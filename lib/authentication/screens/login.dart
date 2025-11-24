@@ -29,15 +29,12 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    unawaited(
-      _googleSignIn.initialize(
-        clientId: _googleClientId,
-      ),
-    );
+    unawaited(_googleSignIn.initialize(clientId: _googleClientId));
   }
 
   Future<void> _performLogin(BuildContext context) async {
     final request = context.read<CookieRequest>();
+    final navigator = Navigator.of(context);
 
     setState(() {
       isLoading = true;
@@ -45,29 +42,30 @@ class _LoginPageState extends State<LoginPage> {
       successMessage = null;
     });
 
-    final response = await request.post(
-      "$_baseUrl/auth/flutter-login/",
-      {
-        "username": _usernameController.text,
-        "password": _passwordController.text,
-      },
-    );
+    final response = await request.post("$_baseUrl/auth/flutter-login/", {
+      "username": _usernameController.text,
+      "password": _passwordController.text,
+    });
 
+    if (!mounted) return;
     setState(() => isLoading = false);
 
     if (response["status"] == "success") {
       request.loggedIn = true;
       request.jsonData = response;
-      Navigator.pushReplacementNamed(context, "/profile");
+      navigator.pushReplacementNamed("/profile");
     } else {
       request.loggedIn = false;
-      setState(() =>
-          errorMessage = response["message"] ?? response["errors"]?.toString());
+      setState(
+        () => errorMessage =
+            response["message"] ?? response["errors"]?.toString(),
+      );
     }
   }
 
   Future<void> _performGoogleLogin(BuildContext context) async {
     final request = context.read<CookieRequest>();
+    final navigator = Navigator.of(context);
 
     try {
       setState(() {
@@ -87,13 +85,7 @@ class _LoginPageState extends State<LoginPage> {
         scopeHint: const ["email", "profile"],
       );
 
-      if (account == null) {
-        setState(() => errorMessage = "Login Google dibatalkan.");
-        setState(() => isLoading = false);
-        return;
-      }
-
-      final auth = await account.authentication;
+      final auth = account.authentication;
       final idToken = auth.idToken;
 
       if (idToken == null) {
@@ -107,25 +99,34 @@ class _LoginPageState extends State<LoginPage> {
         {"credential": idToken},
       );
 
+      if (!mounted) return;
       if (response["status"] == "success") {
         request.loggedIn = true;
         request.jsonData = response;
-        setState(() => successMessage = "Login berhasil, mengalihkan ke profil...");
-        Navigator.pushReplacementNamed(context, "/profile");
+        setState(
+          () => successMessage = "Login berhasil, mengalihkan ke profil...",
+        );
+        navigator.pushReplacementNamed("/profile");
       } else {
         request.loggedIn = false;
-        setState(() =>
-            errorMessage = response["message"] ?? response["errors"]?.toString());
+        setState(
+          () => errorMessage =
+              response["message"] ?? response["errors"]?.toString(),
+        );
       }
     } catch (e) {
       setState(() => errorMessage = "Google login error: $e");
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
   Future<void> _performLogout(BuildContext context) async {
     final request = context.read<CookieRequest>();
+    final navigator = Navigator.of(context);
+    bool shouldNavigate = false;
     setState(() {
       isLoading = true;
       errorMessage = null;
@@ -133,20 +134,27 @@ class _LoginPageState extends State<LoginPage> {
     });
     try {
       await request.logout("$_baseUrl/auth/flutter-logout/");
-      successMessage = "Logout berhasil.";
+      if (mounted) {
+        setState(() {
+          successMessage = "Logout berhasil.";
+        });
+      }
+      shouldNavigate = true;
     } finally {
-      setState(() => isLoading = false);
-      Navigator.pushReplacementNamed(context, "/login");
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+
+    if (shouldNavigate && mounted) {
+      navigator.pushReplacementNamed("/login");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Login"), centerTitle: true),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(22),
@@ -192,18 +200,14 @@ class _LoginPageState extends State<LoginPage> {
                 if (!context.watch<CookieRequest>().loggedIn) ...[
                   TextFormField(
                     controller: _usernameController,
-                    decoration: const InputDecoration(
-                      labelText: "Username",
-                    ),
+                    decoration: const InputDecoration(labelText: "Username"),
                     validator: (value) =>
                         value!.isEmpty ? "Username required" : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: "Password",
-                    ),
+                    decoration: const InputDecoration(labelText: "Password"),
                     obscureText: true,
                     validator: (value) =>
                         value!.isEmpty ? "Password required" : null,
@@ -221,7 +225,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: isLoading ? null : () => _performGoogleLogin(context),
+                    onPressed: isLoading
+                        ? null
+                        : () => _performGoogleLogin(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.black87,
@@ -230,10 +236,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Image.asset(
-                          "assets/google.png",
-                          height: 28,
-                        ),
+                        Image.asset("assets/google.png", height: 28),
                         const SizedBox(width: 12),
                         const Text(
                           "Continue with Google",
@@ -256,10 +259,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 8),
                   const Text(
                     "Anda sudah login.",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton.icon(

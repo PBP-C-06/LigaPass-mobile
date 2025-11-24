@@ -27,6 +27,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _performRegister(BuildContext context) async {
     final request = context.read<CookieRequest>();
+    final navigator = Navigator.of(context);
 
     setState(() {
       isLoading = true;
@@ -45,12 +46,14 @@ class _RegisterPageState extends State<RegisterPage> {
       },
     );
 
+    if (!mounted) return;
     setState(() => isLoading = false);
 
     if (response["status"] == "success") {
       request.loggedIn = true;
       request.jsonData = response;
-      Navigator.pushReplacementNamed(context, "/profile");
+      if (!mounted) return;
+      navigator.pushReplacementNamed("/profile");
     } else {
       request.loggedIn = false;
       setState(() => errorMessage = response["errors"].toString());
