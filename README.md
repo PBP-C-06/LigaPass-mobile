@@ -36,7 +36,7 @@ Registrasi, login, logout, dan manage cookie untuk mendapatkan role yang sesuai.
 4. **Product Management**  
 *Dikerjakan oleh Jaysen Lestari*  
    Aplikasi ini memungkinkan user memilih pertandingan dari halaman utama, lalu memilih kategori tiket (VVIP/VIP/Reguler), memvalidasi ketersediaan kursi, menentukan jumlah (opsional bundle/promo), dan membuat pesanan. Untuk pembayaran, pengguna dapat membayar dengan berbagai pilihan seperti qris, virtual account ataupun visa/mastercard. Setelah pembayaran diverifikasi, maka tiket dari user dapat dicek di bagian profile, tiket juga dapat di download dalam format png.
-5. **Review & Comment**  
+5. **Review & analytics**  
 *Dikerjakan oleh Refki Septian*  
    Pada bagian modul ini, admin dapat melihat fitur analitik yang menampilkan ringkasan tiket terjual pada hari itu, minggu ini, dan bulan ini (dipilih berdasarkan filter) serta pendapatan pada hari itu, minggu itu, dan bulan itu (dipilih berdasarkan filter)selain itu, admin juga dapat memantau melihat review dari penonton dan membalas review untuk setiap pertandingan. Untuk User, tersedia statistik kehadiran, grafik pengeluaran harian, mingguan, dan bulanan (dipisahkan berdasar review), pengguna juga dapat memberikan rating pertandingan dan menuliskan komentar pengalaman menonton.
    
