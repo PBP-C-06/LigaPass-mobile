@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ligapass/matches/matches_page.dart';
 import 'package:ligapass/news/news_page.dart';
 import 'package:ligapass/profiles/user_profile.dart';
 import 'package:ligapass/reviews/reviews_page.dart';
@@ -16,9 +15,6 @@ import 'matches/screens/match_detail_page.dart';
 import 'matches/screens/matches_page.dart';
 import 'matches/services/matches_api_client.dart';
 import 'matches/state/matches_notifier.dart';
-import 'news/news_page.dart';
-import 'profiles/user_profile.dart';
-import 'reviews/reviews_page.dart';
 
 void main() {
   runApp(const LigaPassApp());

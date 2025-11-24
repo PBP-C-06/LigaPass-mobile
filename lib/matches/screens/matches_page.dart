@@ -291,7 +291,7 @@ class _FilterCard extends StatelessWidget {
                 SizedBox(
                   width: 220,
                   child: DropdownButtonFormField<int>(
-                    value: perPage,
+                    initialValue: perPage,
                     decoration: InputDecoration(
                       labelText: 'Entri per halaman',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

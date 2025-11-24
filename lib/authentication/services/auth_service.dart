@@ -66,7 +66,7 @@ class AuthService {
     );
 
     // Ambil authentication tokens
-    final GoogleSignInAuthentication auth = await account.authentication;
+    final GoogleSignInAuthentication auth = account.authentication;
     final idToken = auth.idToken;
 
     if (idToken == null) {

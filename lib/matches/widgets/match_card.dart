@@ -114,7 +114,6 @@ class MatchCard extends StatelessWidget {
           foreground: const Color(0xFFB91C1C),
         );
       case MatchStatus.unknown:
-      default:
         return _StatusStyle(
           background: Colors.grey.shade200,
           foreground: Colors.grey.shade800,

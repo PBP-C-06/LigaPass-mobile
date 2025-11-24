@@ -101,7 +101,6 @@ class MatchDetailPage extends StatelessWidget {
       case MatchStatus.finished:
         return const Color(0xFFB91C1C);
       case MatchStatus.unknown:
-      default:
         return Colors.grey.shade700;
     }
   }

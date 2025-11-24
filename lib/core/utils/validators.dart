@@ -12,7 +12,7 @@ class Validators {
   static String? email(String? value) {
     final base = required(value, fieldName: 'Email');
     if (base != null) return base;
-    final pattern = RegExp(r'^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}\$');
+    final pattern = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!pattern.hasMatch(value!.trim())) {
       return 'Format email tidak valid';
     }

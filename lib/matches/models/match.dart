@@ -101,7 +101,6 @@ class Match {
       case MatchStatus.finished:
         return 'Finished';
       case MatchStatus.unknown:
-      default:
         return 'Unknown';
     }
   }
