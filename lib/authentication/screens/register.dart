@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -154,6 +155,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/register'),
     );
   }
 }

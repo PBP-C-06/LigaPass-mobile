@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/profiles/profiles_colors.dart';
 
 class UserProfilePage extends StatelessWidget {
@@ -227,6 +228,7 @@ class UserProfilePage extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }
 }

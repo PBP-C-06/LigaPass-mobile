@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -219,6 +220,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/login'),
     );
   }
 }
