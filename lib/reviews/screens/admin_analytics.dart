@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class AdminAnalyticsPage extends StatelessWidget {
   const AdminAnalyticsPage({super.key});
@@ -13,83 +14,131 @@ class AdminAnalyticsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Revenue Analytics
-          _AdminAnalyticsCard(
-            title: "Total Pendapatan",
-            subtitle: "Revenue trends based on date range",
-            icon: Icons.bar_chart,
-            color: Colors.green,
-          ),
+          const _SectionTitle("Pendapatan"),
+          const SizedBox(height: 12),
+          const _LineChartPlaceholder(),
 
-          const SizedBox(height: 16),
-
-          // Ticket Count Analytics
-          _AdminAnalyticsCard(
-            title: "Tiket Terjual",
-            subtitle: "Tickets sold by category/date",
-            icon: Icons.confirmation_number,
-            color: Colors.blue,
-          ),
-
-          const SizedBox(height: 16),
-
-         
+          const SizedBox(height: 32),
+          const _SectionTitle("Tiket Terjual"),
+          const SizedBox(height: 12),
+          const _BarChartPlaceholder(),
         ],
       ),
     );
   }
 }
 
-class _AdminAnalyticsCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
+// --- TITLE ---
+class _SectionTitle extends StatelessWidget {
+  final String text;
+  const _SectionTitle(this.text);
 
-  const _AdminAnalyticsCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-  });
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+    );
+  }
+}
+
+// --- LINE CHART PLACEHOLDER ---
+class _LineChartPlaceholder extends StatelessWidget {
+  const _LineChartPlaceholder({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 6,
-            color: Colors.black.withOpacity(0.06),
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 36, color: color),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    )),
-                const SizedBox(height: 4),
-                Text(subtitle, style: TextStyle(color: Colors.grey[700])),
-              ],
+      height: 240,
+      padding: const EdgeInsets.all(12),
+      decoration: _box,
+      child: LineChart(
+        LineChartData(
+          borderData: FlBorderData(show: false),
+          titlesData: FlTitlesData(
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (x, _) =>
+                    Text("M-${x.toInt() + 1}", style: const TextStyle(fontSize: 11)),
+              ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
             ),
           ),
-          const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey)
-        ],
+          lineBarsData: [
+            LineChartBarData(
+              isCurved: true,
+              color: Colors.green,
+              barWidth: 4,
+              dotData: FlDotData(show: true),
+              spots: const [
+                FlSpot(0, 30),
+                FlSpot(1, 60),
+                FlSpot(2, 45),
+                FlSpot(3, 70),
+                FlSpot(4, 100),
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
 }
 
+// --- REUSABLE BAR FOR ADMIN ---
+class _BarChartPlaceholder extends StatelessWidget {
+  const _BarChartPlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 240,
+      padding: const EdgeInsets.all(12),
+      decoration: _box,
+      child: BarChart(
+        BarChartData(
+          barGroups: List.generate(
+            5,
+            (i) => BarChartGroupData(
+              x: i,
+              barRods: [
+                BarChartRodData(
+                  toY: (i + 2) * 15,
+                  width: 20,
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ],
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (x, _) =>
+                    Text("W-${x.toInt() + 1}", style: const TextStyle(fontSize: 11)),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+final BoxDecoration _box = BoxDecoration(
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(16),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black12,
+      blurRadius: 6,
+      offset: Offset(0, 3),
+    )
+  ],
+);

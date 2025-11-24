@@ -17,11 +17,16 @@ class AppBottomNav extends StatelessWidget {
     '/profile',
   ];
 
-  Future<void> _handleTap(BuildContext context, String route, bool loggedIn) async {
+  Future<void> _handleTap(
+    BuildContext context,
+    String route,
+    bool loggedIn,
+  ) async {
     final request = context.read<CookieRequest>();
 
     if (route == '/login' && loggedIn) {
       await request.logout("$_authBaseUrl/auth/flutter-logout/");
+      if (!context.mounted) return;
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
