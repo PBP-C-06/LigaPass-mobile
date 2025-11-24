@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../common/widgets/app_bottom_nav.dart';
 import '../models/match.dart';
 import '../models/match_filter.dart';
 import '../state/matches_notifier.dart';
@@ -196,6 +197,7 @@ class _MatchesPageState extends State<MatchesPage> {
           },
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/matches'),
     );
   }
 }

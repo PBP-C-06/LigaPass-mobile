@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/foundation.dart';
 
 import 'env.dart';
@@ -50,6 +48,9 @@ class ApiConfig {
 
   static bool get _isDesktopOrSimulator {
     if (kIsWeb) return false;
-    return Platform.isMacOS || Platform.isLinux || Platform.isWindows || Platform.isIOS;
+    return defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.linux ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.iOS;
   }
 }

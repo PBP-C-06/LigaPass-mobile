@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 
-import '../config/api_config.dart';
+import '../../config/api_config.dart';
 
 enum MatchStatus { upcoming, ongoing, finished, unknown }
 

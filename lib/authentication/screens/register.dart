@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+
+const String _baseUrl = "http://localhost:8000";
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -30,8 +33,8 @@ class _RegisterPageState extends State<RegisterPage> {
       errorMessage = null;
     });
 
-    final response = await request.postJson(
-      "https://your-domain-here/auth/flutter/register/",
+    final response = await request.post(
+      "$_baseUrl/auth/flutter-register/",
       {
         "username": _usernameController.text,
         "first_name": _fnameController.text,
@@ -45,8 +48,11 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => isLoading = false);
 
     if (response["status"] == "success") {
-      Navigator.pushReplacementNamed(context, response["redirect_url"]);
+      request.loggedIn = true;
+      request.jsonData = response;
+      Navigator.pushReplacementNamed(context, "/profile");
     } else {
+      request.loggedIn = false;
       setState(() => errorMessage = response["errors"].toString());
     }
   }
@@ -76,46 +82,36 @@ class _RegisterPageState extends State<RegisterPage> {
                       style: const TextStyle(color: Colors.red),
                     ),
                   ),
-
                 TextFormField(
                   controller: _usernameController,
                   decoration: const InputDecoration(labelText: "Username"),
-                  validator: (value) =>
-                      value!.isEmpty ? "Required" : null,
+                  validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 const SizedBox(height: 12),
-
                 TextFormField(
                   controller: _fnameController,
                   decoration: const InputDecoration(labelText: "First Name"),
-                  validator: (value) =>
-                      value!.isEmpty ? "Required" : null,
+                  validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 const SizedBox(height: 12),
-
                 TextFormField(
                   controller: _lnameController,
                   decoration: const InputDecoration(labelText: "Last Name"),
                 ),
                 const SizedBox(height: 12),
-
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: "Email"),
-                  validator: (value) =>
-                      value!.isEmpty ? "Required" : null,
+                  validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 const SizedBox(height: 12),
-
                 TextFormField(
                   controller: _pw1Controller,
                   obscureText: true,
                   decoration: const InputDecoration(labelText: "Password"),
-                  validator: (value) =>
-                      value!.isEmpty ? "Required" : null,
+                  validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 const SizedBox(height: 12),
-
                 TextFormField(
                   controller: _pw2Controller,
                   obscureText: true,
@@ -129,7 +125,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                 ),
                 const SizedBox(height: 20),
-
                 ElevatedButton(
                   onPressed: isLoading
                       ? null
@@ -140,9 +135,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         },
                   child: Text(isLoading ? "Loading..." : "Register"),
                 ),
-
                 const SizedBox(height: 12),
-
                 TextButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, "/login");
@@ -154,6 +147,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/register'),
     );
   }
 }
