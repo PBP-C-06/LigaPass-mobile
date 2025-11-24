@@ -2,6 +2,8 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 
+import 'env.dart';
+
 class ApiConfig {
   static const String _overrideBaseUrl =
       String.fromEnvironment('API_BASE_URL');
@@ -14,6 +16,13 @@ class ApiConfig {
 
   static String get baseUrl {
     if (_overrideBaseUrl.isNotEmpty) return _overrideBaseUrl;
+    if (Env.baseUrl.isNotEmpty) {
+      // Jika env masih 10.0.2.2 tapi platform web/desktop, ganti ke localhost.
+      if (kIsWeb && Env.baseUrl.contains('10.0.2.2')) {
+        return Env.baseUrl.replaceFirst('10.0.2.2', 'localhost');
+      }
+      return Env.baseUrl;
+    }
     if (kIsWeb) return _defaultLocalhost;
     if (_isDesktopOrSimulator) return _defaultLocalhost;
     return _defaultAndroidEmulator;

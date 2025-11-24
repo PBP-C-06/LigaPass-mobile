@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
+import 'authentication/screens/login.dart';
+import 'authentication/screens/register.dart';
+import 'config/env.dart';
+import 'core/theme/app_theme.dart';
 import 'models/match.dart';
+import 'profiles/user_profile.dart';
 import 'repositories/matches_repository.dart';
 import 'screens/match_detail_page.dart';
 import 'screens/matches_page.dart';
@@ -19,6 +25,7 @@ class LigaPassApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<CookieRequest>(create: (_) => CookieRequest()),
         ChangeNotifierProvider(
           create: (_) => MatchesNotifier(
             MatchesRepository(apiClient: MatchesApiClient()),
@@ -26,19 +33,14 @@ class LigaPassApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'LigaPass Matches',
+        title: Env.appName,
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1D4ED8)),
-          scaffoldBackgroundColor: const Color(0xFFF6F7FB),
-          useMaterial3: true,
-          fontFamily: 'SF Pro',
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            elevation: 0,
-          ),
-        ),
+        theme: AppTheme.light,
+        routes: {
+          '/login': (_) => const LoginPage(),
+          '/register': (_) => const RegisterPage(),
+          '/profile': (_) => const UserProfilePage(),
+        },
         onGenerateRoute: (settings) {
           if (settings.name == '/match' && settings.arguments is Match) {
             final match = settings.arguments as Match;
@@ -46,7 +48,7 @@ class LigaPassApp extends StatelessWidget {
               builder: (_) => MatchDetailPage(match: match),
             );
           }
-          return MaterialPageRoute(builder: (_) => const MatchesPage());
+          return null;
         },
         home: const MatchesPage(),
       ),
