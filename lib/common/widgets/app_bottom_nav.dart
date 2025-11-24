@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+
+const String _authBaseUrl = "http://localhost:8000";
 
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.currentRoute});
 
   final String currentRoute;
 
-  static const _routes = [
+  static const _baseRoutes = [
     '/matches',
     '/news',
     '/reviews',
@@ -13,37 +17,46 @@ class AppBottomNav extends StatelessWidget {
     '/profile',
   ];
 
-  void _navigate(BuildContext context, String route) {
+  Future<void> _handleTap(BuildContext context, String route, bool loggedIn) async {
+    final request = context.read<CookieRequest>();
+
+    if (route == '/login' && loggedIn) {
+      await request.logout("$_authBaseUrl/auth/flutter-logout/");
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
     if (route == currentRoute) return;
     Navigator.pushReplacementNamed(context, route);
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = _routes.indexOf(currentRoute);
+    final loggedIn = context.watch<CookieRequest>().loggedIn;
+    final currentIndex = _baseRoutes.indexOf(currentRoute);
 
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: currentIndex == -1 ? 0 : currentIndex,
-      onTap: (index) => _navigate(context, _routes[index]),
-      items: const [
-        BottomNavigationBarItem(
+      onTap: (index) => _handleTap(context, _baseRoutes[index], loggedIn),
+      items: [
+        const BottomNavigationBarItem(
           icon: Icon(Icons.sports_soccer),
           label: 'Matches',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.article_outlined),
           label: 'News',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.reviews_outlined),
           label: 'Reviews',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.login_rounded),
-          label: 'Login',
+          icon: Icon(loggedIn ? Icons.logout : Icons.login_rounded),
+          label: loggedIn ? 'Logout' : 'Login',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
           label: 'Profile',
         ),

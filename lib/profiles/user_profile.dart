@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/profiles/profiles_colors.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class UserProfilePage extends StatelessWidget {
   const UserProfilePage({super.key});
@@ -10,6 +12,50 @@ class UserProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
+    if (!request.loggedIn) {
+      return Scaffold(
+        backgroundColor: backgroundBlue,
+        appBar: AppBar(
+          title: const Text('Profil Pengguna'),
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
+          elevation: 2,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Anda belum login. Silakan login untuk mengakses profil.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () =>
+                      Navigator.pushReplacementNamed(context, '/login'),
+                  icon: const Icon(Icons.login),
+                  label: const Text('Ke Halaman Login'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
+      );
+    }
+
     return Scaffold(
       backgroundColor: backgroundBlue,
       appBar: AppBar(
