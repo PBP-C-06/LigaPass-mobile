@@ -29,8 +29,12 @@
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"
-            android:value="2" />
+            android:value="2"/>
+        <meta-data
+            android:name="com.google.android.gms.client_id"
+            android:value="496589546073-lhasinbg2db22bkti40suvgaqjqti4t2.apps.googleusercontent.com" />
     </application>
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
