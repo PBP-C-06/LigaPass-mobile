@@ -6,8 +6,6 @@ class BookingStatusService {
   final CookieRequest request;
   BookingStatusService(this.request);
 
-  /// Check booking/payment status
-  /// Django URL: flutter-check-status/<uuid:booking_id>/
   Future<Map<String, dynamic>> checkStatus(String bookingId) async {
     try {
       final response = await request.get(
@@ -15,7 +13,6 @@ class BookingStatusService {
       );
       return response;
     } catch (e) {
-      print('Error checking status: $e');
       return {
         'status': false,
         'payment_status': 'UNKNOWN',
@@ -24,8 +21,6 @@ class BookingStatusService {
     }
   }
 
-  /// Cancel a pending booking
-  /// Django URL: flutter-cancel/<uuid:booking_id>/
   Future<Map<String, dynamic>> cancelBooking(String bookingId) async {
     try {
       final response = await request.postJson(
@@ -34,12 +29,10 @@ class BookingStatusService {
       );
       return response;
     } catch (e) {
-      print('Error cancelling booking: $e');
       return {'status': false, 'message': 'Failed to cancel booking: $e'};
     }
   }
 
-  /// Get all user bookings
   Future<Map<String, dynamic>> getMyBookings() async {
     try {
       final response = await request.get(
@@ -47,7 +40,6 @@ class BookingStatusService {
       );
       return response;
     } catch (e) {
-      print('Error fetching bookings: $e');
       return {
         'status': false,
         'bookings': [],
