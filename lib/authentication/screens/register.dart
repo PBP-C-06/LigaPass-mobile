@@ -1,9 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-
-const String _baseUrl = "http://localhost:8000";
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -28,22 +29,23 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _performRegister(BuildContext context) async {
     final request = context.read<CookieRequest>();
     final navigator = Navigator.of(context);
+    final baseUrl = ApiConfig.baseUrl;
 
     setState(() {
       isLoading = true;
       errorMessage = null;
     });
 
-    final response = await request.post(
-      "$_baseUrl/auth/flutter-register/",
-      {
+    final response = await request.postJson(
+      "$baseUrl/auth/flutter-register/",
+      jsonEncode({
         "username": _usernameController.text,
         "first_name": _fnameController.text,
         "last_name": _lnameController.text,
         "email": _emailController.text,
         "password1": _pw1Controller.text,
         "password2": _pw2Controller.text,
-      },
+      }),
     );
 
     if (!mounted) return;
