@@ -34,13 +34,17 @@ class _NewsListScreenState extends State<NewsListScreen> {
         isFeatured: selectedIsFeatured,
         sort: selectedSort,
       );
+      if (!mounted) return;
       setState(() => newsList = data);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Gagal memuat berita: $e")),
       );
     } finally {
-      setState(() => loading = false);
+      if (mounted) {
+        setState(() => loading = false);
+      }
     }
   }
 
@@ -53,7 +57,7 @@ class _NewsListScreenState extends State<NewsListScreen> {
     return SizedBox(
       width: 180,
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -155,7 +159,7 @@ class _NewsListScreenState extends State<NewsListScreen> {
                   pinned: true,
                   floating: false,
                   expandedHeight: 100.0,
-                  backgroundColor: Colors.white.withOpacity(0.9),
+                  backgroundColor: Colors.white.withValues(alpha: 0.9),
                   elevation: 1,
                   flexibleSpace: FlexibleSpaceBar(
                     centerTitle: true,

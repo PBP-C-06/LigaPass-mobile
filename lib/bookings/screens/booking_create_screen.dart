@@ -156,7 +156,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Error loading tickets',
-                    style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -262,7 +262,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                     color: const Color(0xFF1a1a2e),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFFe94560).withOpacity(0.3),
+                      color: const Color(0xFFe94560).withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -292,13 +292,13 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                                   Text(
                                     '${ticket.seatCategory} x${_selectedQuantities[ticket.seatCategory]}',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
+                                      color: Colors.white.withValues(alpha: 0.8),
                                     ),
                                   ),
                                   Text(
                                     'Rp ${_formatPrice(ticket.price * (_selectedQuantities[ticket.seatCategory] ?? 0))}',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
+                                      color: Colors.white.withValues(alpha: 0.8),
                                     ),
                                   ),
                                 ],
@@ -390,7 +390,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
         border: Border.all(
           color: quantity > 0
               ? const Color(0xFFe94560)
-              : Colors.white.withOpacity(0.1),
+              : Colors.white.withValues(alpha: 0.1),
           width: quantity > 0 ? 2 : 1,
         ),
       ),
@@ -526,7 +526,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
           border: Border.all(
             color: isSelected
                 ? const Color(0xFFe94560)
-                : Colors.white.withOpacity(0.1),
+                : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -536,7 +536,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
               method['icon'],
               color: isSelected
                   ? const Color(0xFFe94560)
-                  : Colors.white.withOpacity(0.6),
+                  : Colors.white.withValues(alpha: 0.6),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -545,7 +545,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                 style: TextStyle(
                   color: isSelected
                       ? Colors.white
-                      : Colors.white.withOpacity(0.7),
+                      : Colors.white.withValues(alpha: 0.7),
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),

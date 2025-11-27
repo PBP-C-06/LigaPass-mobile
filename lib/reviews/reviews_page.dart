@@ -234,7 +234,7 @@ class _ReviewsPageState extends State<ReviewsPage> {
         child: ListView(
           children: [
             const SizedBox(height: 10),
-            ...reviews.map(_buildReviewItem).toList(),
+            ...reviews.map(_buildReviewItem),
           ],
         ),
       ),

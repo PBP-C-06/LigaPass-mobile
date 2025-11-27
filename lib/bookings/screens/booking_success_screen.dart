@@ -83,7 +83,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.green.withOpacity(0.4),
+                          color: Colors.green.withValues(alpha: 0.4),
                           blurRadius: 20,
                           spreadRadius: 5,
                         ),
@@ -112,7 +112,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                   'Your tickets have been issued',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -125,7 +125,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                     color: const Color(0xFF1a1a2e),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFFe94560).withOpacity(0.3),
+                      color: const Color(0xFFe94560).withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -252,7 +252,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
               Text(
                 label,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 12,
                 ),
               ),

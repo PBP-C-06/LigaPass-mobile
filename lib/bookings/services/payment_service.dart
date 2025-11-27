@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../../config/api_config.dart';
 
@@ -28,7 +29,7 @@ class PaymentService {
 
       return response;
     } catch (e) {
-      print('Error initiating payment: $e');
+      debugPrint('Error initiating payment: $e');
       return {'status': false, 'message': 'Failed to initiate payment: $e'};
     }
   }
@@ -59,7 +60,7 @@ class PaymentService {
       );
       return response;
     } catch (e) {
-      print('Error checking payment status: $e');
+      debugPrint('Error checking payment status: $e');
       return {'status': false, 'message': 'Failed to check status: $e'};
     }
   }

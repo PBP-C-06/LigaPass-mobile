@@ -44,7 +44,7 @@ class _SectionTitle extends StatelessWidget {
 
 // --- LINE CHART PLACEHOLDER ---
 class _LineChartPlaceholder extends StatelessWidget {
-  const _LineChartPlaceholder({super.key});
+  const _LineChartPlaceholder();
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +90,7 @@ class _LineChartPlaceholder extends StatelessWidget {
 
 // --- REUSABLE BAR FOR ADMIN ---
 class _BarChartPlaceholder extends StatelessWidget {
-  const _BarChartPlaceholder({super.key});
+  const _BarChartPlaceholder();
 
   @override
   Widget build(BuildContext context) {
