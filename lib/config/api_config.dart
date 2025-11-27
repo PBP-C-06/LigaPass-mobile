@@ -15,8 +15,8 @@ class ApiConfig {
   static String get baseUrl {
     if (_overrideBaseUrl.isNotEmpty) return _overrideBaseUrl;
     if (Env.baseUrl.isNotEmpty) {
-      // Jika env masih 10.0.2.2 tapi platform web/desktop, ganti ke localhost.
-      if (kIsWeb && Env.baseUrl.contains('10.0.2.2')) {
+      // Ganti 10.0.2.2 ke localhost ketika berjalan di web/desktop/iOS simulator
+      if ((kIsWeb || _isDesktopOrSimulator) && Env.baseUrl.contains('10.0.2.2')) {
         return Env.baseUrl.replaceFirst('10.0.2.2', 'localhost');
       }
       return Env.baseUrl;
