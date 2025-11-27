@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../../common/widgets/app_bottom_nav.dart';
+import '../../bookings/screens/booking_create_screen.dart';
 import '../models/match.dart';
 import '../models/match_filter.dart';
 import '../state/matches_notifier.dart';
@@ -98,6 +100,28 @@ class _MatchesPageState extends State<MatchesPage> {
   String _formatDate(DateTime? date) =>
       date != null ? DateFormat('dd MMM yyyy').format(date) : 'Pilih tanggal';
 
+  Future<void> _handleBuy(Match match) async {
+    final request = context.read<CookieRequest>();
+    if (!request.loggedIn) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan login untuk membeli tiket')),
+      );
+      Navigator.pushNamed(context, '/login');
+      return;
+    }
+
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BookingCreateScreen(
+          matchId: match.id,
+          matchTitle: '${match.homeTeamName} vs ${match.awayTeamName}',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,10 +198,8 @@ class _MatchesPageState extends State<MatchesPage> {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: MatchCard(
                           match: match,
-                          onTap: () => Navigator.of(context).pushNamed(
-                            '/match',
-                            arguments: match,
-                          ),
+                          onTap: () => Navigator.of(context).pushNamed('/match', arguments: match),
+                          onBuy: () => _handleBuy(match),
                         ),
                       ),
                     ),

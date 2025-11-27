@@ -8,10 +8,12 @@ class MatchCard extends StatelessWidget {
     super.key,
     required this.match,
     this.onTap,
+    this.onBuy,
   });
 
   final Match match;
   final VoidCallback? onTap;
+  final VoidCallback? onBuy;
 
   @override
   Widget build(BuildContext context) {
@@ -19,79 +21,105 @@ class MatchCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade200,
-              blurRadius: 8,
-              offset: const Offset(0, 6),
+      borderRadius: BorderRadius.circular(18),
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade200,
+                  blurRadius: 8,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
-          ],
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: statusStyle.background,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    match.statusLabel,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: statusStyle.foreground,
-                      fontSize: 12,
-                      letterSpacing: 0.2,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: statusStyle.background,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        match.statusLabel,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: statusStyle.foreground,
+                          fontSize: 12,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
                     ),
-                  ),
+                    Text(
+                      match.dateText,
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  match.dateText,
-                  style: TextStyle(
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w600,
-                  ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(child: _TeamTile(name: match.homeTeamName, logoUrl: match.homeLogoUrl, isHome: true)),
+                    _ScoreSection(match: match),
+                    Expanded(child: _TeamTile(name: match.awayTeamName, logoUrl: match.awayLogoUrl, isHome: false)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        match.venueDisplay,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+          ),
+          if (onBuy != null) ...[
+            const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _TeamTile(name: match.homeTeamName, logoUrl: match.homeLogoUrl, isHome: true)),
-                _ScoreSection(match: match),
-                Expanded(child: _TeamTile(name: match.awayTeamName, logoUrl: match.awayLogoUrl, isHome: false)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
                 Expanded(
-                  child: Text(
-                    match.venueDisplay,
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                  child: OutlinedButton.icon(
+                    onPressed: onTap,
+                    icon: const Icon(Icons.info_outline),
+                    label: const Text('Detail'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: onBuy,
+                    icon: const Icon(Icons.confirmation_number_outlined),
+                    label: const Text('Beli Tiket'),
                   ),
                 ),
               ],
             ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -131,7 +159,7 @@ class _ScoreSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final isFinished = match.status == MatchStatus.finished;
     return Container(
-      width: 100,
+      width: 92,
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,

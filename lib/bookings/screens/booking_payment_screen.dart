@@ -78,7 +78,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
         _showErrorAndGoBack('Payment $status');
       }
     } catch (e) {
-      print('Error checking status: $e');
+      debugPrint('Error checking status: $e');
     }
   }
 
@@ -135,7 +135,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
       ),
     );
 
-    if (confirm != true) return;
+    if (!mounted || confirm != true) return;
 
     setState(() => _isCancelling = true);
 
@@ -158,9 +158,8 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      debugPrint('Error checking status: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) {
         setState(() => _isCancelling = false);
@@ -237,7 +236,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Booking ID: #${widget.bookingId}',
-                    style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
                   ),
                 ],
               ),
@@ -329,7 +328,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
             Text(
               'Status auto-refreshes every 5 seconds',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 12,
               ),
             ),
@@ -409,7 +408,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
           Text(
             'Open your GoPay, OVO, Dana, or other\ne-wallet app to scan this QR code',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white.withOpacity(0.7)),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
           ),
         ],
       ),
@@ -520,7 +519,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
           Text(
             'Complete your payment in the browser window.\nReturn here after completing payment.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white.withOpacity(0.7)),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
           ),
           const SizedBox(height: 16),
           if (redirectUrl != null)
@@ -570,7 +569,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(color: Colors.white.withOpacity(0.8)),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
             ),
           ),
         ],

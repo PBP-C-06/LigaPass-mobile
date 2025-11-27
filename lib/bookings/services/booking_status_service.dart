@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../../config/api_config.dart';
 
@@ -15,7 +16,7 @@ class BookingStatusService {
       );
       return response;
     } catch (e) {
-      print('Error checking status: $e');
+      debugPrint('Error checking status: $e');
       return {
         'status': false,
         'payment_status': 'UNKNOWN',
@@ -34,7 +35,7 @@ class BookingStatusService {
       );
       return response;
     } catch (e) {
-      print('Error cancelling booking: $e');
+      debugPrint('Error cancelling booking: $e');
       return {'status': false, 'message': 'Failed to cancel booking: $e'};
     }
   }
@@ -47,7 +48,7 @@ class BookingStatusService {
       );
       return response;
     } catch (e) {
-      print('Error fetching bookings: $e');
+      debugPrint('Error fetching bookings: $e');
       return {
         'status': false,
         'bookings': [],

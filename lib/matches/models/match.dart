@@ -70,12 +70,17 @@ class Match {
 
   factory Match.fromJson(Map<String, dynamic> json) {
     final statusKey = (json['status_key'] ?? '') as String;
+    String _pickLogoUrl(String? primary, String? fallback) {
+      final candidates = [primary, fallback].where((e) => (e ?? '').isNotEmpty).toList();
+      if (candidates.isEmpty) return '';
+      return ApiConfig.resolveUrl(candidates.first!);
+    }
     return Match(
       id: json['id'].toString(),
       homeTeamName: json['home_team_name'] ?? '',
       awayTeamName: json['away_team_name'] ?? '',
-      homeLogoUrl: ApiConfig.resolveUrl(json['home_logo_url'] ?? ''),
-      awayLogoUrl: ApiConfig.resolveUrl(json['away_logo_url'] ?? ''),
+      homeLogoUrl: _pickLogoUrl(json['home_logo_proxy_url'], json['home_logo_url']),
+      awayLogoUrl: _pickLogoUrl(json['away_logo_proxy_url'], json['away_logo_url']),
       dateText: json['date'] ?? '',
       status: _matchStatusFromKey(statusKey),
       homeGoals: _parseGoal(json['home_goals']),

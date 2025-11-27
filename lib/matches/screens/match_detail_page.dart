@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
+import '../../bookings/screens/booking_create_screen.dart';
 import '../models/match.dart';
 
 class MatchDetailPage extends StatelessWidget {
@@ -13,6 +16,25 @@ class MatchDetailPage extends StatelessWidget {
     final dateText = match.kickoff != null
         ? DateFormat('EEEE, dd MMM yyyy • HH:mm').format(match.kickoff!)
         : match.dateText;
+    void handleBuy() {
+      final request = context.read<CookieRequest>();
+      if (!request.loggedIn) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Silakan login untuk membeli tiket')),
+        );
+        Navigator.pushNamed(context, '/login');
+        return;
+      }
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BookingCreateScreen(
+            matchId: match.id,
+            matchTitle: '${match.homeTeamName} vs ${match.awayTeamName}',
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -86,6 +108,13 @@ class MatchDetailPage extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: handleBuy,
+            icon: const Icon(Icons.confirmation_number_outlined),
+            label: const Text('Beli Tiket'),
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
           ),
         ],
       ),

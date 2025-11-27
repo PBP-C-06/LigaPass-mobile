@@ -89,7 +89,8 @@ class _LoginPageState extends State<LoginPage> {
         successMessage = null;
       });
 
-      final GoogleSignInAuthentication auth = await user.authentication;
+      final GoogleSignInAuthentication auth =
+          await Future.value(user.authentication);
       final String? idToken = auth.idToken;
 
       if (idToken == null) {
@@ -207,7 +208,8 @@ class _LoginPageState extends State<LoginPage> {
       final GoogleSignInAccount user = await GoogleSignIn.instance
           .authenticate();
 
-      final GoogleSignInAuthentication auth = await user.authentication;
+      final GoogleSignInAuthentication auth =
+          await Future.value(user.authentication);
       final String? idToken = auth.idToken;
 
       if (idToken == null) {
@@ -280,7 +282,7 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.blueGrey.withOpacity(0.08),
+              color: Colors.blueGrey.withValues(alpha: 0.08),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -296,7 +298,7 @@ class _LoginPageState extends State<LoginPage> {
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
         foregroundColor: Colors.blueGrey.shade900,
-        side: BorderSide(color: Colors.blueGrey.withOpacity(0.25)),
+        side: BorderSide(color: Colors.blueGrey.withValues(alpha: 0.25)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         backgroundColor: Colors.white,
       ),
@@ -395,12 +397,12 @@ class _LoginPageState extends State<LoginPage> {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blueGrey.withOpacity(0.14),
+                        color: Colors.blueGrey.withValues(alpha: 0.14),
                         blurRadius: 26,
                         offset: const Offset(0, 14),
                       ),
                     ],
-                    border: Border.all(color: Colors.indigo.withOpacity(0.04)),
+                    border: Border.all(color: Colors.indigo.withValues(alpha: 0.04)),
                   ),
                   child: Form(
                     key: _formKey,
@@ -468,7 +470,7 @@ class _LoginPageState extends State<LoginPage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(14),
                                 borderSide: BorderSide(
-                                  color: Colors.blueGrey.withOpacity(0.2),
+                                  color: Colors.blueGrey.withValues(alpha: 0.2),
                                 ),
                               ),
                             ),
@@ -485,7 +487,7 @@ class _LoginPageState extends State<LoginPage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(14),
                                 borderSide: BorderSide(
-                                  color: Colors.blueGrey.withOpacity(0.2),
+                                  color: Colors.blueGrey.withValues(alpha: 0.2),
                                 ),
                               ),
                             ),
@@ -553,7 +555,7 @@ class _LoginPageState extends State<LoginPage> {
                               Expanded(
                                 child: Container(
                                   height: 1,
-                                  color: Colors.blueGrey.withOpacity(0.2),
+                                  color: Colors.blueGrey.withValues(alpha: 0.2),
                                 ),
                               ),
                               Padding(
@@ -570,7 +572,7 @@ class _LoginPageState extends State<LoginPage> {
                               Expanded(
                                 child: Container(
                                   height: 1,
-                                  color: Colors.blueGrey.withOpacity(0.2),
+                                  color: Colors.blueGrey.withValues(alpha: 0.2),
                                 ),
                               ),
                             ],
