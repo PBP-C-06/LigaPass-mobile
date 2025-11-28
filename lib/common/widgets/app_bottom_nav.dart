@@ -11,6 +11,7 @@ class AppBottomNav extends StatelessWidget {
 
   static const _baseRoutes = [
     '/matches',
+    '/tickets',
     '/news',
     '/reviews',
     '/login',
@@ -27,6 +28,12 @@ class AppBottomNav extends StatelessWidget {
     if (route == '/login' && loggedIn) {
       await request.logout("$_authBaseUrl/auth/flutter-logout/");
       if (!context.mounted) return;
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
+    // Tickets requires login
+    if (route == '/tickets' && !loggedIn) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
@@ -48,6 +55,10 @@ class AppBottomNav extends StatelessWidget {
         const BottomNavigationBarItem(
           icon: Icon(Icons.sports_soccer),
           label: 'Matches',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.local_activity),
+          label: 'Tiket',
         ),
         const BottomNavigationBarItem(
           icon: Icon(Icons.article_outlined),

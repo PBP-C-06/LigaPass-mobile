@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ligapass/news/news_page.dart';
 import 'package:ligapass/profiles/user_profile.dart';
 import 'package:ligapass/reviews/reviews_page.dart';
+import 'package:ligapass/bookings/screens/my_tickets_screen.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -40,12 +41,14 @@ class LigaPassApp extends StatelessWidget {
         theme: AppTheme.light,
         initialRoute: '/matches',
         routes: {
+          '/': (_) => const MatchesPage(),
           '/login': (_) => const LoginPage(),
           '/register': (_) => const RegisterPage(),
           '/profile': (_) => const UserProfilePage(),
           '/matches': (_) => const MatchesPage(),
           '/news': (_) => const NewsPage(),
           '/reviews': (_) => const ReviewsPage(),
+          '/tickets': (_) => const MyTicketsScreen(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/match' && settings.arguments is Match) {

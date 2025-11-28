@@ -49,7 +49,7 @@ class _SectionTitle extends StatelessWidget {
 
 // --- BAR CHART PLACEHOLDER ---
 class _BarChartPlaceholder extends StatelessWidget {
-  const _BarChartPlaceholder({super.key});
+  const _BarChartPlaceholder();
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +96,7 @@ class _BarChartPlaceholder extends StatelessWidget {
 
 // --- PIE CHART PLACEHOLDER ---
 class _PieChartPlaceholder extends StatelessWidget {
-  const _PieChartPlaceholder({super.key});
+  const _PieChartPlaceholder();
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +133,7 @@ class _PieChartPlaceholder extends StatelessWidget {
 
 // --- ATTENDANCE PLACEHOLDER ---
 class _AttendanceCard extends StatelessWidget {
-  const _AttendanceCard({super.key});
+  const _AttendanceCard();
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../models/ticket_price.dart';
 import '../../config/api_config.dart';
@@ -21,7 +22,7 @@ class BookingService {
       }
       return [];
     } catch (e) {
-      print('Error fetching ticket prices: $e');
+      debugPrint('Error fetching ticket prices: $e');
       return [];
     }
   }
@@ -41,7 +42,7 @@ class BookingService {
       );
       return response;
     } catch (e) {
-      print('Error creating booking: $e');
+      debugPrint('Error creating booking: $e');
       return {'status': false, 'message': 'Failed to create booking: $e'};
     }
   }
@@ -53,7 +54,7 @@ class BookingService {
       );
       return response;
     } catch (e) {
-      print('Error checking booking status: $e');
+      debugPrint('Error checking booking status: $e');
       return {'status': false, 'message': 'Failed to check status: $e'};
     }
   }
@@ -66,7 +67,7 @@ class BookingService {
       );
       return response;
     } catch (e) {
-      print('Error cancelling booking: $e');
+      debugPrint('Error cancelling booking: $e');
       return {'status': false, 'message': 'Failed to cancel booking: $e'};
     }
   }
@@ -83,7 +84,7 @@ class BookingService {
       }
       return [];
     } catch (e) {
-      print('Error fetching bookings: $e');
+      debugPrint('Error fetching bookings: $e');
       return [];
     }
   }
