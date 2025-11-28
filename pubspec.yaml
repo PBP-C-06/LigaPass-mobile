@@ -44,6 +44,7 @@ dependencies:
   google_sign_in_web: ^1.1.0
   html: ^0.15.4
   url_launcher: ^6.2.5
+  barcode_widget: ^2.0.4
 
 dev_dependencies:
   flutter_test:

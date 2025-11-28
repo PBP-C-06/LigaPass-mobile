@@ -4,21 +4,24 @@ import 'package:flutter/services.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:barcode_widget/barcode_widget.dart';
 import '../services/booking_status_service.dart';
+import '../services/payment_service.dart';
 import 'booking_success_screen.dart';
 
 class BookingPaymentScreen extends StatefulWidget {
   final String bookingId; // UUID string from Django
   final String paymentMethod;
   final double totalAmount;
-  final Map<String, dynamic> paymentData;
+  final Map<String, dynamic>?
+  initialPaymentData; // Can be null, will fetch if needed
 
   const BookingPaymentScreen({
     super.key,
     required this.bookingId,
     required this.paymentMethod,
     required this.totalAmount,
-    required this.paymentData,
+    this.initialPaymentData,
   });
 
   @override
@@ -30,16 +33,14 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
   String _paymentStatus = 'PENDING';
   bool _isLoading = false;
   bool _isCancelling = false;
+  bool _isInitializingPayment = true;
+  Map<String, dynamic> _paymentData = {};
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    // For card payments, open redirect URL immediately
-    if (widget.paymentMethod == 'credit_card') {
-      _handleCardPayment();
-    }
-    // Start polling for payment status
-    _startStatusPolling();
+    _initializePayment();
   }
 
   @override
@@ -48,10 +49,143 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
     super.dispose();
   }
 
+  /// Initialize payment - call flutter_payment endpoint to get VA/QRIS from Midtrans
+  Future<void> _initializePayment() async {
+    // If we already have payment data (e.g., from redirect), use it
+    if (widget.initialPaymentData != null &&
+        widget.initialPaymentData!.isNotEmpty) {
+      setState(() {
+        _paymentData = widget.initialPaymentData!;
+        _isInitializingPayment = false;
+      });
+      _startStatusPolling();
+      if (widget.paymentMethod == 'credit_card') {
+        _handleCardPayment();
+      }
+      return;
+    }
+
+    // Otherwise, call payment endpoint
+    try {
+      final request = context.read<CookieRequest>();
+      final paymentService = PaymentService(request);
+
+      final response = await paymentService.initiatePayment(
+        bookingId: widget.bookingId,
+        method: widget.paymentMethod,
+      );
+
+      if (!mounted) return;
+
+      if (response['status'] == true && response['payment_data'] != null) {
+        final paymentData = response['payment_data'] as Map<String, dynamic>;
+
+        // Debug: Print full payment data from Midtrans
+        debugPrint('=== FULL PAYMENT DATA FROM MIDTRANS ===');
+        debugPrint('$paymentData');
+        debugPrint('Actions: ${paymentData['actions']}');
+        debugPrint('========================================');
+
+        setState(() {
+          _paymentData = paymentData;
+          _isInitializingPayment = false;
+        });
+
+        // Start polling for status
+        _startStatusPolling();
+
+        // For card payments, open redirect URL
+        if (widget.paymentMethod == 'credit_card') {
+          _handleCardPayment();
+        }
+      } else {
+        setState(() {
+          _errorMessage = response['message'] ?? 'Failed to initialize payment';
+          _isInitializingPayment = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Error: $e';
+        _isInitializingPayment = false;
+      });
+    }
+  }
+
   void _startStatusPolling() {
     _statusTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
       await _checkPaymentStatus();
     });
+  }
+
+  /// Manual check status with user feedback - uses sync endpoint to query Midtrans
+  Future<void> _manualCheckStatus() async {
+    if (!mounted) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final request = context.read<CookieRequest>();
+      final service = BookingStatusService(request);
+
+      // Use sync endpoint to query Midtrans and update Django
+      final response = await service.syncStatus(widget.bookingId);
+
+      if (!mounted) return;
+
+      debugPrint('Sync status response: $response');
+
+      final status =
+          response['payment_status'] ?? response['status'] ?? 'PENDING';
+      final statusStr = status.toString().toUpperCase();
+
+      setState(() {
+        _paymentStatus = statusStr;
+        _isLoading = false;
+      });
+
+      if (statusStr == 'CONFIRMED' ||
+          statusStr == 'SETTLEMENT' ||
+          statusStr == 'CAPTURE') {
+        _statusTimer?.cancel();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('🎉 Pembayaran berhasil!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _navigateToSuccess();
+      } else if (statusStr == 'CANCELLED' ||
+          statusStr == 'EXPIRED' ||
+          statusStr == 'CANCEL' ||
+          statusStr == 'EXPIRE' ||
+          statusStr == 'DENY') {
+        _statusTimer?.cancel();
+        _showErrorAndGoBack('Pembayaran $statusStr');
+      } else {
+        // Still pending
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '⏳ Status: $statusStr. Silakan coba lagi beberapa saat.',
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Gagal mengecek status: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _checkPaymentStatus() async {
@@ -83,7 +217,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
   }
 
   Future<void> _handleCardPayment() async {
-    final redirectUrl = widget.paymentData['redirect_url'];
+    final redirectUrl = _paymentData['redirect_url'];
     if (redirectUrl != null) {
       final uri = Uri.parse(redirectUrl);
       if (await canLaunchUrl(uri)) {
@@ -112,14 +246,15 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1a1a2e),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Cancel Booking?',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Color(0xFF111827)),
         ),
         content: const Text(
           'Are you sure you want to cancel this booking?',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: Color(0xFF6B7280)),
         ),
         actions: [
           TextButton(
@@ -159,7 +294,9 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
     } catch (e) {
       if (!mounted) return;
       debugPrint('Error checking status: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) {
         setState(() => _isCancelling = false);
@@ -176,14 +313,86 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Show loading while initializing payment
+    if (_isInitializingPayment) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Payment'),
+          backgroundColor: const Color(0xFF2563EB),
+          foregroundColor: Colors.white,
+        ),
+        backgroundColor: const Color(0xFFF3F4F6),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Color(0xFF2563EB)),
+              SizedBox(height: 20),
+              Text(
+                'Initializing payment...',
+                style: TextStyle(color: Color(0xFF6B7280), fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Show error if failed to initialize
+    if (_errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Payment'),
+          backgroundColor: const Color(0xFF2563EB),
+          foregroundColor: Colors.white,
+        ),
+        backgroundColor: const Color(0xFFF3F4F6),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 20),
+                Text(
+                  'Payment Error',
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Color(0xFF6B7280)),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Go Back'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payment'),
-        backgroundColor: const Color(0xFF1a1a2e),
+        backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
       ),
-      backgroundColor: const Color(0xFF16213e),
+      backgroundColor: const Color(0xFFF3F4F6),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -194,7 +403,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF1a1a2e),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: _paymentStatus == 'PENDING'
@@ -230,13 +439,13 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Color(0xFF111827),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Booking ID: #${widget.bookingId}',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                    style: const TextStyle(color: Color(0xFF6B7280)),
                   ),
                 ],
               ),
@@ -249,7 +458,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFe94560), Color(0xFF0f3460)],
+                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -281,26 +490,28 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
             // Manual Check Button
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _isLoading
-                    ? null
-                    : () async {
-                        setState(() => _isLoading = true);
-                        await _checkPaymentStatus();
-                        setState(() => _isLoading = false);
-                      },
+              child: ElevatedButton.icon(
+                onPressed: _isLoading ? null : _manualCheckStatus,
                 icon: _isLoading
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Icon(Icons.refresh),
-                label: const Text('Check Payment Status'),
-                style: OutlinedButton.styleFrom(
+                label: Text(
+                  _isLoading ? 'Mengecek...' : 'Cek Status Pembayaran',
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
-                  side: const BorderSide(color: Color(0xFFe94560)),
                   padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -309,16 +520,26 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
             // Cancel Button
             SizedBox(
               width: double.infinity,
-              child: TextButton(
+              child: OutlinedButton(
                 onPressed: _isCancelling ? null : _cancelBooking,
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: const BorderSide(color: Colors.red),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 child: _isCancelling
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.red,
+                        ),
                       )
-                    : const Text('Cancel Booking'),
+                    : const Text('Batalkan Booking'),
               ),
             ),
 
@@ -327,10 +548,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
             // Auto-refresh notice
             Text(
               'Status auto-refreshes every 5 seconds',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 12,
-              ),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12),
             ),
           ],
         ),
@@ -350,24 +568,25 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
   }
 
   Widget _buildQrisInstructions() {
-    // Get QRIS URL from payment data
-    String? qrisUrl;
-    final actions = widget.paymentData['actions'] as List?;
-    if (actions != null && actions.isNotEmpty) {
-      for (var action in actions) {
-        if (action['name'] == 'generate-qr-code') {
-          qrisUrl = action['url'];
-          break;
-        }
-      }
-    }
+    // Debug: Print payment data to see structure
+    debugPrint('=== QRIS Payment Data Debug ===');
+    debugPrint('All keys: ${_paymentData.keys.toList()}');
+    debugPrint('Full data: $_paymentData');
+
+    // Get qr_string first (preferred - can generate locally without auth)
+    String? qrString = _paymentData['qr_string']?.toString();
+
+    debugPrint('QR String found: $qrString');
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1a2e),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+        ],
       ),
       child: Column(
         children: [
@@ -376,23 +595,26 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color(0xFF111827),
             ),
           ),
           const SizedBox(height: 16),
-          if (qrisUrl != null)
+          if (qrString != null && qrString.isNotEmpty)
+            // Generate QR code locally from qr_string using barcode_widget
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
-              child: Image.network(
-                qrisUrl,
-                width: 200,
-                height: 200,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.qr_code_2, size: 200, color: Colors.grey),
+              child: BarcodeWidget(
+                barcode: Barcode.qrCode(),
+                data: qrString,
+                width: 220,
+                height: 220,
+                color: Colors.black,
+                backgroundColor: Colors.white,
               ),
             )
           else
@@ -402,13 +624,23 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.qr_code_2, size: 200, color: Colors.grey),
+              child: Column(
+                children: [
+                  const Icon(Icons.qr_code_2, size: 150, color: Colors.grey),
+                  const SizedBox(height: 12),
+                  Text(
+                    'QR Code tidak tersedia\nSilakan refresh atau coba lagi',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ],
+              ),
             ),
           const SizedBox(height: 16),
           Text(
-            'Open your GoPay, OVO, Dana, or other\ne-wallet app to scan this QR code',
+            'Buka aplikasi GoPay, OVO, Dana, atau\ne-wallet lainnya untuk scan QR ini',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+            style: TextStyle(color: const Color(0xFF6B7280)),
           ),
         ],
       ),
@@ -420,7 +652,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
     String? vaNumber;
     String? bankName;
 
-    final vaNumbers = widget.paymentData['va_numbers'] as List?;
+    final vaNumbers = _paymentData['va_numbers'] as List?;
     if (vaNumbers != null && vaNumbers.isNotEmpty) {
       vaNumber = vaNumbers[0]['va_number'];
       bankName = vaNumbers[0]['bank']?.toString().toUpperCase();
@@ -430,8 +662,11 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1a2e),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+        ],
       ),
       child: Column(
         children: [
@@ -440,39 +675,45 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color(0xFF111827),
             ),
           ),
           const SizedBox(height: 20),
           const Text(
             'Transfer to Virtual Account Number:',
-            style: TextStyle(color: Colors.white70),
+            style: TextStyle(color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFF0f3460),
+              color: const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Text(
-                    vaNumber ?? '-',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Text(
+                      vaNumber ?? '-',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF111827),
+                        letterSpacing: 2,
+                      ),
+                      textAlign: TextAlign.center,
+                      softWrap: false,
+                      maxLines: 1,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
                 IconButton(
                   onPressed: () => _copyToClipboard(vaNumber ?? ''),
-                  icon: const Icon(Icons.copy, color: Color(0xFFe94560)),
+                  icon: const Icon(Icons.copy, color: Color(0xFF2563EB)),
                   tooltip: 'Copy',
                 ),
               ],
@@ -481,7 +722,10 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
           const SizedBox(height: 20),
           const Text(
             'How to pay:',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF111827),
+            ),
           ),
           const SizedBox(height: 8),
           _buildStep('1', 'Open your mobile banking app'),
@@ -494,32 +738,35 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
   }
 
   Widget _buildCardInstructions() {
-    final redirectUrl = widget.paymentData['redirect_url'];
+    final redirectUrl = _paymentData['redirect_url'];
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1a2e),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+        ],
       ),
       child: Column(
         children: [
-          const Icon(Icons.credit_card, size: 48, color: Color(0xFFe94560)),
+          const Icon(Icons.credit_card, size: 48, color: Color(0xFF2563EB)),
           const SizedBox(height: 16),
           const Text(
             'Credit Card Payment',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color(0xFF111827),
             ),
           ),
           const SizedBox(height: 12),
           Text(
             'Complete your payment in the browser window.\nReturn here after completing payment.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+            style: TextStyle(color: const Color(0xFF6B7280)),
           ),
           const SizedBox(height: 16),
           if (redirectUrl != null)
@@ -533,7 +780,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
               icon: const Icon(Icons.open_in_browser),
               label: const Text('Open Payment Page'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFe94560),
+                backgroundColor: const Color(0xFF2563EB),
                 foregroundColor: Colors.white,
               ),
             ),
@@ -551,7 +798,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
             width: 24,
             height: 24,
             decoration: const BoxDecoration(
-              color: Color(0xFFe94560),
+              color: Color(0xFF2563EB),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -567,10 +814,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              text,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
-            ),
+            child: Text(text, style: const TextStyle(color: Color(0xFF374151))),
           ),
         ],
       ),

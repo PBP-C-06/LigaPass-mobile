@@ -9,8 +9,6 @@ class BookingService {
 
   BookingService(this.request);
 
-  /// Fetch ticket prices for a match
-  /// Django URL: flutter-ticket-prices/<uuid:match_id>/
   Future<List<TicketPrice>> getTicketPrices(String matchId) async {
     try {
       final response = await request.get(
@@ -29,11 +27,9 @@ class BookingService {
     }
   }
 
-  /// Create a new booking
-  /// Django URL: flutter-create-booking/<uuid:match_id>/
   Future<Map<String, dynamic>> createBooking({
     required String matchId,
-    required Map<String, int> ticketTypes, // e.g., {'REGULAR': 2, 'VIP': 1}
+    required Map<String, int> ticketTypes,
     required String paymentMethod,
   }) async {
     try {
@@ -51,8 +47,6 @@ class BookingService {
     }
   }
 
-  /// Check booking status
-  /// Django URL: flutter-check-status/<uuid:booking_id>/
   Future<Map<String, dynamic>> checkBookingStatus(String bookingId) async {
     try {
       final response = await request.get(
@@ -65,8 +59,6 @@ class BookingService {
     }
   }
 
-  /// Cancel a booking
-  /// Django URL: flutter-cancel/<uuid:booking_id>/
   Future<Map<String, dynamic>> cancelBooking(String bookingId) async {
     try {
       final response = await request.postJson(

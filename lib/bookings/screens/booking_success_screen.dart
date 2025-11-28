@@ -62,7 +62,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF16213e),
+      backgroundColor: const Color(0xFFF3F4F6),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -104,7 +104,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Color(0xFF111827),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -112,7 +112,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                   'Your tickets have been issued',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: const Color(0xFF6B7280),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -122,10 +122,10 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1a1a2e),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFFe94560).withValues(alpha: 0.3),
+                      color: const Color(0xFFE5E7EB),
                     ),
                   ),
                   child: Column(
@@ -135,12 +135,12 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                         '#${widget.bookingId.length > 8 ? widget.bookingId.substring(0, 8) : widget.bookingId}...',
                         Icons.confirmation_number,
                       ),
-                      const Divider(color: Colors.white24, height: 24),
+                      const Divider(color: Color(0xFFE5E7EB), height: 24),
                       if (_isLoading)
                         const Padding(
                           padding: EdgeInsets.all(16),
                           child: CircularProgressIndicator(
-                            color: Color(0xFFe94560),
+                            color: Color(0xFF2563EB),
                           ),
                         )
                       else if (_bookingDetails != null) ...[
@@ -189,7 +189,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFe94560),
+                      backgroundColor: const Color(0xFF2563EB),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -217,8 +217,8 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                       style: TextStyle(fontSize: 16),
                     ),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white54),
+                      foregroundColor: const Color(0xFF2563EB),
+                      side: const BorderSide(color: Color(0xFF2563EB)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -239,10 +239,10 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF0f3460),
+            color: const Color(0xFFEFF6FF),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: const Color(0xFFe94560), size: 20),
+          child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -252,14 +252,14 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
               Text(
                 label,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: const Color(0xFF6B7280),
                   fontSize: 12,
                 ),
               ),
               Text(
                 value,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Color(0xFF111827),
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),

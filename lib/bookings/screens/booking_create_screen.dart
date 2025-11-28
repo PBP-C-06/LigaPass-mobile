@@ -26,27 +26,49 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
   bool _isLoading = false;
 
   final List<Map<String, dynamic>> _paymentMethods = [
-    {'id': 'gopay', 'name': 'GoPay (QRIS)', 'icon': Icons.qr_code},
-    {'id': 'credit_card', 'name': 'Credit Card', 'icon': Icons.credit_card},
+    {
+      'id': 'gopay',
+      'name': 'QRIS / GoPay',
+      'icon': Icons.qr_code,
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/QRIS_logo.svg/300px-QRIS_logo.svg.png',
+    },
+    {
+      'id': 'credit_card',
+      'name': 'Visa / Mastercard',
+      'icon': Icons.credit_card,
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/320px-Mastercard-logo.svg.png',
+    },
     {
       'id': 'bank_bca',
-      'name': 'BCA Virtual Account',
+      'name': 'Virtual Account BCA',
       'icon': Icons.account_balance,
-    },
-    {
-      'id': 'bank_bni',
-      'name': 'BNI Virtual Account',
-      'icon': Icons.account_balance,
-    },
-    {
-      'id': 'bank_bri',
-      'name': 'BRI Virtual Account',
-      'icon': Icons.account_balance,
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/320px-Bank_Central_Asia.svg.png',
     },
     {
       'id': 'bank_cimb',
-      'name': 'CIMB Virtual Account',
+      'name': 'Virtual Account CIMB',
       'icon': Icons.account_balance,
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/CIMB_Niaga_logo.svg/320px-CIMB_Niaga_logo.svg.png',
+      'backupImage':
+          'https://upload.wikimedia.org/wikipedia/id/thumb/b/b9/Logo_CIMB_Niaga.png/320px-Logo_CIMB_Niaga.png',
+    },
+    {
+      'id': 'bank_bni',
+      'name': 'Virtual Account BNI',
+      'icon': Icons.account_balance,
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Bank_Negara_Indonesia_logo_%282004%29.svg/320px-Bank_Negara_Indonesia_logo_%282004%29.svg.png',
+    },
+    {
+      'id': 'bank_bri',
+      'name': 'Virtual Account BRI',
+      'icon': Icons.account_balance,
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/320px-BANK_BRI_logo.svg.png',
     },
   ];
 
@@ -106,7 +128,9 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
               paymentMethod:
                   response['payment_method'] ?? _selectedPaymentMethod,
               totalAmount: (response['total_price'] ?? 0).toDouble(),
-              paymentData: response['payment_data'] ?? {},
+              // initialPaymentData optional - payment screen will call flutter_payment endpoint
+              initialPaymentData:
+                  response['payment_data'] as Map<String, dynamic>?,
             ),
           ),
         );
@@ -134,10 +158,11 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Book Tickets'),
-        backgroundColor: const Color(0xFF1a1a2e),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF111827),
+        elevation: 1,
       ),
-      backgroundColor: const Color(0xFF16213e),
+      backgroundColor: const Color(0xFFF3F4F6),
       body: FutureBuilder<List<TicketPrice>>(
         future: _ticketsFuture,
         builder: (context, snapshot) {
@@ -156,7 +181,9 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Error loading tickets',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                    style: TextStyle(
+                      color: Colors.grey.shade700,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -178,7 +205,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
             return const Center(
               child: Text(
                 'No tickets available for this match',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Color(0xFF111827)),
               ),
             );
           }
@@ -206,7 +233,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFe94560), Color(0xFF0f3460)],
+                      colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -228,7 +255,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Color(0xFF111827),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -243,7 +270,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Color(0xFF111827),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -259,10 +286,10 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1a1a2e),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFFe94560).withValues(alpha: 0.3),
+                      color: const Color(0xFFE5E7EB),
                     ),
                   ),
                   child: Column(
@@ -273,10 +300,10 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Color(0xFF111827),
                         ),
                       ),
-                      const Divider(color: Colors.white24),
+                      const Divider(color: Color(0xFFE5E7EB)),
                       ...tickets
                           .where(
                             (t) =>
@@ -292,20 +319,20 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                                   Text(
                                     '${ticket.seatCategory} x${_selectedQuantities[ticket.seatCategory]}',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.8),
+                                      color: Colors.grey.shade700,
                                     ),
                                   ),
                                   Text(
                                     'Rp ${_formatPrice(ticket.price * (_selectedQuantities[ticket.seatCategory] ?? 0))}',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.8),
+                                      color: Colors.grey.shade700,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                           ),
-                      const Divider(color: Colors.white24),
+                      const Divider(color: Color(0xFFE5E7EB)),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -314,7 +341,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Color(0xFF111827),
                             ),
                           ),
                           Text(
@@ -385,12 +412,12 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1a2e),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: quantity > 0
               ? const Color(0xFFe94560)
-              : Colors.white.withValues(alpha: 0.1),
+              : Colors.grey.shade300,
           width: quantity > 0 ? 2 : 1,
         ),
       ),
@@ -408,7 +435,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Color(0xFF111827),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -446,14 +473,14 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0f3460),
+                      color: const Color(0xFFEFF6FF),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       f,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Colors.white70,
+                        color: Color(0xFF1D4ED8),
                       ),
                     ),
                   ),
@@ -485,7 +512,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Color(0xFF111827),
                   ),
                 ),
               ),
@@ -521,31 +548,63 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1a1a2e),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFFe94560)
-                : Colors.white.withValues(alpha: 0.1),
+                : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
           ),
         ),
         child: Row(
           children: [
-            Icon(
-              method['icon'],
-              color: isSelected
-                  ? const Color(0xFFe94560)
-                  : Colors.white.withValues(alpha: 0.6),
+            Container(
+              height: 32,
+              width: 64,
+              alignment: Alignment.center,
+              child: method['image'] != null
+                  ? Image.network(
+                      method['image'],
+                      height: 28,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) {
+                        if (method['backupImage'] != null) {
+                          return Image.network(
+                            method['backupImage'],
+                            height: 28,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Icon(
+                              method['icon'],
+                              color: isSelected
+                                  ? const Color(0xFFe94560)
+                                  : const Color(0xFF6B7280),
+                            ),
+                          );
+                        }
+                        return Icon(
+                          method['icon'],
+                          color: isSelected
+                              ? const Color(0xFFe94560)
+                              : const Color(0xFF6B7280),
+                        );
+                      },
+                    )
+                  : Icon(
+                      method['icon'],
+                      color: isSelected
+                          ? const Color(0xFFe94560)
+                          : const Color(0xFF6B7280),
+                    ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: Text(
                 method['name'],
                 style: TextStyle(
                   color: isSelected
-                      ? Colors.white
-                      : Colors.white.withValues(alpha: 0.7),
+                      ? const Color(0xFF111827)
+                      : const Color(0xFF4B5563),
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
