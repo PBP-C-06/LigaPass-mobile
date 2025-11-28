@@ -45,6 +45,7 @@ dependencies:
   html: ^0.15.4
   url_launcher: ^6.2.5
   barcode_widget: ^2.0.4
+  image_picker: ^0.8.7+5 
 
 dev_dependencies:
   flutter_test:

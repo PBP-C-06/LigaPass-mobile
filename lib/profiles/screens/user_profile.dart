@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
-import 'package:ligapass/profiles/profiles_colors.dart';
+import 'package:ligapass/profiles/screens/profiles_colors.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 

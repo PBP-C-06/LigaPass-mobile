@@ -1,27 +1,27 @@
 // To parse this JSON data, do
 //
-//     final profile = profileFromJson(jsonString);
+//     final adminJournalistProfile = adminJournalistProfileFromJson(jsonString);
 
 import 'dart:convert';
 
-Profile profileFromJson(String str) => Profile.fromJson(json.decode(str));
+AdminJournalistProfile adminJournalistProfileFromJson(String str) => AdminJournalistProfile.fromJson(json.decode(str));
 
-String profileToJson(Profile data) => json.encode(data.toJson());
+String adminJournalistProfileToJson(AdminJournalistProfile data) => json.encode(data.toJson());
 
-class Profile {
+class AdminJournalistProfile {
     String username;
     String profilePicture;
     int totalNews;
     int totalViews;
 
-    Profile({
+    AdminJournalistProfile({
         required this.username,
         required this.profilePicture,
         required this.totalNews,
         required this.totalViews,
     });
 
-    factory Profile.fromJson(Map<String, dynamic> json) => Profile(
+    factory AdminJournalistProfile.fromJson(Map<String, dynamic> json) => AdminJournalistProfile(
         username: json["username"],
         profilePicture: json["profile_picture"],
         totalNews: json["total_news"],
