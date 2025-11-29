@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/news/news_page.dart';
-import 'package:ligapass/profiles/screens/create_profile.dart';
+import 'package:ligapass/profiles/screens/create_profile_page.dart';
 import 'package:ligapass/profiles/screens/redirect_login.dart';
 import 'package:ligapass/profiles/screens/user_profile.dart';
 import 'package:ligapass/profiles/screens/admin_profile_page.dart';
@@ -56,6 +56,7 @@ class LigaPassApp extends StatelessWidget {
             },
             onGenerateRoute: (settings) {
               final req = Provider.of<CookieRequest>(context, listen: false);
+              final id = req.jsonData['id'];
               final role = req.jsonData['role'];
               final hasProfile = req.jsonData['hasProfile'];
 
@@ -85,7 +86,7 @@ class LigaPassApp extends StatelessWidget {
                     );
                   }
                   return MaterialPageRoute(
-                    builder: (_) => const UserProfilePage(),
+                    builder: (_) => UserProfilePage(id: id),
                   );
                 }
               }

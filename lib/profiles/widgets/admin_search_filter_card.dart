@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/profiles/models/profile.dart';
+import 'package:ligapass/profiles/screens/user_profile.dart';
 
 class AdminSearchFilterCard extends StatelessWidget {
   final List<Profile> userProfiles;
@@ -169,11 +170,13 @@ class AdminSearchFilterCard extends StatelessWidget {
                             ),
                           ),
 
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.pushNamed(
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
                                 context,
-                                '/profiles/user/${p.id}',
+                                MaterialPageRoute(
+                                  builder: (context) => UserProfilePage(id: p.id),
+                                ),
                               );
                             },
                             child: const Text(
