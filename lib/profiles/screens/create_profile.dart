@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 
 class CreateProfilePage extends StatefulWidget {
   const CreateProfilePage({super.key});
@@ -18,14 +19,16 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   File? _profilePicture;
   final _phoneController = TextEditingController();
   DateTime? _selectedDate;
-  final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage() async {
-    final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+
+    if (result != null && result.files.single.path != null) {
       setState(() {
-        _profilePicture = File(pickedFile.path);
+        _profilePicture = File(result.files.single.path!);
       });
     }
   }
@@ -37,6 +40,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
+
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
@@ -48,22 +52,19 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
     if (!_formKey.currentState!.validate()) return;
 
     final uri = Uri.parse("http://localhost:8000/profiles/create/");
-
-    // Multipart request
     var request = http.MultipartRequest('POST', uri);
 
-    // Include session cookies from CookieRequest
     request.headers.addAll(cookieRequest.headers);
 
-    // File
     if (_profilePicture != null) {
-      request.files.add(await http.MultipartFile.fromPath(
-        'profile_picture',
-        _profilePicture!.path,
-      ));
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'profile_picture',
+          _profilePicture!.path,
+        ),
+      );
     }
 
-    // Fields
     request.fields['phone'] = _phoneController.text;
     request.fields['date_of_birth'] =
         _selectedDate != null ? _selectedDate!.toIso8601String() : '';
@@ -73,22 +74,19 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       var respStr = await streamedResponse.stream.bytesToString();
       var data = jsonDecode(respStr);
 
-      if (streamedResponse.statusCode == 200 && data['ok'] == true) {
+      if (streamedResponse.statusCode == 201 && data['ok'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(data['message']),
-            backgroundColor: Colors.green,
-          ),
+          SnackBar(content: Text(data['message']), backgroundColor: Colors.green),
         );
-        Future.delayed(const Duration(milliseconds: 800), () {
+
+        Future.delayed(const Duration(milliseconds: 500), () {
           Navigator.pushReplacementNamed(context, '/matches');
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data['message'] ?? "Terjadi kesalahan."),
-            backgroundColor: Colors.red,
-          ),
+              content: Text(data['message'] ?? "Terjadi kesalahan."),
+              backgroundColor: Colors.red),
         );
       }
     } catch (e) {
@@ -121,8 +119,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
               // Header
               Text(
                 "Selamat datang, ${username.isNotEmpty ? username : 'User'}!",
-                style: const TextStyle(
-                    fontSize: 24, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -204,12 +201,12 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                 child: AbsorbPointer(
                   child: TextFormField(
                     controller: TextEditingController(
-                        text: _selectedDate != null
-                            ? _selectedDate!.toIso8601String().split("T")[0]
-                            : ''),
-                    validator: (val) => val == null || val.isEmpty
-                        ? "Tanggal lahir wajib diisi"
-                        : null,
+                      text: _selectedDate != null
+                          ? _selectedDate!.toIso8601String().split("T")[0]
+                          : '',
+                    ),
+                    validator: (val) =>
+                        val == null || val.isEmpty ? "Tanggal lahir wajib diisi" : null,
                     decoration: const InputDecoration(
                       labelText: "Tanggal Lahir",
                       border: OutlineInputBorder(),
@@ -220,15 +217,14 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
               ),
               const SizedBox(height: 20),
 
-              // Submit
+              // Submit Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => _submitForm(request),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
-                    child:
-                        Text("Selanjutnya", style: TextStyle(fontSize: 16)),
+                    child: Text("Selanjutnya", style: TextStyle(fontSize: 16)),
                   ),
                 ),
               ),
@@ -236,6 +232,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
           ),
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }
 }
