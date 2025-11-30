@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/news/news_page.dart';
-import 'package:ligapass/profiles/user_profile.dart';
+import 'package:ligapass/profiles/screens/create_profile_page.dart';
+import 'package:ligapass/profiles/screens/redirect_login.dart';
+import 'package:ligapass/profiles/screens/user_profile_page.dart';
+import 'package:ligapass/profiles/screens/admin_profile_page.dart';
+import 'package:ligapass/profiles/screens/journalist_profile_page.dart';
 import 'package:ligapass/reviews/reviews_page.dart';
 import 'package:ligapass/bookings/screens/my_tickets_screen.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -35,29 +39,68 @@ class LigaPassApp extends StatelessWidget {
                 ..loadMatches(),
         ),
       ],
-      child: MaterialApp(
-        title: Env.appName,
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        initialRoute: '/matches',
-        routes: {
-          '/': (_) => const MatchesPage(),
-          '/login': (_) => const LoginPage(),
-          '/register': (_) => const RegisterPage(),
-          '/profile': (_) => const UserProfilePage(),
-          '/matches': (_) => const MatchesPage(),
-          '/news': (_) => const NewsPage(),
-          '/reviews': (_) => const ReviewsPage(),
-          '/tickets': (_) => const MyTicketsScreen(),
-        },
-        onGenerateRoute: (settings) {
-          if (settings.name == '/match' && settings.arguments is Match) {
-            final match = settings.arguments as Match;
-            return MaterialPageRoute(
-              builder: (_) => MatchDetailPage(match: match),
-            );
-          }
-          return null;
+      child: Builder(
+        builder: (context) {
+          return MaterialApp(
+            title: Env.appName,
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light,
+            initialRoute: '/matches',
+            routes: {
+              '/login': (_) => const LoginPage(),
+              '/register': (_) => const RegisterPage(),
+              '/matches': (_) => const MatchesPage(),
+              '/news': (_) => const NewsPage(),
+              '/reviews': (_) => const ReviewsPage(),
+              '/tickets': (_) => const MyTicketsScreen(),
+            },
+            onGenerateRoute: (settings) {
+              final req = Provider.of<CookieRequest>(context, listen: false);
+              final id = req.jsonData['id'];
+              final role = req.jsonData['role'];
+              final hasProfile = req.jsonData['hasProfile'];
+
+              // Profile route mapping berdasarkan role
+              if (settings.name == '/profile') {
+                // Jika belum login
+                if (!req.loggedIn) {
+                  return MaterialPageRoute(
+                    builder: (_) => const RedirectLoginPage(),
+                  );
+                } else {
+                  // Jika belum punya profile tapi sudah login dan bukan admin and journlaist
+                  if (!hasProfile && role != "admin" && role != "journalist") {
+                    return MaterialPageRoute(
+                      builder: (_) => const CreateProfilePage(),
+                    );
+                  }
+                  // Jika sudah punya profile
+                  if (role == "admin") {
+                    return MaterialPageRoute(
+                      builder: (_) => const AdminProfilePage(),
+                    );
+                  }
+                  if (role == "journalist") {
+                    return MaterialPageRoute(
+                      builder: (_) => const JournalistProfilePage(),
+                    );
+                  }
+                  return MaterialPageRoute(
+                    builder: (_) => UserProfilePage(id: id),
+                  );
+                }
+              }
+
+              if (settings.name == '/match' && settings.arguments is Match) {
+                final match = settings.arguments as Match;
+                return MaterialPageRoute(
+                  builder: (_) => MatchDetailPage(match: match),
+                );
+              }
+
+              return null;
+            },
+          );
         },
       ),
     );
