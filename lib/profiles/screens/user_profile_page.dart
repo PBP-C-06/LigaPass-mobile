@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/profiles/models/profile.dart';
+import 'package:ligapass/profiles/widgets/user_profile_admin_action_card.dart';
 import 'package:ligapass/profiles/widgets/user_profile_card.dart';
 import 'package:ligapass/profiles/widgets/user_profile_user_action_card.dart';
 import 'package:provider/provider.dart';
@@ -8,8 +9,9 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class UserProfilePage extends StatefulWidget {
   final String id;
+  final void Function(String)? onUserDeleted;
 
-  const UserProfilePage({super.key, required this.id});
+  const UserProfilePage({super.key, required this.id, this.onUserDeleted});
 
   @override
   State<UserProfilePage> createState() => _UserProfilePageState();
@@ -19,8 +21,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<Profile> fetchProfile(CookieRequest request) async {
     final url = "http://localhost:8000/profiles/json/${widget.id}/";
     final response = await request.get(url);
-
-    // print("DEBUG response: $response"); // Debug JSON
 
     if (response.containsKey('error')) {
       throw Exception(response['error']);
@@ -51,14 +51,22 @@ class _UserProfilePageState extends State<UserProfilePage> {
           }
 
           final profile = snapshot.data!;
+          final role = request.jsonData['role'];
+          String currentStatus = profile.status;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
                 UserProfileCard(profile: profile),
-                const SizedBox(height: 5),
-                UserProfileUserActionCard(userId: profile.id),
+                if (role == 'admin')
+                  UserProfileAdminActionCard(
+                    userId: profile.id,
+                    currentStatus: currentStatus,
+                    onUserDeleted: widget.onUserDeleted,
+                  )
+                else if (role == 'user')
+                  UserProfileUserActionCard(userId: profile.id),
               ],
             ),
           );

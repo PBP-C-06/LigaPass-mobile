@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ligapass/news/news_page.dart';
 import 'package:ligapass/profiles/screens/create_profile_page.dart';
 import 'package:ligapass/profiles/screens/redirect_login.dart';
-import 'package:ligapass/profiles/screens/user_profile.dart';
+import 'package:ligapass/profiles/screens/user_profile_page.dart';
 import 'package:ligapass/profiles/screens/admin_profile_page.dart';
 import 'package:ligapass/profiles/screens/journalist_profile_page.dart';
 import 'package:ligapass/reviews/reviews_page.dart';

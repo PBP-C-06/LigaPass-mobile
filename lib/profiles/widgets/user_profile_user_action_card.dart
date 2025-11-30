@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:ligapass/profiles/screens/redirect_login.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -10,31 +9,39 @@ class UserProfileUserActionCard extends StatelessWidget {
 
   const UserProfileUserActionCard({super.key, required this.userId});
 
-  Future<void> _deleteProfile(BuildContext context, CookieRequest request) async {
+  // Delete profile, return true jika berhasil
+  Future<bool> _deleteProfile(
+    BuildContext context,
+    CookieRequest request,
+  ) async {
     try {
-      final url = "http://localhost:8000/profiles/delete/$userId/";
+      final url = "http://localhost:8000/profiles/flutter-delete/$userId/";
       final response = await request.postJson(
         url,
         jsonEncode({}), // endpoint tidak butuh data tambahan
       );
 
-      if (!context.mounted) return;
+      if (!context.mounted) return false;
 
       if (response['ok'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'])),
-        );
-        Navigator.pop(context); // kembali ke halaman sebelumnya
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(response['message'])));
+        return true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal menghapus profil: ${response['message']}")),
+          SnackBar(
+            content: Text("Gagal menghapus profil: ${response['message']}"),
+          ),
         );
+        return false;
       }
     } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Terjadi kesalahan: $e")),
-      );
+      if (!context.mounted) return false;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Terjadi kesalahan: $e")));
+      return false;
     }
   }
 
@@ -49,7 +56,11 @@ class UserProfileUserActionCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, 8)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
         ],
       ),
       child: Row(
@@ -76,7 +87,10 @@ class UserProfileUserActionCard extends StatelessWidget {
               icon: const Icon(Icons.edit, color: Colors.white),
               label: const Text(
                 "Edit",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -97,7 +111,9 @@ class UserProfileUserActionCard extends StatelessWidget {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text("Konfirmasi Hapus"),
-                    content: const Text("Apakah Anda yakin ingin menghapus profil ini?"),
+                    content: const Text(
+                      "Apakah Anda yakin ingin menghapus profil ini?",
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -115,13 +131,24 @@ class UserProfileUserActionCard extends StatelessWidget {
                 );
 
                 if (confirm == true) {
-                  await _deleteProfile(context, request);
+                  if (!context.mounted) return;
+                  final ctx = context; // simpan context lokal
+                  final success = await _deleteProfile(ctx, request);
+                  if (success) {
+                    if (!context.mounted) return;
+                    request.loggedIn = false;
+                    request.cookies.clear();
+                    Navigator.pushReplacementNamed(ctx, '/login');
+                  }
                 }
               },
               icon: const Icon(Icons.delete, color: Colors.white),
               label: const Text(
                 "Delete",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),

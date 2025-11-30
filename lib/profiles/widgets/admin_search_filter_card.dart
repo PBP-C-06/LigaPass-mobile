@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/profiles/models/profile.dart';
-import 'package:ligapass/profiles/screens/user_profile.dart';
+import 'package:ligapass/profiles/screens/user_profile_page.dart';
 
 class AdminSearchFilterCard extends StatelessWidget {
   final List<Profile> userProfiles;
@@ -16,6 +16,7 @@ class AdminSearchFilterCard extends StatelessWidget {
   final int totalPages;
   final VoidCallback onNextPage;
   final VoidCallback onPrevPage;
+  final void Function(String)? onUserDeleted;
 
   const AdminSearchFilterCard({
     super.key,
@@ -31,6 +32,7 @@ class AdminSearchFilterCard extends StatelessWidget {
     required this.totalPages,
     required this.onNextPage,
     required this.onPrevPage,
+    this.onUserDeleted,
   });
 
   @override
@@ -171,13 +173,22 @@ class AdminSearchFilterCard extends StatelessWidget {
                           ),
 
                           TextButton(
-                            onPressed: () {
-                              Navigator.push(
+                            onPressed: () async {
+                              final deleted = await Navigator.push<bool>(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => UserProfilePage(id: p.id),
+                                  builder: (context) => UserProfilePage(
+                                    id: p.id,
+                                    // Oper callback ke halaman detail
+                                    onUserDeleted: onUserDeleted,
+                                  ),
                                 ),
                               );
+
+                              // Kalau user dihapus, panggil callback onUserDeleted
+                              if (deleted == true) {
+                                onUserDeleted?.call(p.id);
+                              }
                             },
                             child: const Text(
                               "Detail",

@@ -154,7 +154,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                   search: search, filter: filter);
                             },
 
-                            // ➕ Pagination
+                            // Pagination
                             currentPage: currentPage,
                             totalPages: totalPages,
                             onNextPage: () {
@@ -166,6 +166,15 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                               if (currentPage > 1) {
                                 setState(() => currentPage--);
                               }
+                            },
+
+                            onUserDeleted: (userId) {
+                              setState(() {
+                                profiles.removeWhere((p) => p.id == userId);
+                                totalPages = (profiles.length / 5).ceil();
+                                if (totalPages < 1) totalPages = 1;
+                                if (currentPage > totalPages) currentPage = totalPages;
+                              });
                             },
                           ),
 
