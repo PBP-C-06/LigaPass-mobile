@@ -3,6 +3,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 
+import '../../config/api_config.dart';
+
 List<Ticket> ticketListFromJson(String str) =>
     List<Ticket>.from(json.decode(str).map((x) => Ticket.fromJson(x)));
 
@@ -53,8 +55,8 @@ class Ticket {
     matchTitle: json['match_title'] ?? '',
     homeTeam: json['home_team'] ?? '',
     awayTeam: json['away_team'] ?? '',
-    homeTeamLogo: json['home_team_logo'],
-    awayTeamLogo: json['away_team_logo'],
+    homeTeamLogo: _resolveLogo(json['home_team_logo']),
+    awayTeamLogo: _resolveLogo(json['away_team_logo']),
     matchDate: json['match_date'] != null
         ? DateTime.tryParse(json['match_date']) ?? DateTime.now()
         : DateTime.now(),
@@ -110,6 +112,13 @@ class Ticket {
       default:
         return const Color(0xFFbfdbfe); // Blue
     }
+  }
+
+  static String? _resolveLogo(dynamic url) {
+    if (url == null) return null;
+    final value = url.toString();
+    if (value.isEmpty) return null;
+    return ApiConfig.resolveUrl(value);
   }
 }
 

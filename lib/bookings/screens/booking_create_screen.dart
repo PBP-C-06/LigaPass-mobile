@@ -128,7 +128,6 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
               paymentMethod:
                   response['payment_method'] ?? _selectedPaymentMethod,
               totalAmount: (response['total_price'] ?? 0).toDouble(),
-              // initialPaymentData optional - payment screen will call flutter_payment endpoint
               initialPaymentData:
                   response['payment_data'] as Map<String, dynamic>?,
             ),

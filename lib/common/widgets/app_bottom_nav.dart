@@ -2,19 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
-const String _authBaseUrl = "http://localhost:8000";
-
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.currentRoute});
 
   final String currentRoute;
 
   static const _baseRoutes = [
+    '/home',
     '/matches',
     '/tickets',
     '/news',
-    '/reviews',
-    '/login',
     '/profile',
   ];
 
@@ -23,15 +20,6 @@ class AppBottomNav extends StatelessWidget {
     String route,
     bool loggedIn,
   ) async {
-    final request = context.read<CookieRequest>();
-
-    if (route == '/login' && loggedIn) {
-      await request.logout("$_authBaseUrl/auth/flutter-logout/");
-      if (!context.mounted) return;
-      Navigator.pushReplacementNamed(context, '/login');
-      return;
-    }
-
     // Tickets requires login
     if (route == '/tickets' && !loggedIn) {
       Navigator.pushReplacementNamed(context, '/login');
@@ -53,6 +41,10 @@ class AppBottomNav extends StatelessWidget {
       onTap: (index) => _handleTap(context, _baseRoutes[index], loggedIn),
       items: [
         const BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined),
+          label: 'Home',
+        ),
+        const BottomNavigationBarItem(
           icon: Icon(Icons.sports_soccer),
           label: 'Matches',
         ),
@@ -63,14 +55,6 @@ class AppBottomNav extends StatelessWidget {
         const BottomNavigationBarItem(
           icon: Icon(Icons.article_outlined),
           label: 'News',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.reviews_outlined),
-          label: 'Reviews',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(loggedIn ? Icons.logout : Icons.login_rounded),
-          label: loggedIn ? 'Logout' : 'Login',
         ),
         const BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),

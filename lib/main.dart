@@ -14,6 +14,7 @@ import 'authentication/screens/login.dart';
 import 'authentication/screens/register.dart';
 import 'config/env.dart';
 import 'core/theme/app_theme.dart';
+import 'home/home_page.dart';
 import 'matches/models/match.dart';
 import 'matches/repositories/matches_repository.dart';
 import 'matches/screens/match_detail_page.dart';
@@ -45,8 +46,9 @@ class LigaPassApp extends StatelessWidget {
             title: Env.appName,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light,
-            initialRoute: '/matches',
+            initialRoute: '/home',
             routes: {
+              '/home': (_) => const HomePage(),
               '/login': (_) => const LoginPage(),
               '/register': (_) => const RegisterPage(),
               '/matches': (_) => const MatchesPage(),

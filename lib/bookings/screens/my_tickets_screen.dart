@@ -282,10 +282,12 @@ class TicketCard extends StatelessWidget {
                 children: [
                   // Teams Row
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Home Team
                       Expanded(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             _buildTeamLogo(ticket.homeTeamLogo),
                             const SizedBox(height: 8),
@@ -304,23 +306,27 @@ class TicketCard extends StatelessWidget {
                         ),
                       ),
                       // VS
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        child: const Text(
-                          'VS',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2563EB),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 18),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          child: const Text(
+                            'VS',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2563EB),
+                            ),
                           ),
                         ),
                       ),
                       // Away Team
                       Expanded(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             _buildTeamLogo(ticket.awayTeamLogo),
                             const SizedBox(height: 8),
@@ -445,20 +451,30 @@ class TicketCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
-      child: logoUrl != null && logoUrl.isNotEmpty
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(11),
-              child: Image.network(
-                logoUrl,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.sports_soccer,
-                  size: 30,
-                  color: Color(0xFF9CA3AF),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(11),
+        child: logoUrl != null && logoUrl.isNotEmpty
+            ? Padding(
+                padding: const EdgeInsets.all(6),
+                child: Image.network(
+                  logoUrl,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.center,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.sports_soccer,
+                    size: 30,
+                    color: Color(0xFF9CA3AF),
+                  ),
                 ),
+              )
+            : const Icon(
+                Icons.sports_soccer,
+                size: 30,
+                color: Color(0xFF9CA3AF),
               ),
-            )
-          : const Icon(Icons.sports_soccer, size: 30, color: Color(0xFF9CA3AF)),
+      ),
     );
   }
 
