@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
-import '../../bookings/screens/booking_create_screen.dart';
+import '../../bookings/screens/ticket_price_screen.dart';
 import '../models/match.dart';
 
 class MatchDetailPage extends StatelessWidget {
@@ -28,9 +28,17 @@ class MatchDetailPage extends StatelessWidget {
 
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => BookingCreateScreen(
+          builder: (_) => TicketPriceScreen(
             matchId: match.id,
-            matchTitle: '${match.homeTeamName} vs ${match.awayTeamName}',
+            homeTeam: match.homeTeamName,
+            awayTeam: match.awayTeamName,
+            homeTeamLogo: match.homeLogoUrl,
+            awayTeamLogo: match.awayLogoUrl,
+            venue: match.venueDisplay,
+            matchDate: dateText,
+            matchStatus: match.status.name,
+            homeScore: match.displayHomeGoals,
+            awayScore: match.displayAwayGoals,
           ),
         ),
       );
@@ -70,23 +78,44 @@ class MatchDetailPage extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: _TeamColumn(name: match.homeTeamName, logoUrl: match.homeLogoUrl)),
+                    Expanded(
+                      child: _TeamColumn(
+                        name: match.homeTeamName,
+                        logoUrl: match.homeLogoUrl,
+                      ),
+                    ),
                     Column(
                       children: [
                         Text(
-                          match.status == MatchStatus.finished ? 'Skor' : 'Kick-off',
-                          style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600),
+                          match.status == MatchStatus.finished
+                              ? 'Skor'
+                              : 'Kick-off',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           match.status == MatchStatus.finished
                               ? '${match.displayHomeGoals} - ${match.displayAwayGoals}'
-                              : (match.kickoff != null ? DateFormat.Hm().format(match.kickoff!) : match.dateText),
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              : (match.kickoff != null
+                                    ? DateFormat.Hm().format(match.kickoff!)
+                                    : match.dateText),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
-                    Expanded(child: _TeamColumn(name: match.awayTeamName, logoUrl: match.awayLogoUrl, alignEnd: true)),
+                    Expanded(
+                      child: _TeamColumn(
+                        name: match.awayTeamName,
+                        logoUrl: match.awayLogoUrl,
+                        alignEnd: true,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -94,17 +123,31 @@ class MatchDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _InfoRow(icon: Icons.calendar_today, label: 'Jadwal', value: dateText),
+                  _InfoRow(
+                    icon: Icons.calendar_today,
+                    label: 'Jadwal',
+                    value: dateText,
+                  ),
                   const SizedBox(height: 10),
-                  _InfoRow(icon: Icons.location_on_outlined, label: 'Venue', value: match.venueDisplay),
+                  _InfoRow(
+                    icon: Icons.location_on_outlined,
+                    label: 'Venue',
+                    value: match.venueDisplay,
+                  ),
                   const SizedBox(height: 10),
-                  _InfoRow(icon: Icons.link, label: 'Detail Web', value: match.detailsUrl),
+                  _InfoRow(
+                    icon: Icons.link,
+                    label: 'Detail Web',
+                    value: match.detailsUrl,
+                  ),
                 ],
               ),
             ),
@@ -114,7 +157,9 @@ class MatchDetailPage extends StatelessWidget {
             onPressed: handleBuy,
             icon: const Icon(Icons.confirmation_number_outlined),
             label: const Text('Beli Tiket'),
-            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+            ),
           ),
         ],
       ),
@@ -149,7 +194,9 @@ class _TeamColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: alignEnd
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         SizedBox(
           height: 60,
@@ -178,7 +225,11 @@ class _TeamColumn extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   final IconData icon;
   final String label;
