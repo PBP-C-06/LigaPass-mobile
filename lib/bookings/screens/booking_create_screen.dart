@@ -8,11 +8,23 @@ import 'booking_payment_screen.dart';
 class BookingCreateScreen extends StatefulWidget {
   final String matchId;
   final String matchTitle;
+  final String? homeTeam;
+  final String? awayTeam;
+  final String? homeTeamLogo;
+  final String? awayTeamLogo;
+  final String? venue;
+  final String? matchDate;
 
   const BookingCreateScreen({
     super.key,
     required this.matchId,
     this.matchTitle = 'Match Ticket',
+    this.homeTeam,
+    this.awayTeam,
+    this.homeTeamLogo,
+    this.awayTeamLogo,
+    this.venue,
+    this.matchDate,
   });
 
   @override
@@ -24,6 +36,13 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
   final Map<String, int> _selectedQuantities = {};
   String _selectedPaymentMethod = 'gopay';
   bool _isLoading = false;
+
+  // Category accent colors matching website
+  static const Map<String, Color> _categoryAccentColors = {
+    'REGULAR': Color(0xFF2563EB), // Blue
+    'VIP': Color(0xFFE11D48), // Pink/Red
+    'VVIP': Color(0xFFD97706), // Amber
+  };
 
   final List<Map<String, dynamic>> _paymentMethods = [
     {
@@ -53,8 +72,6 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
       'icon': Icons.account_balance,
       'image':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/CIMB_Niaga_logo.svg/320px-CIMB_Niaga_logo.svg.png',
-      'backupImage':
-          'https://upload.wikimedia.org/wikipedia/id/thumb/b/b9/Logo_CIMB_Niaga.png/320px-Logo_CIMB_Niaga.png',
     },
     {
       'id': 'bank_bni',
@@ -86,16 +103,17 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
 
   int get _totalTickets {
     int total = 0;
-    _selectedQuantities.forEach((_, qty) {
-      total += qty;
-    });
+    _selectedQuantities.forEach((_, qty) => total += qty);
     return total;
   }
 
   Future<void> _createBooking() async {
     if (_totalTickets == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one ticket')),
+        const SnackBar(
+          content: Text('Pilih minimal satu tiket'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -106,7 +124,6 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
       final request = context.read<CookieRequest>();
       final service = BookingService(request);
 
-      // Filter out zero quantities
       final ticketTypes = Map<String, int>.from(_selectedQuantities)
         ..removeWhere((key, value) => value == 0);
 
@@ -119,7 +136,6 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
       if (!mounted) return;
 
       if (response['status'] == true) {
-        // Navigate to payment screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -136,85 +152,80 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response['message'] ?? 'Failed to create booking'),
+            content: Text(response['message'] ?? 'Gagal membuat booking'),
+            backgroundColor: Colors.red,
           ),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(
+        0xFFEFF6FF,
+      ), // Light blue background like website
       appBar: AppBar(
-        title: const Text('Book Tickets'),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF111827),
-        elevation: 1,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8),
+              ],
+            ),
+            child: const Icon(
+              Icons.arrow_back,
+              color: Color(0xFF2563EB),
+              size: 20,
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Booking Pertandingan',
+          style: TextStyle(
+            color: Color(0xFF2563EB),
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
       ),
-      backgroundColor: const Color(0xFFF3F4F6),
       body: FutureBuilder<List<TicketPrice>>(
         future: _ticketsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFFe94560)),
+              child: CircularProgressIndicator(color: Color(0xFF2563EB)),
             );
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error, color: Colors.red, size: 48),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error loading tickets',
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _loadTickets();
-                      });
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
+            return _buildErrorWidget();
           }
 
           final tickets = snapshot.data ?? [];
-
           if (tickets.isEmpty) {
-            return const Center(
-              child: Text(
-                'No tickets available for this match',
-                style: TextStyle(color: Color(0xFF111827)),
-              ),
-            );
+            return _buildEmptyWidget();
           }
 
-          // Initialize quantities
           for (var ticket in tickets) {
             _selectedQuantities.putIfAbsent(ticket.seatCategory, () => 0);
           }
 
-          // Calculate total
           double totalPrice = 0;
           for (var ticket in tickets) {
             totalPrice +=
@@ -222,179 +233,73 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Match Title
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    widget.matchTitle,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                // Match Header Card
+                _buildMatchHeader(),
                 const SizedBox(height: 24),
 
-                // Ticket Selection
-                const Text(
-                  'Select Tickets',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF111827),
+                // Seat Category Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Kategori Kursi',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Ticket Cards - Vertical list
+                      ...tickets.map((ticket) => _buildCategoryCard(ticket)),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-
-                ...tickets.map((ticket) => _buildTicketCard(ticket)),
 
                 const SizedBox(height: 24),
 
-                // Payment Method Selection
-                const Text(
-                  'Payment Method',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF111827),
+                // Payment Method Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Metode Pembayaran',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPaymentMethodSection(),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 12),
-
-                ..._paymentMethods.map(
-                  (method) => _buildPaymentMethodCard(method),
                 ),
 
                 const SizedBox(height: 24),
 
                 // Order Summary
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFFE5E7EB),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Order Summary',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                      const Divider(color: Color(0xFFE5E7EB)),
-                      ...tickets
-                          .where(
-                            (t) =>
-                                (_selectedQuantities[t.seatCategory] ?? 0) > 0,
-                          )
-                          .map(
-                            (ticket) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '${ticket.seatCategory} x${_selectedQuantities[ticket.seatCategory]}',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Rp ${_formatPrice(ticket.price * (_selectedQuantities[ticket.seatCategory] ?? 0))}',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                      const Divider(color: Color(0xFFE5E7EB)),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Total',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF111827),
-                            ),
-                          ),
-                          Text(
-                            'Rp ${_formatPrice(totalPrice)}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFe94560),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _buildOrderSummary(tickets, totalPrice),
                 ),
+
                 const SizedBox(height: 24),
 
                 // Book Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading || _totalTickets == 0
-                        ? null
-                        : _createBooking,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFe94560),
-                      disabledBackgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            _totalTickets == 0
-                                ? 'Select Tickets'
-                                : 'Continue to Payment',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _buildBookButton(totalPrice),
                 ),
-                const SizedBox(height: 24),
+
+                const SizedBox(height: 32),
               ],
             ),
           );
@@ -403,129 +308,106 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
     );
   }
 
-  Widget _buildTicketCard(TicketPrice ticket) {
-    final quantity = _selectedQuantities[ticket.seatCategory] ?? 0;
-    final isAvailable = ticket.quantityAvailable > 0;
-
+  Widget _buildMatchHeader() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: quantity > 0
-              ? const Color(0xFFe94560)
-              : Colors.grey.shade300,
-          width: quantity > 0 ? 2 : 1,
-        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    ticket.seatCategory,
+          // Match date and venue
+          if (widget.matchDate != null)
+            Text(
+              widget.matchDate!,
+              style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+            ),
+          if (widget.venue != null) ...[
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.stadium, size: 14, color: Color(0xFF6B7280)),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    widget.venue!,
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF111827),
+                      color: Color(0xFF6B7280),
+                      fontSize: 13,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Rp ${_formatPrice(ticket.price)}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFFe94560),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                '${ticket.quantityAvailable} left',
-                style: TextStyle(
-                  color: ticket.quantityAvailable < 10
-                      ? Colors.orange
-                      : Colors.green,
-                  fontWeight: FontWeight.w500,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Features
-          Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: ticket.features
-                .map(
-                  (f) => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEFF6FF),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      f,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF1D4ED8),
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 12),
-          // Quantity Selector
+              ],
+            ),
+          ],
+          const SizedBox(height: 20),
+
+          // Teams
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                onPressed: isAvailable && quantity > 0
-                    ? () {
-                        setState(() {
-                          _selectedQuantities[ticket.seatCategory] =
-                              quantity - 1;
-                        });
-                      }
-                    : null,
-                icon: const Icon(Icons.remove_circle_outline),
-                color: const Color(0xFFe94560),
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildTeamLogo(widget.homeTeamLogo),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.homeTeam ?? 'Home',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: Color(0xFF1F2937),
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
               Container(
-                width: 40,
-                alignment: Alignment.center,
-                child: Text(
-                  '$quantity',
-                  style: const TextStyle(
-                    fontSize: 18,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: const Text(
+                  'VS',
+                  style: TextStyle(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF111827),
+                    color: Color(0xFF2563EB),
                   ),
                 ),
               ),
-              IconButton(
-                onPressed: isAvailable && quantity < ticket.quantityAvailable
-                    ? () {
-                        setState(() {
-                          _selectedQuantities[ticket.seatCategory] =
-                              quantity + 1;
-                        });
-                      }
-                    : null,
-                icon: const Icon(Icons.add_circle_outline),
-                color: const Color(0xFFe94560),
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildTeamLogo(widget.awayTeamLogo),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.awayTeam ?? 'Away',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: Color(0xFF1F2937),
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -534,84 +416,423 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
     );
   }
 
-  Widget _buildPaymentMethodCard(Map<String, dynamic> method) {
-    final isSelected = _selectedPaymentMethod == method['id'];
+  Widget _buildTeamLogo(String? logoUrl) {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(11),
+        child: logoUrl != null && logoUrl.isNotEmpty
+            ? Image.network(
+                logoUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.sports_soccer,
+                  size: 30,
+                  color: Color(0xFF9CA3AF),
+                ),
+              )
+            : const Icon(
+                Icons.sports_soccer,
+                size: 30,
+                color: Color(0xFF9CA3AF),
+              ),
+      ),
+    );
+  }
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedPaymentMethod = method['id'];
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFFe94560)
-                : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
-          ),
+  Widget _buildCategoryCard(TicketPrice ticket) {
+    final category = ticket.seatCategory.toUpperCase();
+    final accentColor =
+        _categoryAccentColors[category] ?? const Color(0xFF2563EB);
+    final quantity = _selectedQuantities[ticket.seatCategory] ?? 0;
+    final isSelected = quantity > 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isSelected ? accentColor : const Color(0xFFE5E7EB),
+          width: isSelected ? 2 : 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
+            // Category Color Indicator
             Container(
-              height: 32,
-              width: 64,
-              alignment: Alignment.center,
-              child: method['image'] != null
-                  ? Image.network(
-                      method['image'],
-                      height: 28,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) {
-                        if (method['backupImage'] != null) {
-                          return Image.network(
-                            method['backupImage'],
-                            height: 28,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Icon(
-                              method['icon'],
-                              color: isSelected
-                                  ? const Color(0xFFe94560)
-                                  : const Color(0xFF6B7280),
-                            ),
-                          );
-                        }
-                        return Icon(
-                          method['icon'],
-                          color: isSelected
-                              ? const Color(0xFFe94560)
-                              : const Color(0xFF6B7280),
-                        );
-                      },
-                    )
-                  : Icon(
-                      method['icon'],
-                      color: isSelected
-                          ? const Color(0xFFe94560)
-                          : const Color(0xFF6B7280),
-                    ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                method['name'],
-                style: TextStyle(
-                  color: isSelected
-                      ? const Color(0xFF111827)
-                      : const Color(0xFF4B5563),
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
+              width: 6,
+              height: 50,
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: BorderRadius.circular(3),
               ),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: Color(0xFFe94560)),
+            const SizedBox(width: 14),
+            // Category Name & Price
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    category,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Rp ${_formatPrice(ticket.price)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Quantity Selector
+            Row(
+              children: [
+                _buildQuantityButton(
+                  icon: Icons.remove,
+                  onPressed: quantity > 0
+                      ? () => setState(
+                          () => _selectedQuantities[ticket.seatCategory] =
+                              quantity - 1,
+                        )
+                      : null,
+                  color: accentColor,
+                ),
+                Container(
+                  width: 40,
+                  alignment: Alignment.center,
+                  child: Text(
+                    '$quantity',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                    ),
+                  ),
+                ),
+                _buildQuantityButton(
+                  icon: Icons.add,
+                  onPressed: quantity < ticket.quantityAvailable
+                      ? () => setState(
+                          () => _selectedQuantities[ticket.seatCategory] =
+                              quantity + 1,
+                        )
+                      : null,
+                  color: accentColor,
+                ),
+              ],
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildQuantityButton({
+    required IconData icon,
+    required VoidCallback? onPressed,
+    required Color color,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: onPressed != null
+              ? color.withOpacity(0.1)
+              : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: onPressed != null ? color : Colors.grey.shade300,
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: onPressed != null ? color : Colors.grey.shade400,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodSection() {
+    return Column(
+      children: _paymentMethods.map((method) {
+        final isSelected = _selectedPaymentMethod == method['id'];
+        return GestureDetector(
+          onTap: () => setState(() => _selectedPaymentMethod = method['id']),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFF2563EB)
+                    : const Color(0xFFE5E7EB),
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  height: 32,
+                  width: 64,
+                  alignment: Alignment.center,
+                  child: method['image'] != null
+                      ? Image.network(
+                          method['image'],
+                          height: 28,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Icon(
+                            method['icon'],
+                            color: isSelected
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF6B7280),
+                          ),
+                        )
+                      : Icon(
+                          method['icon'],
+                          color: isSelected
+                              ? const Color(0xFF2563EB)
+                              : const Color(0xFF6B7280),
+                        ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    method['name'],
+                    style: TextStyle(
+                      color: isSelected
+                          ? const Color(0xFF111827)
+                          : const Color(0xFF4B5563),
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  const Icon(Icons.check_circle, color: Color(0xFF2563EB)),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildOrderSummary(List<TicketPrice> tickets, double totalPrice) {
+    final selectedTickets = tickets
+        .where((t) => (_selectedQuantities[t.seatCategory] ?? 0) > 0)
+        .toList();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Ringkasan Pemesanan',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          if (selectedTickets.isEmpty)
+            Text(
+              'Belum ada tiket dipilih',
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontStyle: FontStyle.italic,
+              ),
+            )
+          else
+            ...selectedTickets.map((ticket) {
+              final qty = _selectedQuantities[ticket.seatCategory] ?? 0;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${qty}x ${ticket.seatCategory}',
+                      style: const TextStyle(color: Color(0xFF4B5563)),
+                    ),
+                    Text(
+                      'Rp ${_formatPrice(ticket.price * qty)}',
+                      style: const TextStyle(color: Color(0xFF4B5563)),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+          const Divider(height: 24),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total:',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+              Text(
+                'Rp ${_formatPrice(totalPrice)}',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2563EB),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBookButton(double totalPrice) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: _isLoading || _totalTickets == 0 ? null : _createBooking,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2563EB),
+          disabledBackgroundColor: Colors.grey.shade300,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 4,
+          shadowColor: const Color(0xFF2563EB).withOpacity(0.4),
+        ),
+        child: _isLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : Text(
+                _totalTickets == 0 ? 'Pilih Tiket' : 'Lanjut Bayar',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+          const SizedBox(height: 16),
+          const Text(
+            'Gagal memuat tiket',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF374151),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Terjadi kesalahan saat memuat data',
+            style: TextStyle(color: Colors.grey.shade600),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => setState(() => _loadTickets()),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Coba Lagi'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.confirmation_number_outlined,
+            size: 64,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Tidak Ada Tiket',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF374151),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tiket untuk pertandingan ini belum tersedia',
+            style: TextStyle(color: Colors.grey.shade600),
+          ),
+        ],
       ),
     );
   }

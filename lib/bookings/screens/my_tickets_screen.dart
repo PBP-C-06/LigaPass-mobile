@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import '../services/ticket_service.dart';
 import '../models/ticket_models.dart';
+import '../widgets/review_popup.dart';
 import '../../common/widgets/app_bottom_nav.dart';
 
 class MyTicketsScreen extends StatefulWidget {
@@ -187,7 +188,10 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: TicketCard(ticket: _tickets[index]),
+            child: TicketCard(
+              ticket: _tickets[index],
+              onReviewSubmitted: _loadTickets,
+            ),
           );
         },
       ),
@@ -196,10 +200,18 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
 }
 
 /// Individual Ticket Card Widget - Styled to match HTML theme
-class TicketCard extends StatelessWidget {
+class TicketCard extends StatefulWidget {
   final Ticket ticket;
+  final VoidCallback? onReviewSubmitted;
 
-  const TicketCard({super.key, required this.ticket});
+  const TicketCard({super.key, required this.ticket, this.onReviewSubmitted});
+
+  @override
+  State<TicketCard> createState() => _TicketCardState();
+}
+
+class _TicketCardState extends State<TicketCard> {
+  Ticket get ticket => widget.ticket;
 
   @override
   Widget build(BuildContext context) {
@@ -402,7 +414,7 @@ class TicketCard extends StatelessWidget {
               ),
             ),
 
-            // Footer - Status
+            // Footer - Status & Review Button
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -414,25 +426,74 @@ class TicketCard extends StatelessWidget {
                 ),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    !ticket.isValid ? Icons.check_circle : Icons.qr_code_2,
-                    size: 18,
-                    color: !ticket.isValid
-                        ? const Color(0xFFDC2626)
-                        : const Color(0xFF16A34A),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    !ticket.isValid ? ticket.statusText : 'Tap untuk QR Code',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: !ticket.isValid
-                          ? const Color(0xFFDC2626)
-                          : const Color(0xFF16A34A),
+                  // Status indicator
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          !ticket.isValid
+                              ? Icons.check_circle
+                              : Icons.qr_code_2,
+                          size: 18,
+                          color: !ticket.isValid
+                              ? const Color(0xFFDC2626)
+                              : const Color(0xFF16A34A),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          !ticket.isValid
+                              ? ticket.statusText
+                              : 'Tap untuk QR Code',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: !ticket.isValid
+                                ? const Color(0xFFDC2626)
+                                : const Color(0xFF16A34A),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  // Review button - only show if match is finished and not yet reviewed
+                  if (ticket.canReview)
+                    TextButton.icon(
+                      onPressed: () => _showReviewPopup(context),
+                      icon: const Icon(Icons.rate_review, size: 16),
+                      label: const Text('Beri Review'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFDC2626),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                    ),
+                  // Already reviewed indicator
+                  if (ticket.isMatchFinished && ticket.hasReviewed)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDCFCE7),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check, size: 14, color: Color(0xFF16A34A)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Sudah Review',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF16A34A),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -440,6 +501,18 @@ class TicketCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _showReviewPopup(BuildContext context) async {
+    final success = await showReviewPopup(
+      context,
+      matchId: ticket.matchId,
+      matchTitle: ticket.matchTitle,
+    );
+
+    if (success && widget.onReviewSubmitted != null) {
+      widget.onReviewSubmitted!();
+    }
   }
 
   Widget _buildTeamLogo(String? logoUrl) {
@@ -546,7 +619,10 @@ class TicketCard extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => TicketDetailBottomSheet(ticket: ticket),
+      builder: (context) => TicketDetailBottomSheet(
+        ticket: ticket,
+        onReviewSubmitted: widget.onReviewSubmitted,
+      ),
     );
   }
 }
@@ -554,8 +630,13 @@ class TicketCard extends StatelessWidget {
 /// Bottom Sheet for Ticket Detail with QR Code
 class TicketDetailBottomSheet extends StatefulWidget {
   final Ticket ticket;
+  final VoidCallback? onReviewSubmitted;
 
-  const TicketDetailBottomSheet({super.key, required this.ticket});
+  const TicketDetailBottomSheet({
+    super.key,
+    required this.ticket,
+    this.onReviewSubmitted,
+  });
 
   @override
   State<TicketDetailBottomSheet> createState() =>
@@ -710,6 +791,55 @@ class _TicketDetailBottomSheetState extends State<TicketDetailBottomSheet> {
 
                 const SizedBox(height: 24),
 
+                // Review Button - only show if can review
+                if (widget.ticket.canReview) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showReviewPopup(context),
+                      icon: const Icon(Icons.rate_review),
+                      label: const Text('Beri Review'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFDC2626),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // Already Reviewed indicator
+                if (widget.ticket.isMatchFinished &&
+                    widget.ticket.hasReviewed) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDCFCE7),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle, color: Color(0xFF16A34A)),
+                        SizedBox(width: 8),
+                        Text(
+                          'Anda sudah memberikan review',
+                          style: TextStyle(
+                            color: Color(0xFF16A34A),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
                 // Close Button
                 SizedBox(
                   width: double.infinity,
@@ -851,6 +981,23 @@ class _TicketDetailBottomSheetState extends State<TicketDetailBottomSheet> {
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  Future<void> _showReviewPopup(BuildContext context) async {
+    final success = await showReviewPopup(
+      context,
+      matchId: widget.ticket.matchId,
+      matchTitle: widget.ticket.matchTitle,
+    );
+
+    if (success) {
+      if (context.mounted) {
+        Navigator.pop(context); // Close bottom sheet
+      }
+      if (widget.onReviewSubmitted != null) {
+        widget.onReviewSubmitted!();
+      }
+    }
   }
 
   String _formatDateShort(DateTime date) {
