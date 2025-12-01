@@ -4,7 +4,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../../common/widgets/app_bottom_nav.dart';
-import '../../bookings/screens/booking_create_screen.dart';
+import '../../bookings/screens/ticket_price_screen.dart';
 import '../models/match.dart';
 import '../models/match_filter.dart';
 import '../state/matches_notifier.dart';
@@ -112,11 +112,22 @@ class _MatchesPageState extends State<MatchesPage> {
     }
 
     if (!mounted) return;
+    final dateText = match.kickoff != null
+        ? DateFormat('EEEE, dd MMM yyyy • HH:mm').format(match.kickoff!)
+        : match.dateText;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => BookingCreateScreen(
+        builder: (_) => TicketPriceScreen(
           matchId: match.id,
-          matchTitle: '${match.homeTeamName} vs ${match.awayTeamName}',
+          homeTeam: match.homeTeamName,
+          awayTeam: match.awayTeamName,
+          homeTeamLogo: match.homeLogoUrl,
+          awayTeamLogo: match.awayLogoUrl,
+          venue: match.venueDisplay,
+          matchDate: dateText,
+          matchStatus: match.status.name,
+          homeScore: match.displayHomeGoals,
+          awayScore: match.displayAwayGoals,
         ),
       ),
     );
@@ -153,7 +164,8 @@ class _MatchesPageState extends State<MatchesPage> {
                       if (isSelected) {
                         _selectedStatuses = {..._selectedStatuses, status};
                       } else {
-                        _selectedStatuses = {..._selectedStatuses}..remove(status);
+                        _selectedStatuses = {..._selectedStatuses}
+                          ..remove(status);
                         if (_selectedStatuses.isEmpty) {
                           _selectedStatuses = const {MatchStatus.upcoming};
                         }
@@ -191,29 +203,34 @@ class _MatchesPageState extends State<MatchesPage> {
                       ),
                     ),
                   )
-                else
-                  ...[
-                    ...state.matches.map(
-                      (match) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: MatchCard(
-                          match: match,
-                          onTap: () => Navigator.of(context).pushNamed('/match', arguments: match),
-                          onBuy: () => _handleBuy(match),
-                        ),
+                else ...[
+                  ...state.matches.map(
+                    (match) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: MatchCard(
+                        match: match,
+                        onTap: () => Navigator.of(
+                          context,
+                        ).pushNamed('/match', arguments: match),
+                        onBuy: () => _handleBuy(match),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    _PaginationControls(
-                      pagination: state.pagination,
-                      onPrevious: state.pagination?.hasPrevious == true
-                          ? () => state.goToPage((state.pagination!.currentPage - 1))
-                          : null,
-                      onNext: state.pagination?.hasNext == true
-                          ? () => state.goToPage((state.pagination!.currentPage + 1))
-                          : null,
-                    ),
-                  ],
+                  ),
+                  const SizedBox(height: 8),
+                  _PaginationControls(
+                    pagination: state.pagination,
+                    onPrevious: state.pagination?.hasPrevious == true
+                        ? () => state.goToPage(
+                            (state.pagination!.currentPage - 1),
+                          )
+                        : null,
+                    onNext: state.pagination?.hasNext == true
+                        ? () => state.goToPage(
+                            (state.pagination!.currentPage + 1),
+                          )
+                        : null,
+                  ),
+                ],
               ],
             );
           },
@@ -268,7 +285,9 @@ class _FilterCard extends StatelessWidget {
               decoration: InputDecoration(
                 labelText: 'Cari tim',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onSubmitted: (_) => onApply(),
             ),
@@ -277,9 +296,21 @@ class _FilterCard extends StatelessWidget {
               spacing: 10,
               runSpacing: 8,
               children: [
-                _statusChip('Upcoming', MatchStatus.upcoming, statuses.contains(MatchStatus.upcoming)),
-                _statusChip('Ongoing', MatchStatus.ongoing, statuses.contains(MatchStatus.ongoing)),
-                _statusChip('Finished', MatchStatus.finished, statuses.contains(MatchStatus.finished)),
+                _statusChip(
+                  'Upcoming',
+                  MatchStatus.upcoming,
+                  statuses.contains(MatchStatus.upcoming),
+                ),
+                _statusChip(
+                  'Ongoing',
+                  MatchStatus.ongoing,
+                  statuses.contains(MatchStatus.ongoing),
+                ),
+                _statusChip(
+                  'Finished',
+                  MatchStatus.finished,
+                  statuses.contains(MatchStatus.finished),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -290,7 +321,9 @@ class _FilterCard extends StatelessWidget {
                     onPressed: onPickStart,
                     icon: const Icon(Icons.date_range),
                     label: Text(startDateText),
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -299,7 +332,9 @@ class _FilterCard extends StatelessWidget {
                     onPressed: onPickEnd,
                     icon: const Icon(Icons.event),
                     label: Text(endDateText),
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
               ],
@@ -316,10 +351,17 @@ class _FilterCard extends StatelessWidget {
                     initialValue: perPage,
                     decoration: InputDecoration(
                       labelText: 'Entri per halaman',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     items: MatchFilter.allowedPerPage
-                        .map((value) => DropdownMenuItem(value: value, child: Text('$value')))
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text('$value'),
+                          ),
+                        )
                         .toList(),
                     onChanged: onPerPageChanged,
                   ),
@@ -414,7 +456,10 @@ class _ErrorBanner extends StatelessWidget {
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             TextButton.icon(
