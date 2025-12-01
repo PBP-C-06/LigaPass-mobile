@@ -2,350 +2,283 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-const String BASE_URL = "http://localhost:8000";
-
-
-class UserReviewPage extends StatefulWidget {
+class UserReviewSection extends StatefulWidget {
   final String matchId;
   final String sessionCookie;
 
-  const UserReviewPage({
+  const UserReviewSection({
     super.key,
     required this.matchId,
     required this.sessionCookie,
   });
 
   @override
-  State<UserReviewPage> createState() => _UserReviewPageState();
+  State<UserReviewSection> createState() => _UserReviewSectionState();
 }
 
-class _UserReviewPageState extends State<UserReviewPage> {
-  bool loading = true;
-  Map<String, dynamic>? myReview;
-  List<dynamic> otherReviews = [];
+class _UserReviewSectionState extends State<UserReviewSection> {
+  final BASE_URL = "http://localhost:8000";
 
-  // Untuk edit
-  int editRating = 0;
-  final TextEditingController editCommentController = TextEditingController();
+  bool isLoading = true;
+  List<dynamic> reviews = [];
+  Map<String, dynamic>? myReview;
 
   @override
   void initState() {
     super.initState();
-    loadReviews();
+    fetchReviews();
   }
 
-  // =========================================
-  // LOAD DATA REVIEW DARI DJANGO
-  // =========================================
-  Future<void> loadReviews() async {
-    final url = Uri.parse("$BASE_URL/reviews/api/${widget.matchId}/list/");
+  Future<void> fetchReviews() async {
+    final url = "$BASE_URL/reviews/user/${widget.matchId}/json/";
+    setState(() => isLoading = true);
 
-    final res = await http.get(url, headers: {
-      "Cookie": widget.sessionCookie,
-    });
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {"Cookie": widget.sessionCookie},
+    );
 
-    final data = jsonDecode(res.body);
-
-    if (res.statusCode == 200 && data["ok"] == true) {
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
       setState(() {
-        loading = false;
+        reviews = data["reviews"];
         myReview = data["my_review"];
-        otherReviews = data["reviews"];
+        isLoading = false;
       });
-    }
-  }
-
-  // =========================================
-  // DELETE REVIEW
-  // =========================================
-  Future<void> deleteReview() async {
-    final url = Uri.parse("$BASE_URL/reviews/api/${widget.matchId}/delete/");
-
-    final res = await http.post(url, headers: {
-      "Cookie": widget.sessionCookie,
-    });
-
-    if (res.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Review berhasil dihapus")),
-      );
-      await loadReviews();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gagal menghapus review")),
-      );
+      setState(() => isLoading = false);
+      print("Gagal load review: ${response.body}");
     }
   }
 
-  // =========================================
-  // SHOW EDIT POPUP
-  // =========================================
-  void showEditPopup() {
-    editRating = myReview?["rating"] ?? 0;
-    editCommentController.text = myReview?["comment"] ?? "";
-
-    showModalBottomSheet(
+  void showAddReviewPopup() {
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStatePopup) {
-            return Container(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 25,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("Edit Ulasan",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-
-                  const SizedBox(height: 15),
-
-                  // Rating
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (i) {
-                      return IconButton(
-                        icon: Icon(
-                          Icons.star,
-                          size: 32,
-                          color: i < editRating ? Colors.amber : Colors.grey[300],
-                        ),
-                        onPressed: () {
-                          setStatePopup(() {
-                            editRating = i + 1;
-                          });
-                        },
-                      );
-                    }),
-                  ),
-
-                  // Comment
-                  TextField(
-                    controller: editCommentController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: "Edit komentar Anda...",
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text("Batal"),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            await updateReview();
-                            if (mounted) Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          child: Text("Simpan"),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+      builder: (context) => ReviewPopup(
+        matchId: widget.matchId,
+        sessionCookie: widget.sessionCookie,
+        onSuccess: fetchReviews,
+      ),
     );
   }
 
-  // =========================================
-  // UPDATE REVIEW
-  // =========================================
-  Future<void> updateReview() async {
-    final url = Uri.parse("$BASE_URL/reviews/api/${widget.matchId}/update/");
-
-    final body = jsonEncode({
-      "rating": editRating,
-      "comment": editCommentController.text,
-    });
-
-    final res = await http.post(
-      url,
-      headers: {
-        "Cookie": widget.sessionCookie,
-        "Content-Type": "application/json",
-      },
-      body: body,
-    );
-
-    if (res.statusCode == 200) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Review berhasil diperbarui")));
-      await loadReviews();
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Gagal memperbarui review")));
-    }
-  }
-
-  Widget buildStars(int value) {
-    return Row(
-      children: List.generate(5, (i) {
-        return Icon(
-          Icons.star,
-          size: 20,
-          color: i < value ? Colors.amber : Colors.grey[300],
-        );
-      }),
-    );
-  }
-
-  // =========================================
-  // MAIN UI
-  // =========================================
   @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Review")),
-        body: const Center(child: CircularProgressIndicator()),
+    if (isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(child: CircularProgressIndicator()),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(title: Text("Ulasan Pertandingan")),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ===================== My Review =====================
-            if (myReview != null)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Ulasan Anda",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-
-                  Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          buildStars(myReview!["rating"]),
-                          SizedBox(height: 5),
-                          Text(myReview!["comment"] ?? ""),
-
-                          if (myReview!["reply"] != null)
-                            Container(
-                              margin: EdgeInsets.only(top: 10),
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Admin: ${myReview!["reply"]["admin"]}",
-                                      style: TextStyle(fontWeight: FontWeight.bold)),
-                                  Text(myReview!["reply"]["reply_text"]),
-                                ],
-                              ),
-                            ),
-
-                          const SizedBox(height: 10),
-
-                          Row(
-                            children: [
-                              TextButton(
-                                onPressed: showEditPopup,
-                                child: Text("Edit"),
-                              ),
-                              TextButton(
-                                onPressed: deleteReview,
-                                child: Text("Hapus",
-                                    style: TextStyle(color: Colors.red)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-                ],
-              ),
-
-            // ===================== Other Reviews =====================
-            Text("Ulasan Penonton Lain",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-
-            ...otherReviews.map((r) {
-              return Card(
-                margin: EdgeInsets.only(bottom: 15),
-                child: Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(r["user"] ?? "User",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                      buildStars(r["rating"]),
-                      SizedBox(height: 6),
-                      Text(r["comment"] ?? ""),
-
-                      if (r["reply"] != null)
-                        Container(
-                          margin: EdgeInsets.only(top: 10),
-                          padding: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Admin: ${r["reply"]["admin"]}",
-                                  style: TextStyle(fontWeight: FontWeight.bold)),
-                              Text(r["reply"]["reply_text"]),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // === JUDUL SECTION ===
+        const Text(
+          "Review Pertandingan",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
+        const SizedBox(height: 12),
+
+        // === ADD REVIEW BUTTON ===
+        if (myReview == null)
+          ElevatedButton(
+            onPressed: showAddReviewPopup,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("Tambah Review"),
+          ),
+
+        const SizedBox(height: 20),
+
+        // === USER REVIEW ===
+        if (myReview != null) _buildMyReview(),
+
+        const SizedBox(height: 14),
+
+        // === OTHER REVIEWS ===
+        const Text(
+          "Review Penonton Lain",
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 10),
+
+        ...reviews.map((r) => _buildReviewCard(r)),
+      ],
+    );
+  }
+
+  Widget _buildMyReview() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Review Anda", style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          _buildReviewCard(myReview!, isMyReview: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewCard(Map<String, dynamic> r, {bool isMyReview = false}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // User
+          Text(
+            r["user"],
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+
+          // Rating
+          Row(
+            children: List.generate(
+              5,
+              (i) => Icon(
+                i < r["rating"] ? Icons.star : Icons.star_border,
+                size: 16,
+                color: Colors.amber,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          // Comment
+          Text(r["comment"] ?? "-"),
+
+          if (r["reply"] != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text("Balasan Admin: ${r["reply"]}"),
+            )
+          ],
+
+          if (isMyReview) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () => showAddReviewPopup(), // popup untuk edit
+                  child: const Text("Edit"),
+                ),
+                TextButton(
+                  onPressed: () {}, // delete logic nanti
+                  child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            )
+          ]
+        ],
+      ),
+    );
+  }
+}
+
+/// POP UP BUAT TAMBAH / EDIT
+class ReviewPopup extends StatefulWidget {
+  final String matchId;
+  final String sessionCookie;
+  final VoidCallback onSuccess;
+
+  const ReviewPopup({
+    super.key,
+    required this.matchId,
+    required this.sessionCookie,
+    required this.onSuccess,
+  });
+
+  @override
+  State<ReviewPopup> createState() => _ReviewPopupState();
+}
+
+class _ReviewPopupState extends State<ReviewPopup> {
+  int rating = 0;
+  final TextEditingController commentController = TextEditingController();
+
+  final BASE_URL = "http://10.0.2.2:8000";
+
+  Future<void> submitReview() async {
+    final url =
+        "$BASE_URL/reviews/api/${widget.matchId}/create/";
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {"Cookie": widget.sessionCookie},
+      body: {
+        "rating": rating.toString(),
+        "comment": commentController.text,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.pop(context);
+      widget.onSuccess();
+    } else {
+      print("Error add review: ${response.body}");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Beri Ulasan"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              5,
+              (i) => IconButton(
+                icon: Icon(
+                  i < rating ? Icons.star : Icons.star_border,
+                  color: Colors.amber,
+                ),
+                onPressed: () => setState(() => rating = i + 1),
+              ),
+            ),
+          ),
+          TextField(
+            controller: commentController,
+            decoration: const InputDecoration(
+              hintText: "Tulis komentar...",
+            ),
+          )
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
+        ElevatedButton(onPressed: submitReview, child: const Text("Kirim")),
+      ],
     );
   }
 }
