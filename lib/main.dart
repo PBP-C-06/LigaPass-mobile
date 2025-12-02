@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ligapass/news/news_page.dart';
+import 'package:ligapass/onboarding/screens/onboarding_screen.dart';
 import 'package:ligapass/profiles/screens/create_profile_page.dart';
 import 'package:ligapass/profiles/screens/redirect_login.dart';
 import 'package:ligapass/profiles/screens/user_profile_page.dart';
@@ -22,12 +24,17 @@ import 'matches/screens/matches_page.dart';
 import 'matches/services/matches_api_client.dart';
 import 'matches/state/matches_notifier.dart';
 
-void main() {
-  runApp(const LigaPassApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+  runApp(LigaPassApp(showOnboarding: !onboardingComplete));
 }
 
 class LigaPassApp extends StatelessWidget {
-  const LigaPassApp({super.key});
+  final bool showOnboarding;
+
+  const LigaPassApp({super.key, this.showOnboarding = false});
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +53,9 @@ class LigaPassApp extends StatelessWidget {
             title: Env.appName,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light,
-            initialRoute: '/home',
+            initialRoute: showOnboarding ? '/onboarding' : '/home',
             routes: {
+              '/onboarding': (_) => const OnboardingScreen(),
               '/home': (_) => const HomePage(),
               '/login': (_) => const LoginPage(),
               '/register': (_) => const RegisterPage(),

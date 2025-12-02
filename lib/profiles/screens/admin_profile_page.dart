@@ -88,7 +88,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
         // Reset to page awal jika search / filter berubah
         currentPage = 1;
       });
-
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -113,79 +112,101 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     final request = context.watch<CookieRequest>();
 
     return Scaffold(
-      backgroundColor: const Color(0xfff3f4f6),
       appBar: AppBar(
-        title: const Text("Admin Profile"),
+        title: const Text(
+          "Admin Profile",
+          style: TextStyle(
+            color: Color(0xFF1d4ed8),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        foregroundColor: const Color(0xFF1d4ed8),
+        iconTheme: const IconThemeData(color: Color(0xFF1d4ed8)),
       ),
-      body: loadingAdmin
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  AdminProfileCard(adminProfile: adminProfile!),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
+          ),
+        ),
+        child: loadingAdmin
+            ? const Center(child: CircularProgressIndicator())
+            : Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    AdminProfileCard(adminProfile: adminProfile!),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          AdminSearchFilterCard(
-                            userProfiles: profiles,
-                            loading: loadingProfiles,
-                            search: search,
-                            filter: filter,
-                            resolveImage: _resolveImageUrl,
-                            searchController: _searchController,
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            AdminSearchFilterCard(
+                              userProfiles: profiles,
+                              loading: loadingProfiles,
+                              search: search,
+                              filter: filter,
+                              resolveImage: _resolveImageUrl,
+                              searchController: _searchController,
 
-                            onSearchChanged: (val) {
-                              search = val;
-                              _fetchProfiles(request,
-                                  search: search, filter: filter);
-                            },
+                              onSearchChanged: (val) {
+                                search = val;
+                                _fetchProfiles(
+                                  request,
+                                  search: search,
+                                  filter: filter,
+                                );
+                              },
 
-                            onFilterChanged: (val) {
-                              filter = val;
-                              _fetchProfiles(request,
-                                  search: search, filter: filter);
-                            },
+                              onFilterChanged: (val) {
+                                filter = val;
+                                _fetchProfiles(
+                                  request,
+                                  search: search,
+                                  filter: filter,
+                                );
+                              },
 
-                            // Pagination
-                            currentPage: currentPage,
-                            totalPages: totalPages,
-                            onNextPage: () {
-                              if (currentPage < totalPages) {
-                                setState(() => currentPage++);
-                              }
-                            },
-                            onPrevPage: () {
-                              if (currentPage > 1) {
-                                setState(() => currentPage--);
-                              }
-                            },
+                              // Pagination
+                              currentPage: currentPage,
+                              totalPages: totalPages,
+                              onNextPage: () {
+                                if (currentPage < totalPages) {
+                                  setState(() => currentPage++);
+                                }
+                              },
+                              onPrevPage: () {
+                                if (currentPage > 1) {
+                                  setState(() => currentPage--);
+                                }
+                              },
 
-                            onUserDeleted: (userId) {
-                              setState(() {
-                                profiles.removeWhere((p) => p.id == userId);
-                                totalPages = (profiles.length / 5).ceil();
-                                if (totalPages < 1) totalPages = 1;
-                                if (currentPage > totalPages) currentPage = totalPages;
-                              });
-                            },
-                          ),
+                              onUserDeleted: (userId) {
+                                setState(() {
+                                  profiles.removeWhere((p) => p.id == userId);
+                                  totalPages = (profiles.length / 5).ceil();
+                                  if (totalPages < 1) totalPages = 1;
+                                  if (currentPage > totalPages)
+                                    currentPage = totalPages;
+                                });
+                              },
+                            ),
 
-                          const SizedBox(height: 24),
-                        ],
+                            const SizedBox(height: 24),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+      ),
 
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );

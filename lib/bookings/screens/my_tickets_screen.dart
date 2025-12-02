@@ -64,14 +64,17 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
       appBar: AppBar(
         title: const Text(
           'Tiket Saya',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1d4ed8),
+          ),
         ),
-        backgroundColor: const Color(0xFF2563EB),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1d4ed8),
+        iconTheme: const IconThemeData(color: Color(0xFF1d4ed8)),
         elevation: 0,
         actions: [
           IconButton(
@@ -81,7 +84,16 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
           ),
         ],
       ),
-      body: _buildBody(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
+          ),
+        ),
+        child: _buildBody(),
+      ),
       bottomNavigationBar: const AppBottomNav(currentRoute: '/tickets'),
     );
   }

@@ -53,56 +53,64 @@ class _TicketPriceScreenState extends State<TicketPriceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1d4ed8)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Detail Pertandingan',
           style: TextStyle(
-            color: Color(0xFF1F2937),
+            color: Color(0xFF1d4ed8),
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
         centerTitle: true,
       ),
-      body: FutureBuilder<List<TicketPrice>>(
-        future: _ticketsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
+          ),
+        ),
+        child: FutureBuilder<List<TicketPrice>>(
+          future: _ticketsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+              );
+            }
+
+            if (snapshot.hasError) {
+              return _buildErrorWidget();
+            }
+
+            final tickets = snapshot.data ?? [];
+
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  // Match Info Card
+                  _buildMatchInfoCard(),
+                  const SizedBox(height: 24),
+                  // Ticket Price List
+                  _buildTicketPriceSection(tickets),
+                  const SizedBox(height: 24),
+                  // Buy Button
+                  _buildBuyButton(tickets),
+                  const SizedBox(height: 32),
+                ],
+              ),
             );
-          }
-
-          if (snapshot.hasError) {
-            return _buildErrorWidget();
-          }
-
-          final tickets = snapshot.data ?? [];
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                // Match Info Card
-                _buildMatchInfoCard(),
-                const SizedBox(height: 24),
-                // Ticket Price List
-                _buildTicketPriceSection(tickets),
-                const SizedBox(height: 24),
-                // Buy Button
-                _buildBuyButton(tickets),
-                const SizedBox(height: 32),
-              ],
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }

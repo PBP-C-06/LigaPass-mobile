@@ -46,6 +46,7 @@ dependencies:
   url_launcher: ^6.2.5
   barcode_widget: ^2.0.4 
   image_picker: ^1.1.0
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,10 @@ flutter:
   assets:
     - assets/google.png
     - assets/placeholder.png
+    - assets/banners/banner1.jpeg
+    - assets/banners/banner2.jpeg
+    - assets/banners/banner3.jpeg
+    - assets/images/logo.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

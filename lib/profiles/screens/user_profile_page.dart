@@ -34,43 +34,58 @@ class _UserProfilePageState extends State<UserProfilePage> {
     final request = context.watch<CookieRequest>();
 
     return Scaffold(
-      backgroundColor: const Color(0xfff3f4f6),
       appBar: AppBar(
-        title: const Text("User Profile"),
+        title: const Text(
+          "User Profile",
+          style: TextStyle(
+            color: Color(0xFF1d4ed8),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        foregroundColor: const Color(0xFF1d4ed8),
+        iconTheme: const IconThemeData(color: Color(0xFF1d4ed8)),
       ),
-      body: FutureBuilder<Profile>(
-        future: fetchProfile(request),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
+          ),
+        ),
+        child: FutureBuilder<Profile>(
+          future: fetchProfile(request),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
 
-          final profile = snapshot.data!;
-          final role = request.jsonData['role'];
-          String currentStatus = profile.status;
+            final profile = snapshot.data!;
+            final role = request.jsonData['role'];
+            String currentStatus = profile.status;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                UserProfileCard(profile: profile),
-                if (role == 'admin')
-                  UserProfileAdminActionCard(
-                    userId: profile.id,
-                    currentStatus: currentStatus,
-                    onUserDeleted: widget.onUserDeleted,
-                  )
-                else if (role == 'user')
-                  UserProfileUserActionCard(userId: profile.id),
-              ],
-            ),
-          );
-        },
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  UserProfileCard(profile: profile),
+                  if (role == 'admin')
+                    UserProfileAdminActionCard(
+                      userId: profile.id,
+                      currentStatus: currentStatus,
+                      onUserDeleted: widget.onUserDeleted,
+                    )
+                  else if (role == 'user')
+                    UserProfileUserActionCard(userId: profile.id),
+                ],
+              ),
+            );
+          },
+        ),
       ),
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );

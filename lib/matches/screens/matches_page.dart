@@ -141,99 +141,111 @@ class _MatchesPageState extends State<MatchesPage> {
         elevation: 0,
         title: const Text(
           'LigaPass Matches',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Color(0xFF1d4ed8),
+            fontWeight: FontWeight.w700,
+          ),
         ),
         centerTitle: true,
       ),
-      body: RefreshIndicator(
-        onRefresh: () => context.read<MatchesNotifier>().loadMatches(),
-        child: Consumer<MatchesNotifier>(
-          builder: (context, state, _) {
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _FilterCard(
-                  searchController: _searchController,
-                  startDateText: _formatDate(_startDate),
-                  endDateText: _formatDate(_endDate),
-                  onPickStart: () => _pickDate(isStart: true),
-                  onPickEnd: () => _pickDate(isStart: false),
-                  statuses: _selectedStatuses,
-                  onToggleStatus: (status, isSelected) {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedStatuses = {..._selectedStatuses, status};
-                      } else {
-                        _selectedStatuses = {..._selectedStatuses}
-                          ..remove(status);
-                        if (_selectedStatuses.isEmpty) {
-                          _selectedStatuses = const {MatchStatus.upcoming};
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
+          ),
+        ),
+        child: RefreshIndicator(
+          onRefresh: () => context.read<MatchesNotifier>().loadMatches(),
+          child: Consumer<MatchesNotifier>(
+            builder: (context, state, _) {
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _FilterCard(
+                    searchController: _searchController,
+                    startDateText: _formatDate(_startDate),
+                    endDateText: _formatDate(_endDate),
+                    onPickStart: () => _pickDate(isStart: true),
+                    onPickEnd: () => _pickDate(isStart: false),
+                    statuses: _selectedStatuses,
+                    onToggleStatus: (status, isSelected) {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedStatuses = {..._selectedStatuses, status};
+                        } else {
+                          _selectedStatuses = {..._selectedStatuses}
+                            ..remove(status);
+                          if (_selectedStatuses.isEmpty) {
+                            _selectedStatuses = const {MatchStatus.upcoming};
+                          }
                         }
+                      });
+                    },
+                    perPage: _perPage,
+                    onPerPageChanged: (value) {
+                      if (value != null) {
+                        setState(() => _perPage = value);
                       }
-                    });
-                  },
-                  perPage: _perPage,
-                  onPerPageChanged: (value) {
-                    if (value != null) {
-                      setState(() => _perPage = value);
-                    }
-                  },
-                  onApply: _applyFilters,
-                  onReset: _resetFilters,
-                  isLoading: state.isLoading,
-                ),
-                const SizedBox(height: 12),
-                if (state.error != null)
-                  _ErrorBanner(
-                    message: state.error!,
-                    onRetry: () => state.loadMatches(resetPage: true),
-                  )
-                else if (state.isLoading && state.matches.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (state.matches.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: Center(
-                      child: Text(
-                        'Tidak ada pertandingan sesuai filter.',
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                    },
+                    onApply: _applyFilters,
+                    onReset: _resetFilters,
+                    isLoading: state.isLoading,
+                  ),
+                  const SizedBox(height: 12),
+                  if (state.error != null)
+                    _ErrorBanner(
+                      message: state.error!,
+                      onRetry: () => state.loadMatches(resetPage: true),
+                    )
+                  else if (state.isLoading && state.matches.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (state.matches.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(
+                        child: Text(
+                          'Tidak ada pertandingan sesuai filter.',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    )
+                  else ...[
+                    ...state.matches.map(
+                      (match) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: MatchCard(
+                          match: match,
+                          onTap: () => Navigator.of(
+                            context,
+                          ).pushNamed('/match', arguments: match),
+                          onBuy: () => _handleBuy(match),
+                        ),
                       ),
                     ),
-                  )
-                else ...[
-                  ...state.matches.map(
-                    (match) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: MatchCard(
-                        match: match,
-                        onTap: () => Navigator.of(
-                          context,
-                        ).pushNamed('/match', arguments: match),
-                        onBuy: () => _handleBuy(match),
-                      ),
+                    const SizedBox(height: 8),
+                    _PaginationControls(
+                      pagination: state.pagination,
+                      onPrevious: state.pagination?.hasPrevious == true
+                          ? () => state.goToPage(
+                              (state.pagination!.currentPage - 1),
+                            )
+                          : null,
+                      onNext: state.pagination?.hasNext == true
+                          ? () => state.goToPage(
+                              (state.pagination!.currentPage + 1),
+                            )
+                          : null,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  _PaginationControls(
-                    pagination: state.pagination,
-                    onPrevious: state.pagination?.hasPrevious == true
-                        ? () => state.goToPage(
-                            (state.pagination!.currentPage - 1),
-                          )
-                        : null,
-                    onNext: state.pagination?.hasNext == true
-                        ? () => state.goToPage(
-                            (state.pagination!.currentPage + 1),
-                          )
-                        : null,
-                  ),
+                  ],
                 ],
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
       bottomNavigationBar: const AppBottomNav(currentRoute: '/matches'),
