@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
+import 'package:ligapass/common/widgets/logout_button.dart';
 import 'package:ligapass/profiles/models/admin_journalist_profile.dart';
 import 'package:ligapass/profiles/models/profile.dart';
 import 'package:ligapass/profiles/widgets/admin_profile_card.dart';
@@ -192,13 +193,16 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                   profiles.removeWhere((p) => p.id == userId);
                                   totalPages = (profiles.length / 5).ceil();
                                   if (totalPages < 1) totalPages = 1;
-                                  if (currentPage > totalPages)
+                                  if (currentPage > totalPages) {
                                     currentPage = totalPages;
+                                  }
                                 });
                               },
                             ),
 
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 20),
+
+                            const LogoutButton(),
                           ],
                         ),
                       ),

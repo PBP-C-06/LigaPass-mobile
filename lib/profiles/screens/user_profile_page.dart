@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
+import 'package:ligapass/common/widgets/logout_button.dart';
 import 'package:ligapass/profiles/models/profile.dart';
 import 'package:ligapass/profiles/widgets/user_profile_admin_action_card.dart';
 import 'package:ligapass/profiles/widgets/user_profile_card.dart';
@@ -81,6 +82,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     )
                   else if (role == 'user')
                     UserProfileUserActionCard(userId: profile.id),
+
+                  const LogoutButton(),
                 ],
               ),
             );
