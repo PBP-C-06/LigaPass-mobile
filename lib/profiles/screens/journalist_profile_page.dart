@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
+import 'package:ligapass/common/widgets/logout_button.dart';
 import 'package:ligapass/profiles/models/admin_journalist_profile.dart';
 import 'package:ligapass/profiles/widgets/journalist_profile_card.dart';
 import 'package:provider/provider.dart';
@@ -56,7 +57,16 @@ class _JournalistProfilePageState extends State<JournalistProfilePage> {
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(20),
-              child: JournalistProfileCard(profile: profile),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  JournalistProfileCard(profile: profile),
+
+                  const SizedBox(height: 20),
+
+                  const LogoutButton(),
+                ],
+              ),
             );
           },
         ),
