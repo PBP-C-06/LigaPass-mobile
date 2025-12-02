@@ -169,7 +169,6 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -177,373 +176,385 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
         title: const Text(
           'Pembayaran Berhasil',
           style: TextStyle(
-            color: Color(0xFF2563EB),
+            color: Color(0xFF1d4ed8),
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
       ),
-      body: Stack(
-        children: [
-          // Confetti animation layer
-          ...List.generate(_particles.length, (index) {
-            final particle = _particles[index];
-            return Positioned(
-              left: particle.x,
-              top: particle.y,
-              child: Transform.rotate(
-                angle: particle.rotation * 0.0174533,
-                child: Container(
-                  width: particle.size,
-                  height: particle.size * 0.6,
-                  decoration: BoxDecoration(
-                    color: particle.color,
-                    borderRadius: BorderRadius.circular(2),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Confetti animation layer
+            ...List.generate(_particles.length, (index) {
+              final particle = _particles[index];
+              return Positioned(
+                left: particle.x,
+                top: particle.y,
+                child: Transform.rotate(
+                  angle: particle.rotation * 0.0174533,
+                  child: Container(
+                    width: particle.size,
+                    height: particle.size * 0.6,
+                    decoration: BoxDecoration(
+                      color: particle.color,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-            );
-          }),
-          // Main content
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Success Animation with glow effect
-                    ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Outer glow ring
-                          Container(
-                            width: 130,
-                            height: 130,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: RadialGradient(
-                                colors: [
-                                  const Color(0xFF10B981).withOpacity(0.3),
-                                  const Color(0xFF10B981).withOpacity(0),
-                                ],
-                              ),
-                            ),
-                          ),
-                          // Main checkmark circle
-                          Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFF10B981), Color(0xFF059669)],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(
-                                    0xFF10B981,
-                                  ).withOpacity(0.4),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.check,
-                              size: 50,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Success Message
-                    const Text(
-                      'Pembayaran Berhasil!',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        '✓ Tiket Anda telah diterbitkan',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF10B981),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Match Info Card with Club Logos
-                    if (_isLoading)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF2563EB),
-                          ),
-                        ),
-                      )
-                    else if (_bookingDetails != null)
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: Column(
+              );
+            }),
+            // Main content
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Success Animation with glow effect
+                      ScaleTransition(
+                        scale: _scaleAnimation,
+                        child: Stack(
+                          alignment: Alignment.center,
                           children: [
-                            // Match Header with Team Logos
+                            // Outer glow ring
                             Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
+                              width: 130,
+                              height: 130,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: RadialGradient(
+                                  colors: [
+                                    const Color(0xFF10B981).withOpacity(0.3),
+                                    const Color(0xFF10B981).withOpacity(0),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // Main checkmark circle
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: const LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Color(0xFF2563EB),
-                                    Color(0xFF1D4ED8),
+                                    Color(0xFF10B981),
+                                    Color(0xFF059669),
                                   ],
                                 ),
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(16),
-                                  topRight: Radius.circular(16),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  // Home Team
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        _buildTeamLogo(
-                                          _bookingDetails!['home_team_logo'],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          _bookingDetails!['home_team'] ??
-                                              'Home',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // VS
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: const Text(
-                                      'VS',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ),
-                                  // Away Team
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        _buildTeamLogo(
-                                          _bookingDetails!['away_team_logo'],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          _bookingDetails!['away_team'] ??
-                                              'Away',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF10B981,
+                                    ).withOpacity(0.4),
+                                    blurRadius: 20,
+                                    spreadRadius: 5,
                                   ),
                                 ],
                               ),
-                            ),
-                            // Booking Details
-                            Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                children: [
-                                  _buildDetailRow(
-                                    'Booking ID',
-                                    '#${widget.bookingId.length > 8 ? widget.bookingId.substring(0, 8) : widget.bookingId}...',
-                                    Icons.confirmation_number,
-                                  ),
-                                  if (_bookingDetails!['match_date'] !=
-                                      null) ...[
-                                    const SizedBox(height: 12),
-                                    _buildDetailRow(
-                                      'Tanggal',
-                                      _formatDate(
-                                        _bookingDetails!['match_date'],
-                                      ),
-                                      Icons.calendar_today,
-                                    ),
-                                  ],
-                                  if (_bookingDetails!['ticket_count'] !=
-                                      null) ...[
-                                    const SizedBox(height: 12),
-                                    _buildDetailRow(
-                                      'Jumlah Tiket',
-                                      '${_bookingDetails!['ticket_count']} tiket',
-                                      Icons.local_activity,
-                                    ),
-                                  ],
-                                  if (_bookingDetails!['total_amount'] !=
-                                      null) ...[
-                                    const SizedBox(height: 12),
-                                    const Divider(color: Color(0xFFE5E7EB)),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text(
-                                          'Total Bayar',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                        Text(
-                                          'Rp ${_formatPrice(_bookingDetails!['total_amount'])}',
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF10B981),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ],
+                              child: const Icon(
+                                Icons.check,
+                                size: 50,
+                                color: Colors.white,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    const SizedBox(height: 32),
+                      const SizedBox(height: 32),
 
-                    // View Tickets Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/tickets');
-                        },
-                        icon: const Icon(Icons.local_activity),
-                        label: const Text(
-                          'Lihat Tiket Saya',
+                      // Success Message
+                      const Text(
+                        'Pembayaran Berhasil!',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          '✓ Tiket Anda telah diterbitkan',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF10B981),
+                            fontWeight: FontWeight.w500,
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 0,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 32),
 
-                    // Back to Home Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/',
-                            (route) => false,
-                          );
-                        },
-                        icon: const Icon(Icons.home),
-                        label: const Text(
-                          'Kembali ke Beranda',
-                          style: TextStyle(fontSize: 16),
+                      // Match Info Card with Club Logos
+                      if (_isLoading)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF2563EB),
+                            ),
+                          ),
+                        )
+                      else if (_bookingDetails != null)
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              // Match Header with Team Logos
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xFF2563EB),
+                                      Color(0xFF1D4ED8),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(16),
+                                    topRight: Radius.circular(16),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    // Home Team
+                                    Expanded(
+                                      child: Column(
+                                        children: [
+                                          _buildTeamLogo(
+                                            _bookingDetails!['home_team_logo'],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            _bookingDetails!['home_team'] ??
+                                                'Home',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // VS
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: const Text(
+                                        'VS',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                    // Away Team
+                                    Expanded(
+                                      child: Column(
+                                        children: [
+                                          _buildTeamLogo(
+                                            _bookingDetails!['away_team_logo'],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            _bookingDetails!['away_team'] ??
+                                                'Away',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Booking Details
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  children: [
+                                    _buildDetailRow(
+                                      'Booking ID',
+                                      '#${widget.bookingId.length > 8 ? widget.bookingId.substring(0, 8) : widget.bookingId}...',
+                                      Icons.confirmation_number,
+                                    ),
+                                    if (_bookingDetails!['match_date'] !=
+                                        null) ...[
+                                      const SizedBox(height: 12),
+                                      _buildDetailRow(
+                                        'Tanggal',
+                                        _formatDate(
+                                          _bookingDetails!['match_date'],
+                                        ),
+                                        Icons.calendar_today,
+                                      ),
+                                    ],
+                                    if (_bookingDetails!['ticket_count'] !=
+                                        null) ...[
+                                      const SizedBox(height: 12),
+                                      _buildDetailRow(
+                                        'Jumlah Tiket',
+                                        '${_bookingDetails!['ticket_count']} tiket',
+                                        Icons.local_activity,
+                                      ),
+                                    ],
+                                    if (_bookingDetails!['total_amount'] !=
+                                        null) ...[
+                                      const SizedBox(height: 12),
+                                      const Divider(color: Color(0xFFE5E7EB)),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Total Bayar',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Color(0xFF6B7280),
+                                            ),
+                                          ),
+                                          Text(
+                                            'Rp ${_formatPrice(_bookingDetails!['total_amount'])}',
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF10B981),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF2563EB),
-                          side: const BorderSide(color: Color(0xFF2563EB)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      const SizedBox(height: 32),
+
+                      // View Tickets Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pushReplacementNamed(context, '/tickets');
+                          },
+                          icon: const Icon(Icons.local_activity),
+                          label: const Text(
+                            'Lihat Tiket Saya',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+
+                      // Back to Home Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              '/',
+                              (route) => false,
+                            );
+                          },
+                          icon: const Icon(Icons.home),
+                          label: const Text(
+                            'Kembali ke Beranda',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF2563EB),
+                            side: const BorderSide(color: Color(0xFF2563EB)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

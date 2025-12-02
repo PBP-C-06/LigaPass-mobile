@@ -38,9 +38,9 @@ class _NewsListScreenState extends State<NewsListScreen> {
       setState(() => newsList = data);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal memuat berita: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal memuat berita: $e")));
     } finally {
       if (mounted) {
         setState(() => loading = false);
@@ -82,7 +82,9 @@ class _NewsListScreenState extends State<NewsListScreen> {
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
                 labelText: "Cari Judul Berita",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -95,12 +97,24 @@ class _NewsListScreenState extends State<NewsListScreen> {
                   value: selectedCategory,
                   items: const [
                     DropdownMenuItem(value: null, child: Text("Semua")),
-                    DropdownMenuItem(value: "transfer", child: Text("Transfer")),
+                    DropdownMenuItem(
+                      value: "transfer",
+                      child: Text("Transfer"),
+                    ),
                     DropdownMenuItem(value: "update", child: Text("Pembaruan")),
-                    DropdownMenuItem(value: "exclusive", child: Text("Eksklusif")),
-                    DropdownMenuItem(value: "match", child: Text("Pertandingan")),
+                    DropdownMenuItem(
+                      value: "exclusive",
+                      child: Text("Eksklusif"),
+                    ),
+                    DropdownMenuItem(
+                      value: "match",
+                      child: Text("Pertandingan"),
+                    ),
                     DropdownMenuItem(value: "rumor", child: Text("Rumor")),
-                    DropdownMenuItem(value: "analysis", child: Text("Analisis")),
+                    DropdownMenuItem(
+                      value: "analysis",
+                      child: Text("Analisis"),
+                    ),
                   ],
                   onChanged: (val) => setState(() => selectedCategory = val),
                 ),
@@ -118,9 +132,18 @@ class _NewsListScreenState extends State<NewsListScreen> {
                   label: "Urutkan",
                   value: selectedSort,
                   items: const [
-                    DropdownMenuItem(value: "created_at", child: Text("Terbaru")),
-                    DropdownMenuItem(value: "edited_at", child: Text("Terakhir Diedit")),
-                    DropdownMenuItem(value: "news_views", child: Text("Populer")),
+                    DropdownMenuItem(
+                      value: "created_at",
+                      child: Text("Terbaru"),
+                    ),
+                    DropdownMenuItem(
+                      value: "edited_at",
+                      child: Text("Terakhir Diedit"),
+                    ),
+                    DropdownMenuItem(
+                      value: "news_views",
+                      child: Text("Populer"),
+                    ),
                   ],
                   onChanged: (val) => setState(() => selectedSort = val),
                 ),
@@ -151,44 +174,73 @@ class _NewsListScreenState extends State<NewsListScreen> {
   @override
   Widget build(BuildContext context) {
     return loading
-        ? const Center(child: CircularProgressIndicator())
-        : SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  pinned: true,
-                  floating: false,
-                  expandedHeight: 100.0,
-                  backgroundColor: Colors.white.withValues(alpha: 0.9),
-                  elevation: 1,
-                  flexibleSpace: FlexibleSpaceBar(
-                    centerTitle: true,
-                    title: Text(
-                      "Berita",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
+        ? Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFf6f9ff),
+                  Color(0xFFe8f0ff),
+                  Color(0xFFdce6ff),
+                ],
+              ),
+            ),
+            child: const Center(child: CircularProgressIndicator()),
+          )
+        : Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFf6f9ff),
+                  Color(0xFFe8f0ff),
+                  Color(0xFFdce6ff),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: CustomScrollView(
+                slivers: [
+                  SliverAppBar(
+                    pinned: true,
+                    floating: false,
+                    expandedHeight: 100.0,
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    flexibleSpace: const FlexibleSpaceBar(
+                      centerTitle: true,
+                      title: Text(
+                        "Berita",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1d4ed8),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                SliverToBoxAdapter(child: buildFilterCard()),
-                if (newsList.isEmpty)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: Text("Tidak ada berita ditemukan")),
-                  )
-                else
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        child: NewsCard(news: newsList[index]),
+                  SliverToBoxAdapter(child: buildFilterCard()),
+                  if (newsList.isEmpty)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(child: Text("Tidak ada berita ditemukan")),
+                    )
+                  else
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                          child: NewsCard(news: newsList[index]),
+                        ),
+                        childCount: newsList.length,
                       ),
-                      childCount: newsList.length,
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           );
   }

@@ -9,10 +9,6 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'google_sign_in_button_stub.dart'
-    if (dart.library.html) 'google_sign_in_button_web.dart'
-    as gsi_button;
-
 const String _googleClientId =
     "496589546073-lhasinbg2db22bkti40suvgaqjqti4t2.apps.googleusercontent.com";
 
@@ -89,8 +85,9 @@ class _LoginPageState extends State<LoginPage> {
         successMessage = null;
       });
 
-      final GoogleSignInAuthentication auth =
-          await Future.value(user.authentication);
+      final GoogleSignInAuthentication auth = await Future.value(
+        user.authentication,
+      );
       final String? idToken = auth.idToken;
 
       if (idToken == null) {
@@ -208,8 +205,9 @@ class _LoginPageState extends State<LoginPage> {
       final GoogleSignInAccount user = await GoogleSignIn.instance
           .authenticate();
 
-      final GoogleSignInAuthentication auth =
-          await Future.value(user.authentication);
+      final GoogleSignInAuthentication auth = await Future.value(
+        user.authentication,
+      );
       final String? idToken = auth.idToken;
 
       if (idToken == null) {
@@ -276,20 +274,40 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildGoogleSignInButton() {
     if (kIsWeb) {
-      return Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blueGrey.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+      return SizedBox(
+        width: double.infinity,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.blueGrey.withValues(alpha: 0.25)),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: isLoading ? null : () => _performGoogleLogin(context),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset("assets/google.png", height: 24),
+                    const SizedBox(width: 10),
+                    const Text(
+                      "Login dengan Google",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
+          ),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-        child: gsi_button.renderButton(),
       );
     }
 
@@ -308,7 +326,7 @@ class _LoginPageState extends State<LoginPage> {
           Image.asset("assets/google.png", height: 24),
           const SizedBox(width: 10),
           const Text(
-            "Continue with Google",
+            "Login dengan Google",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ],
@@ -377,11 +395,7 @@ class _LoginPageState extends State<LoginPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFf6f9ff),
-              Color(0xFFe8f0ff),
-              Color(0xFFdce6ff),
-            ],
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
           ),
         ),
         child: SafeArea(
@@ -402,7 +416,9 @@ class _LoginPageState extends State<LoginPage> {
                         offset: const Offset(0, 14),
                       ),
                     ],
-                    border: Border.all(color: Colors.indigo.withValues(alpha: 0.04)),
+                    border: Border.all(
+                      color: Colors.indigo.withValues(alpha: 0.04),
+                    ),
                   ),
                   child: Form(
                     key: _formKey,
@@ -560,7 +576,8 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10),
+                                  horizontal: 10,
+                                ),
                                 child: Text(
                                   "atau",
                                   style: TextStyle(
@@ -596,8 +613,7 @@ class _LoginPageState extends State<LoginPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red.shade600,
                               foregroundColor: Colors.white,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
