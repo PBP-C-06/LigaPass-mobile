@@ -934,7 +934,10 @@ class _VenueCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        leading: const Icon(Icons.location_city, color: Colors.indigo),
+        leading: _CircleLogo(
+          url: venue.imageUrl,
+          fallbackUrl: venue.imageUrl,
+        ),
         title: Text(venue.name),
         subtitle: Text(venue.city?.isNotEmpty == true ? venue.city! : 'Kota tidak diisi'),
         trailing: Wrap(
