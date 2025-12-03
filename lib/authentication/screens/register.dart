@@ -55,7 +55,12 @@ class _RegisterPageState extends State<RegisterPage> {
       request.loggedIn = true;
       request.jsonData = response;
       if (!mounted) return;
-      navigator.pushReplacementNamed("/profile");
+      // User baru register, harus buat profile dulu
+      // Pass username ke create-profile page
+      navigator.pushReplacementNamed(
+        "/create-profile",
+        arguments: {"username": _usernameController.text},
+      );
     } else {
       request.loggedIn = false;
       setState(() => errorMessage = response["errors"].toString());
@@ -120,8 +125,9 @@ class _RegisterPageState extends State<RegisterPage> {
                 TextFormField(
                   controller: _pw2Controller,
                   obscureText: true,
-                  decoration:
-                      const InputDecoration(labelText: "Confirm Password"),
+                  decoration: const InputDecoration(
+                    labelText: "Confirm Password",
+                  ),
                   validator: (value) {
                     if (value != _pw1Controller.text) {
                       return "Passwords do not match";
