@@ -5,6 +5,7 @@ import 'package:ligapass/profiles/models/profile.dart';
 import 'package:ligapass/profiles/widgets/user_profile_admin_action_card.dart';
 import 'package:ligapass/profiles/widgets/user_profile_card.dart';
 import 'package:ligapass/profiles/widgets/user_profile_user_action_card.dart';
+import 'package:ligapass/reviews/widgets/user_analytics.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
@@ -82,6 +83,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     )
                   else if (role == 'user')
                     UserProfileUserActionCard(userId: profile.id),
+
+                  UserAnalyticsPanel(
+                    sessionCookie: request.headers['Cookie'] ?? "",
+                  ),
 
                   const LogoutButton(),
                 ],
