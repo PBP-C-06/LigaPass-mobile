@@ -110,6 +110,14 @@ class LigaPassApp extends StatelessWidget {
                 );
               }
 
+              // Route untuk create-profile (dari register page dengan username argument)
+              if (settings.name == '/create-profile') {
+                return MaterialPageRoute(
+                  builder: (_) => const CreateProfilePage(),
+                  settings: settings, // Pass settings agar arguments tersedia
+                );
+              }
+
               return null;
             },
           );

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/common/widgets/logout_button.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:ligapass/profiles/models/profile.dart';
 import 'package:ligapass/profiles/widgets/user_profile_admin_action_card.dart';
 import 'package:ligapass/profiles/widgets/user_profile_card.dart';
 import 'package:ligapass/profiles/widgets/user_profile_user_action_card.dart';
+import 'package:ligapass/reviews/widgets/user_analytics.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
@@ -19,8 +21,21 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
+  late Future<Profile> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  void _loadProfile() {
+    final request = context.read<CookieRequest>();
+    _profileFuture = fetchProfile(request);
+  }
+
   Future<Profile> fetchProfile(CookieRequest request) async {
-    final url = "http://localhost:8000/profiles/json/${widget.id}/";
+    final url = "${ApiConfig.baseUrl}/profiles/json/${widget.id}/";
     final response = await request.get(url);
 
     if (response.containsKey('error')) {
@@ -28,6 +43,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
 
     return Profile.fromJson(response);
+  }
+
+  void _refreshProfile() {
+    setState(() {
+      _loadProfile();
+    });
   }
 
   @override
@@ -57,17 +78,26 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ),
         ),
         child: FutureBuilder<Profile>(
-          future: fetchProfile(request),
+          future: _profileFuture,
           builder: (context, snapshot) {
-            if (!snapshot.hasData) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData) {
+              return const Center(child: Text('Profile not found'));
             }
 
             final profile = snapshot.data!;
             final role = request.jsonData['role'];
             String currentStatus = profile.status;
+
+            // Parse full name into first and last name
+            final nameParts = profile.fullName.split(' ');
+            final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+            final lastName = nameParts.length > 1
+                ? nameParts.sublist(1).join(' ')
+                : '';
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -81,7 +111,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       onUserDeleted: widget.onUserDeleted,
                     )
                   else if (role == 'user')
-                    UserProfileUserActionCard(userId: profile.id),
+                    UserProfileUserActionCard(
+                      userId: profile.id,
+                      username: profile.username,
+                      email: profile.email,
+                      firstName: firstName,
+                      lastName: lastName,
+                      phone: profile.phone,
+                      dateOfBirth: profile.dateOfBirth
+                          .toIso8601String()
+                          .split('T')
+                          .first,
+                      profilePicture: profile.profilePicture,
+                      onEditSuccess: _refreshProfile,
+                    ),
+
+                  UserAnalyticsPanel(
+                    sessionCookie: request.headers['Cookie'] ?? "",
+                  ),
 
                   const LogoutButton(),
                 ],
