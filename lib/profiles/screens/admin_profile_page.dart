@@ -5,6 +5,7 @@ import 'package:ligapass/profiles/models/admin_journalist_profile.dart';
 import 'package:ligapass/profiles/models/profile.dart';
 import 'package:ligapass/profiles/widgets/admin_profile_card.dart';
 import 'package:ligapass/profiles/widgets/admin_search_filter_card.dart';
+import 'package:ligapass/reviews/widgets/admin_analytics.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
@@ -200,8 +201,58 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                               },
                             ),
 
-                            const SizedBox(height: 20),
+                            GestureDetector(
+                              onTap: () {
+                                final request = context.read<CookieRequest>();
 
+                                final sessionCookie = request.cookies.entries
+                                    .map((e) => "${e.key}=${e.value}")
+                                    .join("; ");
+
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (context) {
+                                    return AdminAnalyticsPanel(
+                                      sessionCookie: sessionCookie,
+                                      onClose: () => Navigator.pop(context),
+                                    );
+                                  },
+                                );
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                                margin: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1d4ed8),
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      offset: const Offset(0, 3),
+                                      blurRadius: 8,
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(Icons.analytics, color: Colors.white),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      "Lihat Analitik Admin",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                             const LogoutButton(),
                           ],
                         ),
