@@ -100,14 +100,18 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     }
   }
 
-  String _resolveImageUrl(String? picPath) {
-    if (picPath == null || picPath.isEmpty) {
-      return '$baseUrl/static/images/default-profile-picture.png';
-    }
-    if (picPath.startsWith("http")) return picPath;
-    if (!picPath.startsWith("/")) return "$baseUrl/$picPath";
-    return "$baseUrl$picPath";
+  ImageProvider resolveImage(String? picPath) {
+  if (picPath == null || picPath.isEmpty || !picPath.startsWith("/")) {
+    return const AssetImage("assets/profile_images/default-profile-picture.png");
   }
+
+  if (picPath.startsWith("http")) {
+    return NetworkImage(picPath);
+  }
+
+  return NetworkImage("$baseUrl$picPath");
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +158,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                               loading: loadingProfiles,
                               search: search,
                               filter: filter,
-                              resolveImage: _resolveImageUrl,
+                              resolveImage: resolveImage,
                               searchController: _searchController,
 
                               onSearchChanged: (val) {

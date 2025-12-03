@@ -7,7 +7,7 @@ class AdminSearchFilterCard extends StatelessWidget {
   final bool loading;
   final String search;
   final String filter;
-  final String Function(String?) resolveImage;
+  final ImageProvider Function(String?) resolveImage;
   final void Function(String) onSearchChanged;
   final void Function(String) onFilterChanged;
   final TextEditingController searchController;
@@ -144,9 +144,24 @@ class AdminSearchFilterCard extends StatelessWidget {
                           CircleAvatar(
                             radius: 28,
                             backgroundColor: Colors.grey.shade200,
-                            backgroundImage:
-                                NetworkImage(resolveImage(p.profilePicture)),
+                            child: ClipOval(
+                              child: Image(
+                                image: resolveImage(p.profilePicture),
+                                fit: BoxFit.cover,
+                                width: 56,
+                                height: 56,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    "assets/profile_images/default-profile-picture.png",
+                                    fit: BoxFit.cover,
+                                    width: 56,
+                                    height: 56,
+                                  );
+                                },
+                              )
+                            ),
                           ),
+
                           const SizedBox(width: 16),
 
                           Expanded(
@@ -224,4 +239,11 @@ class AdminSearchFilterCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String resolveUrl(String? path) {
+  if (path == null || path.isEmpty) {
+    return "assets/profile_images/default-profile-picture.png";
+  }
+  return "http://localhost:8000$path";
 }
