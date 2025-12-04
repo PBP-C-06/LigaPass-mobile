@@ -3,8 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'env.dart';
 
 class ApiConfig {
-  static const String _overrideBaseUrl =
-      String.fromEnvironment('API_BASE_URL');
+  static const String _overrideBaseUrl = String.fromEnvironment('API_BASE_URL');
 
   // Default host per platform:
   // - Web/desktop/simulator: localhost hits the dev machine.
@@ -16,7 +15,8 @@ class ApiConfig {
     if (_overrideBaseUrl.isNotEmpty) return _overrideBaseUrl;
     if (Env.baseUrl.isNotEmpty) {
       // Ganti 10.0.2.2 ke localhost ketika berjalan di web/desktop/iOS simulator
-      if ((kIsWeb || _isDesktopOrSimulator) && Env.baseUrl.contains('10.0.2.2')) {
+      if ((kIsWeb || _isDesktopOrSimulator) &&
+          Env.baseUrl.contains('10.0.2.2')) {
         return Env.baseUrl.replaceFirst('10.0.2.2', 'localhost');
       }
       return Env.baseUrl;
@@ -41,8 +41,9 @@ class ApiConfig {
         maybeRelativeUrl.startsWith('https://')) {
       return maybeRelativeUrl;
     }
-    final normalizedPath =
-        maybeRelativeUrl.startsWith('/') ? maybeRelativeUrl : '/$maybeRelativeUrl';
+    final normalizedPath = maybeRelativeUrl.startsWith('/')
+        ? maybeRelativeUrl
+        : '/$maybeRelativeUrl';
     return '${Uri.parse(baseUrl).origin}$normalizedPath';
   }
 

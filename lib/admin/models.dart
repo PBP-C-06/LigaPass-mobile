@@ -29,17 +29,20 @@ class AdminVenue {
     required this.id,
     required this.name,
     this.city,
+    this.imageUrl,
   });
 
   final String id;
   final String name;
   final String? city;
+  final String? imageUrl;
 
   factory AdminVenue.fromJson(Map<String, dynamic> json) {
     return AdminVenue(
       id: json['id'].toString(),
       name: json['name'] ?? '',
       city: json['city'],
+      imageUrl: json['image_url'],
     );
   }
 }

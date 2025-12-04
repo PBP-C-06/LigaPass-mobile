@@ -124,7 +124,7 @@ class _TicketPriceScreenState extends State<TicketPriceScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -274,7 +274,7 @@ class _TicketPriceScreenState extends State<TicketPriceScreen> {
             ? Image.network(
                 logoUrl,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorBuilder: (context, error, stackTrace) => const Icon(
                   Icons.sports_soccer,
                   size: 36,
                   color: Color(0xFF9CA3AF),
@@ -298,7 +298,7 @@ class _TicketPriceScreenState extends State<TicketPriceScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

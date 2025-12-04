@@ -141,7 +141,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       child: Text(
                         _currentPage == _pages.length - 1 ? '' : 'Lewati',
                         style: TextStyle(
-                          color: currentData.color.withOpacity(0.7),
+                          color: currentData.color.withValues(alpha: 0.7),
                           fontSize: 14,
                         ),
                       ),
@@ -231,10 +231,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   width: 160,
                   height: 160,
                   decoration: BoxDecoration(
-                    color: data.color.withOpacity(0.1),
+                    color: data.color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: data.color.withOpacity(0.2),
+                      color: data.color.withValues(alpha: 0.2),
                       width: 2,
                     ),
                   ),
@@ -245,7 +245,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             width: 120,
                             height: 120,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) =>
+                            errorBuilder: (context, error, stackTrace) =>
                                 Icon(data.icon, size: 80, color: data.color),
                           )
                         : Icon(data.icon, size: 80, color: data.color),
@@ -294,7 +294,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       height: 10,
       width: _currentPage == index ? 28 : 10,
       decoration: BoxDecoration(
-        color: _currentPage == index ? color : color.withOpacity(0.3),
+        color: _currentPage == index ? color : color.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(5),
       ),
     );

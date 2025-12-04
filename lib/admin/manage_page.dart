@@ -95,7 +95,8 @@ class _LockedContent extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+              onPressed: () =>
+                  Navigator.pushReplacementNamed(context, '/login'),
               icon: const Icon(Icons.login),
               label: const Text('Ke Halaman Login'),
               style: ElevatedButton.styleFrom(
@@ -137,9 +138,9 @@ class _TeamsSectionState extends State<_TeamsSection> {
       setState(() => _teams = data);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memuat tim: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat tim: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -186,26 +187,21 @@ class _TeamsSectionState extends State<_TeamsSection> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: league,
+                    initialValue: league,
                     decoration: const InputDecoration(
                       labelText: 'Liga',
                       border: OutlineInputBorder(),
                     ),
                     items: const [
-                      DropdownMenuItem(
-                        value: 'liga_1',
-                        child: Text('Liga 1'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'liga_2',
-                        child: Text('Liga 2'),
-                      ),
+                      DropdownMenuItem(value: 'liga_1', child: Text('Liga 1')),
+                      DropdownMenuItem(value: 'liga_2', child: Text('Liga 2')),
                       DropdownMenuItem(
                         value: 'n/a',
                         child: Text('Tidak diketahui'),
                       ),
                     ],
-                    onChanged: (val) => setStateSB(() => league = val ?? 'liga_1'),
+                    onChanged: (val) =>
+                        setStateSB(() => league = val ?? 'liga_1'),
                   ),
                   const SizedBox(height: 12),
                   TextField(
@@ -243,12 +239,14 @@ class _TeamsSectionState extends State<_TeamsSection> {
               : logoController.text.trim(),
         );
       } else {
-        await _service.updateTeam(AdminTeam(
-          id: team.id,
-          name: nameController.text.trim(),
-          league: league,
-          logoUrl: logoController.text.trim(),
-        ));
+        await _service.updateTeam(
+          AdminTeam(
+            id: team.id,
+            name: nameController.text.trim(),
+            league: league,
+            logoUrl: logoController.text.trim(),
+          ),
+        );
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -259,9 +257,9 @@ class _TeamsSectionState extends State<_TeamsSection> {
       _loadTeams();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan tim: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan tim: $e')));
     }
   }
 
@@ -272,8 +270,14 @@ class _TeamsSectionState extends State<_TeamsSection> {
         title: const Text('Hapus Tim'),
         content: Text('Yakin menghapus ${team.name}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
         ],
       ),
     );
@@ -282,15 +286,15 @@ class _TeamsSectionState extends State<_TeamsSection> {
     try {
       await _service.deleteTeam(team.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tim ${team.name} dihapus')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Tim ${team.name} dihapus')));
       _loadTeams();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menghapus tim: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menghapus tim: $e')));
     }
   }
 
@@ -313,11 +317,13 @@ class _TeamsSectionState extends State<_TeamsSection> {
                 if (_teams.isEmpty)
                   const Center(child: Text('Belum ada tim.'))
                 else
-                  ..._teams.map((t) => _TeamCard(
-                        team: t,
-                        onEdit: () => _openTeamForm(team: t),
-                        onDelete: () => _deleteTeam(t),
-                      )),
+                  ..._teams.map(
+                    (t) => _TeamCard(
+                      team: t,
+                      onEdit: () => _openTeamForm(team: t),
+                      onDelete: () => _deleteTeam(t),
+                    ),
+                  ),
               ],
             ),
     );
@@ -351,9 +357,9 @@ class _VenuesSectionState extends State<_VenuesSection> {
       setState(() => _venues = data);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memuat venue: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat venue: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -382,7 +388,10 @@ class _VenuesSectionState extends State<_VenuesSection> {
             children: [
               Text(
                 venue == null ? 'Tambah Venue' : 'Edit Venue',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -423,22 +432,28 @@ class _VenuesSectionState extends State<_VenuesSection> {
           city: cityController.text.trim(),
         );
       } else {
-        await _service.updateVenue(AdminVenue(
-          id: venue.id,
-          name: nameController.text.trim(),
-          city: cityController.text.trim(),
-        ));
+        await _service.updateVenue(
+          AdminVenue(
+            id: venue.id,
+            name: nameController.text.trim(),
+            city: cityController.text.trim(),
+          ),
+        );
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(venue == null ? 'Venue ditambahkan' : 'Venue diperbarui')),
+        SnackBar(
+          content: Text(
+            venue == null ? 'Venue ditambahkan' : 'Venue diperbarui',
+          ),
+        ),
       );
       _loadVenues();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan venue: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan venue: $e')));
     }
   }
 
@@ -449,8 +464,14 @@ class _VenuesSectionState extends State<_VenuesSection> {
         title: const Text('Hapus Venue'),
         content: Text('Yakin menghapus ${venue.name}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
         ],
       ),
     );
@@ -459,15 +480,15 @@ class _VenuesSectionState extends State<_VenuesSection> {
     try {
       await _service.deleteVenue(venue.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Venue ${venue.name} dihapus')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Venue ${venue.name} dihapus')));
       _loadVenues();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menghapus venue: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menghapus venue: $e')));
     }
   }
 
@@ -540,9 +561,9 @@ class _MatchesSectionState extends State<_MatchesSection> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memuat data: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -551,15 +572,21 @@ class _MatchesSectionState extends State<_MatchesSection> {
   Future<void> _openMatchForm({AdminMatch? match}) async {
     if (_teams.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Minimal butuh dua tim untuk membuat pertandingan')),
+        const SnackBar(
+          content: Text('Minimal butuh dua tim untuk membuat pertandingan'),
+        ),
       );
       return;
     }
     String? homeTeamId =
         match?.homeTeamId ?? (_teams.isNotEmpty ? _teams.first.id : null);
-    String? awayTeamId = match?.awayTeamId ??
-        (_teams.length > 1 ? _teams[1].id : (_teams.isNotEmpty ? _teams.first.id : null));
-    String? venueId = match?.venueId ?? (_venues.isNotEmpty ? _venues.first.id : null);
+    String? awayTeamId =
+        match?.awayTeamId ??
+        (_teams.length > 1
+            ? _teams[1].id
+            : (_teams.isNotEmpty ? _teams.first.id : null));
+    String? venueId =
+        match?.venueId ?? (_venues.isNotEmpty ? _venues.first.id : null);
     DateTime date = match?.date ?? DateTime.now().add(const Duration(days: 1));
     int? homeGoals = match?.homeGoals;
     int? awayGoals = match?.awayGoals;
@@ -588,6 +615,7 @@ class _MatchesSectionState extends State<_MatchesSection> {
                   lastDate: DateTime(2100),
                 );
                 if (pickedDate == null) return;
+                if (!context.mounted) return;
                 final pickedTime = await showTimePicker(
                   context: context,
                   initialTime: TimeOfDay.fromDateTime(date),
@@ -608,51 +636,64 @@ class _MatchesSectionState extends State<_MatchesSection> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      match == null ? 'Tambah Pertandingan' : 'Edit Pertandingan',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      match == null
+                          ? 'Tambah Pertandingan'
+                          : 'Edit Pertandingan',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: homeTeamId,
+                      initialValue: homeTeamId,
                       decoration: const InputDecoration(
                         labelText: 'Home Team',
                         border: OutlineInputBorder(),
                       ),
                       items: _teams
-                          .map((t) => DropdownMenuItem(
-                                value: t.id,
-                                child: Text(t.name),
-                              ))
+                          .map(
+                            (t) => DropdownMenuItem(
+                              value: t.id,
+                              child: Text(t.name),
+                            ),
+                          )
                           .toList(),
                       onChanged: (val) => setStateSB(() => homeTeamId = val),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: awayTeamId,
+                      initialValue: awayTeamId,
                       decoration: const InputDecoration(
                         labelText: 'Away Team',
                         border: OutlineInputBorder(),
                       ),
                       items: _teams
-                          .map((t) => DropdownMenuItem(
-                                value: t.id,
-                                child: Text(t.name),
-                              ))
+                          .map(
+                            (t) => DropdownMenuItem(
+                              value: t.id,
+                              child: Text(t.name),
+                            ),
+                          )
                           .toList(),
                       onChanged: (val) => setStateSB(() => awayTeamId = val),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: venueId,
+                      initialValue: venueId,
                       decoration: const InputDecoration(
                         labelText: 'Venue',
                         border: OutlineInputBorder(),
                       ),
                       items: _venues
-                          .map((v) => DropdownMenuItem(
-                                value: v.id,
-                                child: Text('${v.name}${v.city != null ? " - ${v.city}" : ""}'),
-                              ))
+                          .map(
+                            (v) => DropdownMenuItem(
+                              value: v.id,
+                              child: Text(
+                                '${v.name}${v.city != null ? " - ${v.city}" : ""}',
+                              ),
+                            ),
+                          )
                           .toList(),
                       onChanged: (val) => setStateSB(() => venueId = val),
                     ),
@@ -660,7 +701,9 @@ class _MatchesSectionState extends State<_MatchesSection> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Tanggal & waktu'),
-                      subtitle: Text(DateFormat('dd MMM yyyy, HH:mm').format(date)),
+                      subtitle: Text(
+                        DateFormat('dd MMM yyyy, HH:mm').format(date),
+                      ),
                       trailing: IconButton(
                         icon: const Icon(Icons.date_range),
                         onPressed: pickDate,
@@ -714,13 +757,16 @@ class _MatchesSectionState extends State<_MatchesSection> {
         );
       },
     );
+    if (!mounted) return;
 
     if (result != true || homeTeamId == null || awayTeamId == null) return;
 
     try {
       if (homeTeamId == null || awayTeamId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pilih tim home dan away terlebih dahulu')),
+          const SnackBar(
+            content: Text('Pilih tim home dan away terlebih dahulu'),
+          ),
         );
         return;
       }
@@ -735,24 +781,32 @@ class _MatchesSectionState extends State<_MatchesSection> {
           awayGoals: awayGoals,
         );
       } else {
-        await _service.updateMatch(AdminMatch(
-          id: match.id,
-          homeTeamId: homeTeamId!,
-          awayTeamId: awayTeamId!,
-          homeTeamName: match.homeTeamName,
-          awayTeamName: match.awayTeamName,
-          venueName: match.venueName,
-          venueId: venueId,
-          date: date,
-          statusShort: match.statusShort,
-          statusLong: match.statusLong,
-          homeGoals: homeGoals,
-          awayGoals: awayGoals,
-        ));
+        await _service.updateMatch(
+          AdminMatch(
+            id: match.id,
+            homeTeamId: homeTeamId!,
+            awayTeamId: awayTeamId!,
+            homeTeamName: match.homeTeamName,
+            awayTeamName: match.awayTeamName,
+            venueName: match.venueName,
+            venueId: venueId,
+            date: date,
+            statusShort: match.statusShort,
+            statusLong: match.statusLong,
+            homeGoals: homeGoals,
+            awayGoals: awayGoals,
+          ),
+        );
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(match == null ? 'Pertandingan ditambahkan' : 'Pertandingan diperbarui')),
+        SnackBar(
+          content: Text(
+            match == null
+                ? 'Pertandingan ditambahkan'
+                : 'Pertandingan diperbarui',
+          ),
+        ),
       );
       _loadAll();
     } catch (e) {
@@ -768,10 +822,18 @@ class _MatchesSectionState extends State<_MatchesSection> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus Pertandingan'),
-        content: Text('Yakin menghapus ${match.homeTeamName} vs ${match.awayTeamName}?'),
+        content: Text(
+          'Yakin menghapus ${match.homeTeamName} vs ${match.awayTeamName}?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
         ],
       ),
     );
@@ -780,9 +842,9 @@ class _MatchesSectionState extends State<_MatchesSection> {
     try {
       await _service.deleteMatch(match.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Pertandingan dihapus')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Pertandingan dihapus')));
       _loadAll();
     } catch (e) {
       if (!mounted) return;
@@ -856,10 +918,7 @@ class _Header extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(color: Color(0xFF6b7280)),
-              ),
+              Text(subtitle, style: const TextStyle(color: Color(0xFF6b7280))),
             ],
           ),
         ),
@@ -934,9 +993,11 @@ class _VenueCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        leading: const Icon(Icons.location_city, color: Colors.indigo),
+        leading: _CircleLogo(url: venue.imageUrl, fallbackUrl: venue.imageUrl),
         title: Text(venue.name),
-        subtitle: Text(venue.city?.isNotEmpty == true ? venue.city! : 'Kota tidak diisi'),
+        subtitle: Text(
+          venue.city?.isNotEmpty == true ? venue.city! : 'Kota tidak diisi',
+        ),
         trailing: Wrap(
           spacing: 8,
           children: [
@@ -983,10 +1044,7 @@ class _MatchCard extends StatelessWidget {
       final fallback = teamData?.logoUrl;
       return Column(
         children: [
-          _CircleLogo(
-            url: logo,
-            fallbackUrl: fallback,
-          ),
+          _CircleLogo(url: logo, fallbackUrl: fallback),
           const SizedBox(height: 6),
           SizedBox(
             width: 110,
@@ -1027,18 +1085,24 @@ class _MatchCard extends StatelessWidget {
                       onPressed: onDelete,
                     ),
                   ],
-                )
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
-            children: [
-              Expanded(
-                  child: teamColumn(match.homeTeamName, teamFor(match.homeTeamId)),
+              children: [
+                Expanded(
+                  child: teamColumn(
+                    match.homeTeamName,
+                    teamFor(match.homeTeamId),
+                  ),
                 ),
                 const Text('VS', style: TextStyle(fontWeight: FontWeight.bold)),
                 Expanded(
-                  child: teamColumn(match.awayTeamName, teamFor(match.awayTeamId)),
+                  child: teamColumn(
+                    match.awayTeamName,
+                    teamFor(match.awayTeamId),
+                  ),
                 ),
               ],
             ),
@@ -1063,7 +1127,9 @@ class _CircleLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final candidate = (url ?? '').isNotEmpty ? url : (fallbackUrl ?? '');
-    final resolved = (candidate ?? '').isEmpty ? null : ApiConfig.resolveUrl(candidate!);
+    final resolved = (candidate ?? '').isEmpty
+        ? null
+        : ApiConfig.resolveUrl(candidate!);
 
     if (resolved == null) {
       return const CircleAvatar(
@@ -1080,7 +1146,8 @@ class _CircleLogo extends StatelessWidget {
           width: 40,
           height: 40,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Icon(Icons.shield, color: Color(0xFF2563eb)),
+          errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.shield, color: Color(0xFF2563eb)),
         ),
       ),
     );

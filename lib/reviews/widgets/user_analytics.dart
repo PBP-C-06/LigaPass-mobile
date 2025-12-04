@@ -3,15 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
 
-const String BASE_URL = "http://localhost:8000";
+const String baseUrl = "http://localhost:8000";
 
 class UserAnalyticsPanel extends StatefulWidget {
   final String sessionCookie;
 
-  const UserAnalyticsPanel({
-    super.key,
-    required this.sessionCookie,
-  });
+  const UserAnalyticsPanel({super.key, required this.sessionCookie});
 
   @override
   State<UserAnalyticsPanel> createState() => _UserAnalyticsPanelState();
@@ -20,7 +17,7 @@ class UserAnalyticsPanel extends StatefulWidget {
 class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
   bool loading = true;
 
-  String selectedPeriod = "weekly"; 
+  String selectedPeriod = "weekly";
   List spendingData = [];
 
   int hadir = 0;
@@ -37,12 +34,10 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     setState(() => loading = true);
 
     final url = Uri.parse(
-      "$BASE_URL/reviews/analytics/user/data/?period=$selectedPeriod",
+      "$baseUrl/reviews/analytics/user/data/?period=$selectedPeriod",
     );
 
-    final res = await http.get(url, headers: {
-      "Cookie": widget.sessionCookie,
-    });
+    final res = await http.get(url, headers: {"Cookie": widget.sessionCookie});
 
     final data = jsonDecode(res.body);
 
@@ -65,8 +60,10 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Statistik Kehadiran",
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            const Text(
+              "Statistik Kehadiran",
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
 
             SizedBox(
@@ -99,7 +96,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -133,9 +130,10 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Data Pengeluaran",
-                    style: TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.bold)),
+                const Text(
+                  "Data Pengeluaran",
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
                 DropdownButton<String>(
                   value: selectedPeriod,
                   items: const [
@@ -160,8 +158,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                   barGroups: spendingData.asMap().entries.map((entry) {
                     int index = entry.key;
                     var item = entry.value;
-                    double value =
-                        (item["total_spent"] as num).toDouble();
+                    double value = (item["total_spent"] as num).toDouble();
 
                     return BarChartGroupData(
                       x: index,
@@ -211,10 +208,12 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: CircularProgressIndicator(),
-      ));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     return Column(
@@ -237,8 +236,10 @@ class _Dot extends StatelessWidget {
     return Container(
       width: 12,
       height: 12,
-      decoration:
-          BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+      ),
     );
   }
 }

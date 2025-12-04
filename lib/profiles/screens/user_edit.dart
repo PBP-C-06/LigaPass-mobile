@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -285,8 +284,12 @@ class _UserEditPageState extends State<UserEditPage> {
                                                         .initialProfilePicture!
                                                   : '${ApiConfig.baseUrl}${widget.initialProfilePicture}',
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) =>
-                                                  const Icon(
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => const Icon(
                                                     Icons.person,
                                                     size: 48,
                                                     color: Color(0xFF9CA3AF),

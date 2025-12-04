@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-const String BASE_URL = "http://localhost:8000";  
-
+const String baseUrl = "http://localhost:8000";
 
 void showAddReviewPopup(
   BuildContext context,
@@ -36,10 +34,7 @@ void showAddReviewPopup(
               children: [
                 Text(
                   "Beri Ulasan Anda",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 15),
@@ -60,7 +55,9 @@ void showAddReviewPopup(
                       icon: Icon(
                         Icons.star,
                         size: 32,
-                        color: i < selectedRating ? Colors.amber : Colors.grey[300],
+                        color: i < selectedRating
+                            ? Colors.amber
+                            : Colors.grey[300],
                       ),
                       onPressed: () {
                         setState(() {
@@ -103,7 +100,10 @@ void showAddReviewPopup(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text("Batal", style: TextStyle(color: Colors.black87)),
+                        child: Text(
+                          "Batal",
+                          style: TextStyle(color: Colors.black87),
+                        ),
                       ),
                     ),
 
@@ -132,14 +132,12 @@ void showAddReviewPopup(
                           // CALL DJANGO CREATE REVIEW API
                           // ============================
                           final url = Uri.parse(
-                            "$BASE_URL/reviews/api/$matchId/create/",
+                            "$baseUrl/reviews/api/$matchId/create/",
                           );
 
                           final response = await http.post(
                             url,
-                            headers: {
-                              "Cookie": sessionCookie,
-                            },
+                            headers: {"Cookie": sessionCookie},
                             body: {
                               "rating": selectedRating.toString(),
                               "comment": commentController.text,
@@ -147,21 +145,30 @@ void showAddReviewPopup(
                           );
 
                           if (response.statusCode == 200) {
+                            if (!context.mounted) return;
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Review berhasil dikirim!")),
+                              const SnackBar(
+                                content: Text("Review berhasil dikirim!"),
+                              ),
                             );
                           } else {
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Gagal mengirim review")),
+                              const SnackBar(
+                                content: Text("Gagal mengirim review"),
+                              ),
                             );
                           }
                         },
-                        child: Text("Kirim", style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: Text(
+                          "Kirim",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           );
