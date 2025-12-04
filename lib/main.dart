@@ -1,122 +1,130 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ligapass/admin/manage_page.dart';
+import 'package:ligapass/news/news_page.dart';
+import 'package:ligapass/onboarding/screens/onboarding_screen.dart';
+import 'package:ligapass/profiles/screens/create_profile_page.dart';
+import 'package:ligapass/profiles/screens/redirect_login.dart';
+import 'package:ligapass/profiles/screens/user_profile_page.dart';
+import 'package:ligapass/profiles/screens/admin_profile_page.dart';
+import 'package:ligapass/profiles/screens/journalist_profile_page.dart';
+import 'package:ligapass/reviews/reviews_page.dart';
+import 'package:ligapass/bookings/screens/my_tickets_screen.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'assistant/screens/chatbot_page.dart';
+import 'authentication/screens/login.dart';
+import 'authentication/screens/register.dart';
+import 'config/env.dart';
+import 'core/theme/app_theme.dart';
+import 'home/home_page.dart';
+import 'matches/models/match.dart';
+import 'matches/repositories/matches_repository.dart';
+import 'matches/screens/match_detail_page.dart';
+import 'matches/screens/matches_page.dart';
+import 'matches/services/matches_api_client.dart';
+import 'matches/state/matches_notifier.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+  runApp(LigaPassApp(showOnboarding: !onboardingComplete));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class LigaPassApp extends StatelessWidget {
+  final bool showOnboarding;
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  const LigaPassApp({super.key, this.showOnboarding = false});
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    return MultiProvider(
+      providers: [
+        Provider<CookieRequest>(create: (_) => CookieRequest()),
+        ChangeNotifierProvider(
+          create: (_) =>
+              MatchesNotifier(MatchesRepository(apiClient: MatchesApiClient()))
+                ..loadMatches(),
         ),
+      ],
+      child: Builder(
+        builder: (context) {
+          return MaterialApp(
+            title: Env.appName,
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light,
+            initialRoute: showOnboarding ? '/onboarding' : '/home',
+            routes: {
+              '/onboarding': (_) => const OnboardingScreen(),
+              '/home': (_) => const HomePage(),
+              '/login': (_) => const LoginPage(),
+              '/register': (_) => const RegisterPage(),
+              '/matches': (_) => const MatchesPage(),
+              '/news': (_) => const NewsPage(),
+              '/reviews': (_) => const ReviewsPage(),
+              '/tickets': (_) => const MyTicketsScreen(),
+              '/manage': (_) => const AdminManagePage(),
+              '/assistant': (_) => const ChatbotPage(),
+            },
+            onGenerateRoute: (settings) {
+              final req = Provider.of<CookieRequest>(context, listen: false);
+              final id = req.jsonData['id'];
+              final role = req.jsonData['role'];
+              final hasProfile = req.jsonData['hasProfile'];
+
+              // Profile route mapping berdasarkan role
+              if (settings.name == '/profile') {
+                // Jika belum login
+                if (!req.loggedIn) {
+                  return MaterialPageRoute(
+                    builder: (_) => const RedirectLoginPage(),
+                  );
+                } else {
+                  // Jika belum punya profile tapi sudah login dan bukan admin and journlaist
+                  if (!hasProfile && role != "admin" && role != "journalist") {
+                    return MaterialPageRoute(
+                      builder: (_) => const CreateProfilePage(),
+                    );
+                  }
+                  // Jika sudah punya profile
+                  if (role == "admin") {
+                    return MaterialPageRoute(
+                      builder: (_) => const AdminProfilePage(),
+                    );
+                  }
+                  if (role == "journalist") {
+                    return MaterialPageRoute(
+                      builder: (_) => const JournalistProfilePage(),
+                    );
+                  }
+                  return MaterialPageRoute(
+                    builder: (_) => UserProfilePage(id: id),
+                  );
+                }
+              }
+
+              if (settings.name == '/match' && settings.arguments is Match) {
+                final match = settings.arguments as Match;
+                return MaterialPageRoute(
+                  builder: (_) => MatchDetailPage(match: match),
+                );
+              }
+
+              // Route untuk create-profile (dari register page dengan username argument)
+              if (settings.name == '/create-profile') {
+                return MaterialPageRoute(
+                  builder: (_) => const CreateProfilePage(),
+                  settings: settings, // Pass settings agar arguments tersedia
+                );
+              }
+
+              return null;
+            },
+          );
+        },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
