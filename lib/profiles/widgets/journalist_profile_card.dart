@@ -58,8 +58,21 @@ class JournalistProfileCard extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 45,
                   backgroundColor: Colors.grey.shade200,
-                  backgroundImage: NetworkImage(
-                    "http://localhost:8000/static/${profile.profilePicture}",
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/profile_images/Journalist.png',
+                      fit: BoxFit.cover,
+                      width: 90,
+                      height: 90,
+                      errorBuilder: (context, error, stack) {
+                        return Image.asset(
+                          'assets/profile_images/default-profile-picture.png',
+                          fit: BoxFit.cover,
+                          width: 90,
+                          height: 90,
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
