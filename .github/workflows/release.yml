@@ -3,9 +3,12 @@ name: Release
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push events but only for the main branch
+  # Trigger on pushes to dev and main, plus manual run
   push:
-    branches: [main]
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
 
 # Permissions needed for creating releases
 permissions:
@@ -24,7 +27,8 @@ jobs:
 
       - name: Get version from pubspec.yaml
         id: version
-        run: echo "::set-output name=version::$(grep "version:" pubspec.yaml | cut -c10-)"
+        run: |
+          echo "version=$(awk -F ': ' '/^version:/{print $2; exit}' pubspec.yaml)" >> "$GITHUB_OUTPUT"
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -43,13 +47,31 @@ jobs:
       - name: Build APK
         run: flutter build apk --split-per-abi
 
+      - name: Decode keystore
+        run: echo "${{ secrets.KEY_JKS }}" | base64 -d > release-keystore.jks
+
+      - name: Sign APKs
+        run: |
+          for apk in build/app/outputs/flutter-apk/*.apk; do
+            echo "Signing $apk..."
+            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore release-keystore.jks \
+              -storepass "${{ secrets.KEY_PASSWORD }}" \
+              -keypass "${{ secrets.KEY_PASSWORD }}" \
+              "$apk" release
+          done
+
+      - name: Cleanup keystore
+        if: always()
+        run: rm -f release-keystore.jks
+
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(TZ='Asia/Jakarta' date +'%A %d-%m-%Y %T WIB')"
+        run: echo "date=$(TZ='Asia/Jakarta' date +'%A %d-%m-%Y %T WIB')" >> "$GITHUB_OUTPUT"
 
       - name: Generate unique tag
         id: tag
-        run: echo "::set-output name=tag::v${{ steps.version.outputs.version }}-$(date +'%Y%m%d%H%M%S')"
+        run: echo "tag=v${{ steps.version.outputs.version }}-$(date +'%Y%m%d%H%M%S')" >> "$GITHUB_OUTPUT"
 
       - name: Release APK
         uses: ncipollo/release-action@v1
@@ -60,4 +82,3 @@ jobs:
           name: "v${{ steps.version.outputs.version }} - ${{ steps.date.outputs.date }}"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.tag.outputs.tag }}
-          
