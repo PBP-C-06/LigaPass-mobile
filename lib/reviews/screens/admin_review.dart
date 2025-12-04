@@ -21,7 +21,7 @@ class AdminReviewSection extends StatefulWidget {
 }
 
 class _AdminReviewSectionState extends State<AdminReviewSection> {
-  final BASE_URL = "http://localhost:8000"; 
+  static const String baseUrl = "http://localhost:8000";
   bool isLoading = true;
   List reviews = [];
 
@@ -34,15 +34,11 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
   Future<void> fetchReviews() async {
     setState(() => isLoading = true);
 
-    final url = "$BASE_URL/reviews/api/${
-      widget.matchId
-    }/admin_list/"; 
+    final url = "$baseUrl/reviews/api/${widget.matchId}/admin_list/";
 
     final response = await http.get(
       Uri.parse(url),
-      headers: {
-        "Cookie": widget.sessionCookie,
-      },
+      headers: {"Cookie": widget.sessionCookie},
     );
 
     if (response.statusCode == 200) {
@@ -58,10 +54,8 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
 
   Future<void> sendReply(String reviewId, String text) async {
     final response = await http.post(
-      Uri.parse("$BASE_URL/reviews/api/reply/$reviewId/"),
-      headers: {
-        "Cookie": widget.sessionCookie,
-      },
+      Uri.parse("$baseUrl/reviews/api/reply/$reviewId/"),
+      headers: {"Cookie": widget.sessionCookie},
       body: {"reply_text": text},
     );
 
@@ -75,10 +69,8 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
 
   Future<void> updateReply(String reviewId, String text) async {
     final response = await http.put(
-      Uri.parse("$BASE_URL/reviews/api/reply/$reviewId/edit/"),
-      headers: {
-        "Cookie": widget.sessionCookie,
-      },
+      Uri.parse("$baseUrl/reviews/api/reply/$reviewId/edit/"),
+      headers: {"Cookie": widget.sessionCookie},
       body: {"reply_text": text},
     );
 
@@ -92,10 +84,8 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
 
   Future<void> deleteReply(String reviewId) async {
     final response = await http.delete(
-      Uri.parse("$BASE_URL/reviews/api/reply/$reviewId/delete/"),
-      headers: {
-        "Cookie": widget.sessionCookie,
-      },
+      Uri.parse("$baseUrl/reviews/api/reply/$reviewId/delete/"),
+      headers: {"Cookie": widget.sessionCookie},
     );
 
     if (response.statusCode == 200) {
@@ -115,9 +105,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
         title: Text(initialText == null ? "Balas Review" : "Edit Balasan"),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            hintText: "Tulis balasan admin...",
-          ),
+          decoration: const InputDecoration(hintText: "Tulis balasan admin..."),
         ),
         actions: [
           TextButton(
@@ -165,8 +153,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ==== RATING AVERAGE ====
-        if (reviews.isNotEmpty)
-          _buildRatingSummary(),
+        if (reviews.isNotEmpty) _buildRatingSummary(),
 
         const SizedBox(height: 16),
 
@@ -181,10 +168,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               boxShadow: const [
-                BoxShadow(
-                  blurRadius: 3,
-                  color: Colors.black12,
-                )
+                BoxShadow(blurRadius: 3, color: Colors.black12),
               ],
             ),
             child: Column(
@@ -293,11 +277,8 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
         const SizedBox(width: 6),
         Text(
           "${avg.toStringAsFixed(1)}/5.0",
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        )
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }

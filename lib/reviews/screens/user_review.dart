@@ -17,7 +17,7 @@ class UserReviewSection extends StatefulWidget {
 }
 
 class _UserReviewSectionState extends State<UserReviewSection> {
-  final BASE_URL = "http://localhost:8000";
+  static const String baseUrl = "http://localhost:8000";
 
   bool isLoading = true;
   List<dynamic> reviews = [];
@@ -30,7 +30,7 @@ class _UserReviewSectionState extends State<UserReviewSection> {
   }
 
   Future<void> fetchReviews() async {
-    final url = "$BASE_URL/reviews/user/${widget.matchId}/json/";
+    final url = "$baseUrl/reviews/user/${widget.matchId}/json/";
     setState(() => isLoading = true);
 
     final response = await http.get(
@@ -47,7 +47,7 @@ class _UserReviewSectionState extends State<UserReviewSection> {
       });
     } else {
       setState(() => isLoading = false);
-      print("Gagal load review: ${response.body}");
+      debugPrint("Gagal load review: ${response.body}");
     }
   }
 
@@ -115,13 +115,16 @@ class _UserReviewSectionState extends State<UserReviewSection> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.08),
+        color: Colors.blue.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Review Anda", style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            "Review Anda",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           _buildReviewCard(myReview!, isMyReview: true),
         ],
@@ -141,17 +144,14 @@ class _UserReviewSectionState extends State<UserReviewSection> {
             color: Colors.black12,
             blurRadius: 4,
             offset: const Offset(0, 2),
-          )
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // User
-          Text(
-            r["user"],
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Text(r["user"], style: const TextStyle(fontWeight: FontWeight.bold)),
 
           // Rating
           Row(
@@ -175,11 +175,11 @@ class _UserReviewSectionState extends State<UserReviewSection> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text("Balasan Admin: ${r["reply"]}"),
-            )
+            ),
           ],
 
           if (isMyReview) ...[
@@ -192,11 +192,14 @@ class _UserReviewSectionState extends State<UserReviewSection> {
                 ),
                 TextButton(
                   onPressed: () {}, // delete logic nanti
-                  child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+                  child: const Text(
+                    "Hapus",
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ),
               ],
-            )
-          ]
+            ),
+          ],
         ],
       ),
     );
@@ -224,26 +227,23 @@ class _ReviewPopupState extends State<ReviewPopup> {
   int rating = 0;
   final TextEditingController commentController = TextEditingController();
 
-  final BASE_URL = "http://10.0.2.2:8000";
+  static const String baseUrl = "http://10.0.2.2:8000";
 
   Future<void> submitReview() async {
-    final url =
-        "$BASE_URL/reviews/api/${widget.matchId}/create/";
+    final url = "$baseUrl/reviews/api/${widget.matchId}/create/";
 
     final response = await http.post(
       Uri.parse(url),
       headers: {"Cookie": widget.sessionCookie},
-      body: {
-        "rating": rating.toString(),
-        "comment": commentController.text,
-      },
+      body: {"rating": rating.toString(), "comment": commentController.text},
     );
 
     if (response.statusCode == 200) {
+      if (!mounted) return;
       Navigator.pop(context);
       widget.onSuccess();
     } else {
-      print("Error add review: ${response.body}");
+      debugPrint("Error add review: ${response.body}");
     }
   }
 
@@ -269,14 +269,15 @@ class _ReviewPopupState extends State<ReviewPopup> {
           ),
           TextField(
             controller: commentController,
-            decoration: const InputDecoration(
-              hintText: "Tulis komentar...",
-            ),
-          )
+            decoration: const InputDecoration(hintText: "Tulis komentar..."),
+          ),
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Batal"),
+        ),
         ElevatedButton(onPressed: submitReview, child: const Text("Kirim")),
       ],
     );

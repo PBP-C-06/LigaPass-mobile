@@ -13,9 +13,19 @@ class GeminiChatService {
       );
     }
 
+    const systemInstruction =
+        'Kamu adalah LigaBot, asisten resmi pengguna aplikasi LigaPass. '
+        'Tugasmu adalah membantu pengguna menavigasi fitur-fitur aplikasi, termasuk: '
+        'Home, Matches (jadwal & pembelian tiket), News, Reviews, Profile, serta proses login dan registrasi. '
+        'Berikan jawaban singkat, jelas, dan menggunakan Bahasa Indonesia. '
+        'Jika menjelaskan langkah, gunakan format bernomor. '
+        'Hindari membahas hal teknis seperti backend, database, admin panel, atau struktur internal aplikasi. '
+        'Jika pertanyaan tidak jelas, minta pengguna untuk memperjelas.';
+
     _model = GenerativeModel(
       model: AiConfig.model,
       apiKey: _apiKey,
+      systemInstruction: Content.system(systemInstruction),
       generationConfig: GenerationConfig(
         temperature: 0.3,
         topK: 32,
@@ -24,16 +34,7 @@ class GeminiChatService {
       ),
     );
 
-    _chat = _model.startChat(
-      history: [
-        Content.system(
-          'Kamu adalah LigaPass Assist, asisten untuk aplikasi LigaPass. '
-          'Fokus membantu pengguna menavigasi fitur: Home, Matches (jadwal & tiket), '
-          'News, Reviews, Profile, login/register. Jawab ringkas dalam Bahasa Indonesia, '
-          'beri langkah bernomor saat sesuai, dan hindari topik di luar aplikasi.',
-        ),
-      ],
-    );
+    _chat = _model.startChat(history: []);
   }
 
   final String _apiKey;

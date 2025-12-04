@@ -235,7 +235,7 @@ class _TicketCardState extends State<TicketCard> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -261,7 +261,7 @@ class _TicketCardState extends State<TicketCard> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -291,7 +291,7 @@ class _TicketCardState extends State<TicketCard> {
                     style: TextStyle(
                       fontFamily: 'monospace',
                       fontWeight: FontWeight.bold,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 12,
                     ),
                   ),
@@ -547,7 +547,7 @@ class _TicketCardState extends State<TicketCard> {
                   height: 48,
                   fit: BoxFit.contain,
                   alignment: Alignment.center,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  errorBuilder: (context, error, stackTrace) => const Icon(
                     Icons.sports_soccer,
                     size: 30,
                     color: Color(0xFF9CA3AF),
@@ -707,7 +707,7 @@ class _TicketDetailBottomSheetState extends State<TicketDetailBottomSheet> {
                     border: Border.all(color: const Color(0xFFE5E7EB)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                       ),
                     ],
@@ -900,6 +900,7 @@ class _TicketDetailBottomSheetState extends State<TicketDetailBottomSheet> {
       // Convert to image (for future use with image_gallery_saver)
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (!context.mounted) return;
 
       if (byteData == null) {
         _showSnackBar(context, 'Gagal mengonversi ke gambar', isError: true);

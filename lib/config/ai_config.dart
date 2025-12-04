@@ -13,7 +13,15 @@ class AiConfig {
   static String get geminiApiKey =>
       _envApiKey.isNotEmpty ? _envApiKey : Env.geminiApiKey;
 
-  static const String model = 'gemini-1.5-flash';
+  static const String _envModel = String.fromEnvironment(
+    'GEMINI_MODEL',
+    defaultValue: '',
+  );
+
+  // Urutan prioritas: dart-define -> Env.geminiModel -> default aman.
+  static String get model => _envModel.isNotEmpty
+      ? _envModel
+      : (Env.geminiModel.isNotEmpty ? Env.geminiModel : 'gemini-2.0-flash');
 
   static bool get hasApiKey => geminiApiKey.isNotEmpty;
 }

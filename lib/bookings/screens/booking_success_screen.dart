@@ -233,8 +233,12 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                                 shape: BoxShape.circle,
                                 gradient: RadialGradient(
                                   colors: [
-                                    const Color(0xFF10B981).withOpacity(0.3),
-                                    const Color(0xFF10B981).withOpacity(0),
+                                    const Color(
+                                      0xFF10B981,
+                                    ).withValues(alpha: 0.3),
+                                    const Color(
+                                      0xFF10B981,
+                                    ).withValues(alpha: 0),
                                   ],
                                 ),
                               ),
@@ -257,7 +261,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                                   BoxShadow(
                                     color: const Color(
                                       0xFF10B981,
-                                    ).withOpacity(0.4),
+                                    ).withValues(alpha: 0.4),
                                     blurRadius: 20,
                                     spreadRadius: 5,
                                   ),
@@ -290,7 +294,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
@@ -314,7 +318,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 10,
                               ),
                             ],
@@ -333,7 +337,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 10,
                               ),
                             ],
@@ -391,7 +395,9 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                                         vertical: 8,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: const Text(
@@ -657,7 +663,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4),
         ],
       ),
       child: ClipRRect(
@@ -666,7 +672,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
             ? Image.network(
                 resolvedUrl,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorBuilder: (context, error, stackTrace) => const Icon(
                   Icons.sports_soccer,
                   size: 24,
                   color: Color(0xFF9CA3AF),

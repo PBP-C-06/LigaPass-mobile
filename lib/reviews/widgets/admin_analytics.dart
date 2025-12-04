@@ -24,7 +24,7 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
   List<dynamic> ticketsData = [];
   bool isLoading = true;
 
-  final BASE_URL = "http://localhost:8000"; 
+  static const String baseUrl = "http://localhost:8000";
 
   @override
   void initState() {
@@ -35,14 +35,11 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
   Future<void> fetchAnalytics() async {
     setState(() => isLoading = true);
 
-    final url =
-        "$BASE_URL/reviews/analytics/admin/data/?period=$selectedPeriod";
+    final url = "$baseUrl/reviews/analytics/admin/data/?period=$selectedPeriod";
 
     final response = await http.get(
       Uri.parse(url),
-      headers: {
-        "Cookie": widget.sessionCookie,
-      },
+      headers: {"Cookie": widget.sessionCookie},
     );
 
     if (response.statusCode == 200) {
@@ -54,7 +51,7 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
       });
     } else {
       setState(() => isLoading = false);
-      print("Error fetching admin analytics: ${response.body}");
+      debugPrint("Error fetching admin analytics: ${response.body}");
     }
   }
 
@@ -86,7 +83,7 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
               IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: widget.onClose,
-              )
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -101,18 +98,9 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
                 fetchAnalytics();
               },
               items: const [
-                DropdownMenuItem(
-                  value: "daily",
-                  child: Text("Harian"),
-                ),
-                DropdownMenuItem(
-                  value: "weekly",
-                  child: Text("Mingguan"),
-                ),
-                DropdownMenuItem(
-                  value: "monthly",
-                  child: Text("Bulanan"),
-                ),
+                DropdownMenuItem(value: "daily", child: Text("Harian")),
+                DropdownMenuItem(value: "weekly", child: Text("Mingguan")),
+                DropdownMenuItem(value: "monthly", child: Text("Bulanan")),
               ],
             ),
           ),
@@ -121,9 +109,7 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
 
           // LOADING STATE
           if (isLoading)
-            const Expanded(
-              child: Center(child: CircularProgressIndicator()),
-            )
+            const Expanded(child: Center(child: CircularProgressIndicator()))
           else
             Expanded(
               child: ListView(
@@ -163,10 +149,7 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 16),
           child,
@@ -196,7 +179,7 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
                 BarChartRodData(
                   toY: (data["total_revenue"] ?? 0).toDouble(),
                   color: Colors.blue,
-                )
+                ),
               ],
             );
           }).toList(),
@@ -246,7 +229,7 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
                 BarChartRodData(
                   toY: (data["tickets_sold"] ?? 0).toDouble(),
                   color: Colors.orange,
-                )
+                ),
               ],
             );
           }).toList(),

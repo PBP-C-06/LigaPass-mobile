@@ -52,11 +52,7 @@ class AppBottomNav extends StatelessWidget {
     final role = request.jsonData['role'] as String?;
 
     final navItems = <_NavItem>[
-      const _NavItem(
-        route: '/home',
-        icon: Icons.home_outlined,
-        label: 'Home',
-      ),
+      const _NavItem(route: '/home', icon: Icons.home_outlined, label: 'Home'),
       const _NavItem(
         route: '/matches',
         icon: Icons.sports_soccer,
@@ -78,6 +74,11 @@ class AppBottomNav extends StatelessWidget {
           requiresLogin: true,
         ),
       const _NavItem(
+        route: '/assistant',
+        icon: Icons.chat_bubble_outline,
+        label: 'Assist',
+      ),
+      const _NavItem(
         route: '/news',
         icon: Icons.article_outlined,
         label: 'News',
@@ -90,7 +91,9 @@ class AppBottomNav extends StatelessWidget {
       ),
     ];
 
-    final currentIndex = navItems.indexWhere((item) => item.route == currentRoute);
+    final currentIndex = navItems.indexWhere(
+      (item) => item.route == currentRoute,
+    );
 
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
