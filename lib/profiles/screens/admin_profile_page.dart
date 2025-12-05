@@ -219,7 +219,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                   backgroundColor: Colors.transparent,
                                   builder: (context) {
                                     return AdminAnalyticsPanel(
-                                      sessionCookie: sessionCookie,
                                       onClose: () => Navigator.pop(context),
                                     );
                                   },
