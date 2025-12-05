@@ -38,6 +38,7 @@ class _UserReviewSectionState extends State<UserReviewSection> {
     final response = await widget.request
         .get("${Endpoints.base}/reviews/api/${widget.matchId}/list/");
 
+    if (!mounted) return;
     setState(() {
       myReview = response["my_review"];
       otherReviews = (response["reviews"] ?? []) as List<dynamic>;
@@ -54,6 +55,7 @@ class _UserReviewSectionState extends State<UserReviewSection> {
       },
     );
 
+    if (!mounted) return;
     if (response["ok"] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Review berhasil ditambahkan")),
@@ -77,6 +79,7 @@ class _UserReviewSectionState extends State<UserReviewSection> {
       },
     );
 
+    if (!mounted) return;
     if (response["ok"] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Review berhasil diperbarui")),
@@ -331,7 +334,7 @@ class _UserReviewSectionState extends State<UserReviewSection> {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

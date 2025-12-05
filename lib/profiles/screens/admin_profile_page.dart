@@ -207,12 +207,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                             GestureDetector(
                               onTap: () {
-                                final request = context.read<CookieRequest>();
-
-                                final sessionCookie = request.cookies.entries
-                                    .map((e) => "${e.key}=${e.value}")
-                                    .join("; ");
-
                                 showModalBottomSheet(
                                   context: context,
                                   isScrollControlled: true,

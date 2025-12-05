@@ -34,6 +34,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
     final url = "$baseUrl/reviews/api/${widget.matchId}/admin_list/";
     final response = await request.get(url);
 
+    if (!mounted) return;
     setState(() {
       reviews = response["reviews"] ?? [];
       averageRating = (response["average_rating"] ?? 0).toDouble();   
@@ -50,6 +51,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
       {"reply_text": text},
     );
 
+    if (!mounted) return;
     if (response["status"] == "success") {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Berhasil menambahkan balasan")),
@@ -66,6 +68,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
       {"reply_text": text},
     );
 
+    if (!mounted) return;
     if (response["status"] == "success") {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Balasan berhasil diperbarui")),
@@ -82,6 +85,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
       {},
     );
 
+    if (!mounted) return;
     if (response["status"] == "success") {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Balasan berhasil dihapus")),
@@ -232,7 +236,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
@@ -270,7 +274,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
