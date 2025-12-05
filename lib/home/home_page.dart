@@ -291,7 +291,7 @@ class _HomePageState extends State<HomePage> {
                     banner['image'],
                     fit: BoxFit.cover,
                     colorBlendMode: BlendMode.darken,
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                   ),
                   // Gradient Overlay
                   Container(
@@ -300,8 +300,8 @@ class _HomePageState extends State<HomePage> {
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                         colors: [
-                          Colors.black.withOpacity(0.7),
-                          Colors.black.withOpacity(0.2),
+                          Colors.black.withValues(alpha: 0.7),
+                          Colors.black.withValues(alpha: 0.2),
                         ],
                       ),
                     ),
@@ -331,7 +331,7 @@ class _HomePageState extends State<HomePage> {
                           child: Text(
                             banner['description'],
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 13,
                             ),
                             maxLines: 2,
@@ -385,7 +385,7 @@ class _HomePageState extends State<HomePage> {
                   decoration: BoxDecoration(
                     color: _currentBannerIndex == index
                         ? Colors.white
-                        : Colors.white.withOpacity(0.5),
+                        : Colors.white.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 );
@@ -442,7 +442,7 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                   ),
                 ],
@@ -500,7 +500,7 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -606,7 +606,7 @@ class _HomePageState extends State<HomePage> {
           ? Image.network(
               logoUrl,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) =>
+              errorBuilder: (context, error, stackTrace) =>
                   const Icon(Icons.sports_soccer, color: Color(0xFF9CA3AF)),
             )
           : const Icon(Icons.sports_soccer, color: Color(0xFF9CA3AF)),
@@ -705,7 +705,7 @@ class _HomePageState extends State<HomePage> {
           ? Image.network(
               resolvedUrl,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) =>
+              errorBuilder: (context, error, stackTrace) =>
                   const Icon(Icons.sports_soccer, color: Color(0xFF9CA3AF)),
             )
           : const Icon(Icons.sports_soccer, color: Color(0xFF9CA3AF)),
@@ -796,7 +796,7 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -817,7 +817,7 @@ class _HomePageState extends State<HomePage> {
                     ? Image.network(
                         resolvedImageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+                        errorBuilder: (context, error, stackTrace) => Container(
                           color: const Color(0xFFE5E7EB),
                           child: const Icon(
                             Icons.newspaper,

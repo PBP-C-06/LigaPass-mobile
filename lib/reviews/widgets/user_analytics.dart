@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
-const String BASE_URL = "http://localhost:8000";
+const String baseUrl = "http://localhost:8000";
 
 class UserAnalyticsPanel extends StatefulWidget {
   const UserAnalyticsPanel({super.key});
@@ -89,7 +89,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -253,8 +253,10 @@ class _Dot extends StatelessWidget {
     return Container(
       width: 12,
       height: 12,
-      decoration:
-          BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+      ),
     );
   }
 }

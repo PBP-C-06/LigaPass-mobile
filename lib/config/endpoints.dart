@@ -12,5 +12,4 @@ class Endpoints {
 
   // TODO: Tambahkan endpoint modul lain ketika sudah siap.
   static const String newsList = 'http://127.0.0.1:8000/news/api/news/';
-
 }

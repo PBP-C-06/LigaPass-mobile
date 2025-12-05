@@ -183,7 +183,10 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                ),
               ],
             ),
             child: const Icon(
@@ -317,7 +320,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -431,7 +434,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
             ? Image.network(
                 logoUrl,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorBuilder: (context, error, stackTrace) => const Icon(
                   Icons.sports_soccer,
                   size: 30,
                   color: Color(0xFF9CA3AF),
@@ -464,7 +467,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -565,7 +568,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
         height: 36,
         decoration: BoxDecoration(
           color: onPressed != null
-              ? color.withOpacity(0.1)
+              ? color.withValues(alpha: 0.1)
               : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
@@ -611,7 +614,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
                           method['image'],
                           height: 28,
                           fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => Icon(
+                          errorBuilder: (context, error, stackTrace) => Icon(
                             method['icon'],
                             color: isSelected
                                 ? const Color(0xFF2563EB)
@@ -660,7 +663,10 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
         ],
       ),
       child: Column(
@@ -746,7 +752,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 4,
-          shadowColor: const Color(0xFF2563EB).withOpacity(0.4),
+          shadowColor: const Color(0xFF2563EB).withValues(alpha: 0.4),
         ),
         child: _isLoading
             ? const SizedBox(
