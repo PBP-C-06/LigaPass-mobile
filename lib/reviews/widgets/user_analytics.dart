@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-const String baseUrl = "http://localhost:8000";
+import '../../config/endpoints.dart';
 
 class UserAnalyticsPanel extends StatefulWidget {
-  const UserAnalyticsPanel({super.key});
+  final String sessionCookie;
+
+  const UserAnalyticsPanel({super.key, required this.sessionCookie});
 
   @override
   State<UserAnalyticsPanel> createState() => _UserAnalyticsPanelState();
@@ -30,15 +32,17 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
   Future<void> loadAnalytics() async {
     setState(() => loading = true);
 
-    final request = context.read<CookieRequest>();
-    final response = await request.get(
-      "$BASE_URL/reviews/analytics/user/data/?period=$selectedPeriod",
+    final url = Uri.parse(
+      "${Endpoints.base}/reviews/analytics/user/data/?period=$selectedPeriod",
     );
 
+    final res = await http.get(url, headers: {"Cookie": widget.sessionCookie});
+    final data = jsonDecode(res.body);
+
     setState(() {
-      spendingData = response["spendingData"];
-      hadir = response["attendance"]["hadir"];
-      tidakHadir = response["attendance"]["tidak_hadir"];
+      spendingData = data["spendingData"];
+      hadir = data["attendance"]["hadir"];
+      tidakHadir = data["attendance"]["tidak_hadir"];
       loading = false;
     });
   }

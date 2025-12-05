@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+
+import '../../config/endpoints.dart';
 
 class AdminAnalyticsPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -26,7 +28,7 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
   bool isLoadingRevenue = true;
   bool isLoadingTickets = true;
 
-  final String BASE_URL = "http://localhost:8000";
+  final String baseUrl = Endpoints.base;
 
   @override
   void initState() {
@@ -40,10 +42,11 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
     setState(() => isLoadingRevenue = true);
 
     final request = context.read<CookieRequest>();
-    final url = "$BASE_URL/reviews/analytics/admin/data/?period=$revenuePeriod";
+    final url = "$baseUrl/reviews/analytics/admin/data/?period=$revenuePeriod";
 
     final response = await request.get(url);
 
+    if (!mounted) return;
     setState(() {
       revenueData = response["revenueData"] ?? [];
       isLoadingRevenue = false;
@@ -54,10 +57,11 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
     setState(() => isLoadingTickets = true);
 
     final request = context.read<CookieRequest>();
-    final url = "$BASE_URL/reviews/analytics/admin/data/?period=$ticketPeriod";
+    final url = "$baseUrl/reviews/analytics/admin/data/?period=$ticketPeriod";
 
     final response = await request.get(url);
 
+    if (!mounted) return;
     setState(() {
       ticketsData = response["ticketsData"] ?? [];
       isLoadingTickets = false;
