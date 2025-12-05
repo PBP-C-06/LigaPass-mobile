@@ -129,8 +129,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       onEditSuccess: _refreshProfile,
                     ),
 
-                  UserAnalyticsPanel(sessionCookie: sessionCookie),
-
                   const LogoutButton(),
                 ],
               ),
