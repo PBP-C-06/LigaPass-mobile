@@ -3,11 +3,10 @@ name: Release
 
 # Controls when the workflow will run
 on:
-  # Trigger on pushes to dev and main, plus manual run
+  # Trigger on pushes to main only, plus manual run
   push:
     branches:
       - main
-      - dev
   workflow_dispatch:
 
 # Permissions needed for creating releases
