@@ -46,6 +46,8 @@ dependencies:
   url_launcher: ^6.2.5
   barcode_widget: ^2.0.4 
   image_picker: ^1.1.0
+  shared_preferences: ^2.1.1
+  path: ^1.8.4
 
 dev_dependencies:
   flutter_test:

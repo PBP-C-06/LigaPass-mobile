@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/news.dart';
 import '../services/api_service.dart';
 import '../widgets/news_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class NewsListScreen extends StatefulWidget {
   const NewsListScreen({super.key});
@@ -13,6 +16,8 @@ class NewsListScreen extends StatefulWidget {
 class _NewsListScreenState extends State<NewsListScreen> {
   List<News> newsList = [];
   bool loading = true;
+  bool userRoleLoading = true;
+  String? userRole;
 
   final _searchController = TextEditingController();
   String? selectedCategory;
@@ -22,7 +27,16 @@ class _NewsListScreenState extends State<NewsListScreen> {
   @override
   void initState() {
     super.initState();
+    fetchUserRole();
     fetchData();
+  }
+
+  Future<void> fetchUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userRole = prefs.getString('userRole');
+      userRoleLoading = false;
+    });
   }
 
   Future<void> fetchData() async {
@@ -57,7 +71,7 @@ class _NewsListScreenState extends State<NewsListScreen> {
     return SizedBox(
       width: 180,
       child: DropdownButtonFormField<String>(
-        initialValue: value,
+        value: value,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -148,48 +162,80 @@ class _NewsListScreenState extends State<NewsListScreen> {
     );
   }
 
+  Widget buildAddNewsButton() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: ElevatedButton.icon(
+          onPressed: () {
+            Navigator.pushNamed(context, '/news/create');
+          },
+          icon: const Icon(Icons.add),
+          label: const Text("Tambah Berita"),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return loading
-        ? const Center(child: CircularProgressIndicator())
-        : SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  pinned: true,
-                  floating: false,
-                  expandedHeight: 100.0,
-                  backgroundColor: Colors.white.withValues(alpha: 0.9),
-                  elevation: 1,
-                  flexibleSpace: FlexibleSpaceBar(
-                    centerTitle: true,
-                    title: Text(
-                      "Berita",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ),
+    final request = context.watch<CookieRequest>();
+    final isLoggedIn = request.loggedIn;
+    print('userRole: $userRole');
+    if (loading || userRoleLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return SafeArea(
+      child: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            floating: false,
+            expandedHeight: 100.0,
+            backgroundColor: Colors.white.withAlpha(230),
+            elevation: 1,
+            flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              title: Text(
+                "Berita",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                SliverToBoxAdapter(child: buildFilterCard()),
-                if (newsList.isEmpty)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: Text("Tidak ada berita ditemukan")),
-                  )
-                else
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        child: NewsCard(news: newsList[index]),
-                      ),
-                      childCount: newsList.length,
-                    ),
-                  ),
-              ],
+              ),
             ),
-          );
+          ),
+          SliverToBoxAdapter(child: buildFilterCard()),
+
+          // Tampilkan tombol hanya kalau sudah login dan role-nya journalist
+          if (isLoggedIn && userRole == 'journalist') buildAddNewsButton(),
+
+          if (newsList.isEmpty)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: Text("Tidak ada berita ditemukan")),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: NewsCard(news: newsList[index]),
+                ),
+                childCount: newsList.length,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
