@@ -316,8 +316,9 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                                 onPressed: _loading
                                     ? null
                                     : () async {
-                                        if (!_formKey.currentState!.validate())
+                                        if (!_formKey.currentState!.validate()) {
                                           return;
+                                        }
                                         await submitProfile(
                                           request,
                                           _phoneController.text.trim(),

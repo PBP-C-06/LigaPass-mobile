@@ -13,6 +13,7 @@ import 'package:ligapass/bookings/screens/my_tickets_screen.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
+import 'assistant/screens/chatbot_page.dart';
 import 'authentication/screens/login.dart';
 import 'authentication/screens/register.dart';
 import 'config/env.dart';
@@ -65,6 +66,7 @@ class LigaPassApp extends StatelessWidget {
               '/reviews': (_) => const ReviewsPage(),
               '/tickets': (_) => const MyTicketsScreen(),
               '/manage': (_) => const AdminManagePage(),
+              '/assistant': (_) => const ChatbotPage(),
             },
             onGenerateRoute: (settings) {
               final req = Provider.of<CookieRequest>(context, listen: false);

@@ -1,17 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:http/http.dart' as http;
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
-const String BASE_URL = "http://localhost:8000";
+const String baseUrl = "http://localhost:8000";
 
 class UserAnalyticsPanel extends StatefulWidget {
-  final String sessionCookie;
-
-  const UserAnalyticsPanel({
-    super.key,
-    required this.sessionCookie,
-  });
+  const UserAnalyticsPanel({super.key});
 
   @override
   State<UserAnalyticsPanel> createState() => _UserAnalyticsPanelState();
@@ -20,7 +15,7 @@ class UserAnalyticsPanel extends StatefulWidget {
 class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
   bool loading = true;
 
-  String selectedPeriod = "weekly"; 
+  String selectedPeriod = "weekly";
   List spendingData = [];
 
   int hadir = 0;
@@ -32,32 +27,25 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     loadAnalytics();
   }
 
-  // Fetch analytics data from Django
   Future<void> loadAnalytics() async {
     setState(() => loading = true);
 
-    final url = Uri.parse(
+    final request = context.read<CookieRequest>();
+    final response = await request.get(
       "$BASE_URL/reviews/analytics/user/data/?period=$selectedPeriod",
     );
 
-    final res = await http.get(url, headers: {
-      "Cookie": widget.sessionCookie,
-    });
-
-    final data = jsonDecode(res.body);
-
     setState(() {
-      spendingData = data["spendingData"];
-      hadir = data["attendance"]["hadir"];
-      tidakHadir = data["attendance"]["tidak_hadir"];
+      spendingData = response["spendingData"];
+      hadir = response["attendance"]["hadir"];
+      tidakHadir = response["attendance"]["tidak_hadir"];
       loading = false;
     });
   }
 
-  // =================== Donut Chart ===================
   Widget buildAttendanceChart() {
     int total = hadir + tidakHadir;
-    double percent = total == 0 ? 0 : (hadir / total * 100);
+    double percent = total == 0 ? 0 : hadir / total * 100;
 
     return Card(
       child: Padding(
@@ -65,10 +53,13 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Statistik Kehadiran",
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            const Text(
+              "Statistik Kehadiran",
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
 
+            // Pie Chart
             SizedBox(
               height: 180,
               child: Stack(
@@ -92,17 +83,17 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       ],
                     ),
                   ),
-
                   Text(
                     "${percent.toStringAsFixed(0)}%",
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
+
             const SizedBox(height: 12),
 
             Row(
@@ -122,20 +113,20 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     );
   }
 
-  // =================== Bar Chart ===================
   Widget buildSpendingChart() {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Title row
+            // Title + dropdown
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Data Pengeluaran",
-                    style: TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.bold)),
+                const Text(
+                  "Data Pengeluaran",
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
                 DropdownButton<String>(
                   value: selectedPeriod,
                   items: const [
@@ -158,10 +149,9 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
               child: BarChart(
                 BarChartData(
                   barGroups: spendingData.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    var item = entry.value;
-                    double value =
-                        (item["total_spent"] as num).toDouble();
+                    final index = entry.key;
+                    final item = entry.value;
+                    final value = (item["total_spent"] as num).toDouble();
 
                     return BarChartGroupData(
                       x: index,
@@ -174,16 +164,35 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       ],
                     );
                   }).toList(),
+
                   borderData: FlBorderData(show: false),
+
+                  
                   titlesData: FlTitlesData(
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: true),
+                    
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 42,
+                        getTitlesWidget: (value, _) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(fontSize: 10),
+                          );
+                        },
+                      ),
                     ),
+
+                 
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          int index = value.toInt();
+                          final index = value.toInt();
                           if (index < 0 || index >= spendingData.length) {
                             return const SizedBox.shrink();
                           }
@@ -197,6 +206,11 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                         },
                       ),
                     ),
+
+                    // TOP: off
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                 ),
               ),
@@ -207,14 +221,16 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     );
   }
 
-  // main widget layout
+  
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: CircularProgressIndicator(),
-      ));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     return Column(
@@ -237,8 +253,10 @@ class _Dot extends StatelessWidget {
     return Container(
       width: 12,
       height: 12,
-      decoration:
-          BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+      ),
     );
   }
 }

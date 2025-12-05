@@ -127,7 +127,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
 
                   UserAnalyticsPanel(
-                    sessionCookie: request.headers['Cookie'] ?? "",
+                    
                   ),
 
                   const LogoutButton(),

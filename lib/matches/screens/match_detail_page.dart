@@ -252,7 +252,7 @@ class _TeamColumn extends StatelessWidget {
             child: Image.network(
               logoUrl,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => Container(
+              errorBuilder: (context, error, stackTrace) => Container(
                 color: Colors.grey.shade200,
                 child: const Icon(Icons.shield_outlined, color: Colors.grey),
               ),

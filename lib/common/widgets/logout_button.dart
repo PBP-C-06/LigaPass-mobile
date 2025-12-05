@@ -29,7 +29,7 @@ class LogoutButton extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
               elevation: 2,
-              shadowColor: Colors.redAccent.withOpacity(0.3),
+              shadowColor: Colors.redAccent.withValues(alpha: 0.3),
             ),
             icon: const Icon(Icons.logout),
             label: const Text(
