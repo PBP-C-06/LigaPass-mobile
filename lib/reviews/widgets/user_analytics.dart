@@ -6,9 +6,7 @@ import 'package:http/http.dart' as http;
 import '../../config/endpoints.dart';
 
 class UserAnalyticsPanel extends StatefulWidget {
-  final String sessionCookie;
-
-  const UserAnalyticsPanel({super.key, required this.sessionCookie});
+  const UserAnalyticsPanel({super.key});
 
   @override
   State<UserAnalyticsPanel> createState() => _UserAnalyticsPanelState();
@@ -29,7 +27,6 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     loadAnalytics();
   }
 
-  // Fetch analytics data from Django
   Future<void> loadAnalytics() async {
     setState(() => loading = true);
 
@@ -37,22 +34,17 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
       "${Endpoints.base}/reviews/analytics/user/data/?period=$selectedPeriod",
     );
 
-    final res = await http.get(url, headers: {"Cookie": widget.sessionCookie});
-
-    final data = jsonDecode(res.body);
-
     setState(() {
-      spendingData = data["spendingData"];
-      hadir = data["attendance"]["hadir"];
-      tidakHadir = data["attendance"]["tidak_hadir"];
+      spendingData = response["spendingData"];
+      hadir = response["attendance"]["hadir"];
+      tidakHadir = response["attendance"]["tidak_hadir"];
       loading = false;
     });
   }
 
-  // =================== Donut Chart ===================
   Widget buildAttendanceChart() {
     int total = hadir + tidakHadir;
-    double percent = total == 0 ? 0 : (hadir / total * 100);
+    double percent = total == 0 ? 0 : hadir / total * 100;
 
     return Card(
       child: Padding(
@@ -66,6 +58,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
             ),
             const SizedBox(height: 20),
 
+            // Pie Chart
             SizedBox(
               height: 180,
               child: Stack(
@@ -89,7 +82,6 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       ],
                     ),
                   ),
-
                   Text(
                     "${percent.toStringAsFixed(0)}%",
                     style: const TextStyle(
@@ -100,6 +92,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                 ],
               ),
             ),
+
             const SizedBox(height: 12),
 
             Row(
@@ -119,14 +112,13 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     );
   }
 
-  // =================== Bar Chart ===================
   Widget buildSpendingChart() {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Title row
+            // Title + dropdown
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -156,9 +148,9 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
               child: BarChart(
                 BarChartData(
                   barGroups: spendingData.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    var item = entry.value;
-                    double value = (item["total_spent"] as num).toDouble();
+                    final index = entry.key;
+                    final item = entry.value;
+                    final value = (item["total_spent"] as num).toDouble();
 
                     return BarChartGroupData(
                       x: index,
@@ -171,16 +163,35 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       ],
                     );
                   }).toList(),
+
                   borderData: FlBorderData(show: false),
+
+                  
                   titlesData: FlTitlesData(
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: true),
+                    
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 42,
+                        getTitlesWidget: (value, _) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(fontSize: 10),
+                          );
+                        },
+                      ),
                     ),
+
+                 
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          int index = value.toInt();
+                          final index = value.toInt();
                           if (index < 0 || index >= spendingData.length) {
                             return const SizedBox.shrink();
                           }
@@ -194,6 +205,11 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                         },
                       ),
                     ),
+
+                    // TOP: off
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                 ),
               ),
@@ -204,7 +220,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     );
   }
 
-  // main widget layout
+  
   @override
   Widget build(BuildContext context) {
     if (loading) {
