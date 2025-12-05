@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ligapass/admin/manage_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ligapass/news/news_page.dart';
 import 'package:ligapass/onboarding/screens/onboarding_screen.dart';
 import 'package:ligapass/profiles/screens/create_profile_page.dart';
@@ -109,14 +109,6 @@ class LigaPassApp extends StatelessWidget {
                 final match = settings.arguments as Match;
                 return MaterialPageRoute(
                   builder: (_) => MatchDetailPage(match: match),
-                );
-              }
-
-              // Route untuk create-profile (dari register page dengan username argument)
-              if (settings.name == '/create-profile') {
-                return MaterialPageRoute(
-                  builder: (_) => const CreateProfilePage(),
-                  settings: settings, // Pass settings agar arguments tersedia
                 );
               }
 
