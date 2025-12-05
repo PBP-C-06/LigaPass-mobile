@@ -29,7 +29,6 @@ class PaymentService {
 
       return response;
     } catch (e) {
-      debugPrint('Error initiating payment: $e');
       return {'status': false, 'message': 'Failed to initiate payment: $e'};
     }
   }
@@ -60,7 +59,6 @@ class PaymentService {
       );
       return response;
     } catch (e) {
-      debugPrint('Error checking payment status: $e');
       return {'status': false, 'message': 'Failed to check status: $e'};
     }
   }

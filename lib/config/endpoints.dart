@@ -19,6 +19,6 @@ class Endpoints {
       '$base/news/api/news/$id/comments/?sort=$sort';
   static String newsRecommendations(int id) =>
     '$base/news/api/news/$id/recommendations/';
-  static String likeComment(int id) => '$base/news/comment/$id/like/';
-  static String deleteComment(int id) => '$base/news/comment/$id/delete/';
+  static String likeComment(int id) => '$base/news/api/comment/$id/like/';
+  static String deleteComment(int id) => '$base/news/api/comment/$id/delete/';
 }

@@ -49,7 +49,6 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
         loading = false;
       });
     } catch (e) {
-      debugPrint("Error load user analytics: $e");
       setState(() => loading = false);
     }
   }

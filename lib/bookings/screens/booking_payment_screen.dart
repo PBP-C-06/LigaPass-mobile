@@ -90,10 +90,6 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
         final paymentData = response['payment_data'] as Map<String, dynamic>;
 
         // Debug: Print full payment data from Midtrans
-        debugPrint('=== FULL PAYMENT DATA FROM MIDTRANS ===');
-        debugPrint('$paymentData');
-        debugPrint('Actions: ${paymentData['actions']}');
-        debugPrint('========================================');
 
         setState(() {
           _paymentData = paymentData;
@@ -143,7 +139,6 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
 
       if (!mounted) return;
 
-      debugPrint('Sync status response: $response');
 
       final status =
           response['payment_status'] ?? response['status'] ?? 'PENDING';
@@ -221,7 +216,6 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
         _showErrorAndGoBack('Payment $status');
       }
     } catch (e) {
-      debugPrint('Error checking status: $e');
     }
   }
 
@@ -302,7 +296,6 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
       }
     } catch (e) {
       if (!mounted) return;
-      debugPrint('Error checking status: $e');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -627,14 +620,10 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
 
   Widget _buildQrisInstructions() {
     // Debug: Print payment data to see structure
-    debugPrint('=== QRIS Payment Data Debug ===');
-    debugPrint('All keys: ${_paymentData.keys.toList()}');
-    debugPrint('Full data: $_paymentData');
 
     // Get qr_string first (preferred - can generate locally without auth)
     String? qrString = _paymentData['qr_string']?.toString();
 
-    debugPrint('QR String found: $qrString');
 
     return Container(
       width: double.infinity,

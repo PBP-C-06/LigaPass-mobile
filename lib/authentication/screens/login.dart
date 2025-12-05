@@ -68,11 +68,9 @@ class _LoginPageState extends State<LoginPage> {
           }
         },
         onError: (error) {
-          debugPrint("Google Sign-In stream error: $error");
         },
       );
     } catch (e) {
-      debugPrint("Google Sign-In initialization error: $e");
     }
   }
 

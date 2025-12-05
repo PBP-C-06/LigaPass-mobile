@@ -214,7 +214,6 @@ class _NewsListScreenState extends State<NewsListScreen> {
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
     final isLoggedIn = request.loggedIn;
-    print('userRole: $userRole');
     if (loading || userRoleLoading) {
       return const Center(child: CircularProgressIndicator());
     }

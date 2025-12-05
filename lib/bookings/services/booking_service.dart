@@ -22,7 +22,6 @@ class BookingService {
       }
       return [];
     } catch (e) {
-      debugPrint('Error fetching ticket prices: $e');
       return [];
     }
   }
@@ -42,7 +41,6 @@ class BookingService {
       );
       return response;
     } catch (e) {
-      debugPrint('Error creating booking: $e');
       return {'status': false, 'message': 'Failed to create booking: $e'};
     }
   }
@@ -54,7 +52,6 @@ class BookingService {
       );
       return response;
     } catch (e) {
-      debugPrint('Error checking booking status: $e');
       return {'status': false, 'message': 'Failed to check status: $e'};
     }
   }
@@ -67,7 +64,6 @@ class BookingService {
       );
       return response;
     } catch (e) {
-      debugPrint('Error cancelling booking: $e');
       return {'status': false, 'message': 'Failed to cancel booking: $e'};
     }
   }
@@ -84,7 +80,6 @@ class BookingService {
       }
       return [];
     } catch (e) {
-      debugPrint('Error fetching bookings: $e');
       return [];
     }
   }

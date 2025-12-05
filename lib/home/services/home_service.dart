@@ -10,10 +10,8 @@ class HomeService {
   Future<HomeData> fetchHomeData() async {
     try {
       final url = '${ApiConfig.baseUrl}/api/flutter/home/';
-      debugPrint('Fetching home data from: $url');
 
       final response = await http.get(Uri.parse(url));
-      debugPrint('Home API response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -22,7 +20,6 @@ class HomeService {
         throw Exception('Failed to load home data: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('Error fetching home data: $e');
       // Return empty data on error, let individual fallbacks work
       rethrow;
     }
@@ -33,7 +30,6 @@ class HomeService {
     try {
       final url =
           '${ApiConfig.baseUrl}/matches/api/calendar/?page=1&per_page=$limit&status=upcoming';
-      debugPrint('Fetching upcoming matches from: $url');
 
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -45,7 +41,6 @@ class HomeService {
       }
       return [];
     } catch (e) {
-      debugPrint('Error fetching upcoming matches: $e');
       return [];
     }
   }
@@ -54,7 +49,6 @@ class HomeService {
   Future<List<NewsItem>> fetchLatestNews({int limit = 6}) async {
     try {
       final url = '${ApiConfig.baseUrl}/news/api/news/?page=1&per_page=$limit';
-      debugPrint('Fetching latest news from: $url');
 
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -72,7 +66,6 @@ class HomeService {
       }
       return [];
     } catch (e) {
-      debugPrint('Error fetching latest news: $e');
       return [];
     }
   }
@@ -81,7 +74,6 @@ class HomeService {
   Future<List<TeamLogo>> fetchTeams() async {
     try {
       final url = '${ApiConfig.baseUrl}/matches/api/flutter/team-logos/';
-      debugPrint('Fetching teams from: $url');
 
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -98,7 +90,6 @@ class HomeService {
       }
       return [];
     } catch (e) {
-      debugPrint('Error fetching teams: $e');
       return [];
     }
   }

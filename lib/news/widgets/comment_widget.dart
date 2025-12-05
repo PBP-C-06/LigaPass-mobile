@@ -3,6 +3,7 @@ import 'package:ligapass/news/models/comment.dart';
 
 class CommentWidget extends StatefulWidget {
   final Comment comment;
+  final bool isLoggedIn;
   final Function(String content, {int? parentId})? onReply;
   final Function(int id)? onLike;
   final Function(int id)? onUnlike;
@@ -12,6 +13,7 @@ class CommentWidget extends StatefulWidget {
   const CommentWidget({
     super.key,
     required this.comment,
+    required this.isLoggedIn,
     this.onReply,
     this.onLike,
     this.onUnlike,
@@ -42,7 +44,6 @@ class _CommentWidgetState extends State<CommentWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Username dan waktu
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -51,31 +52,34 @@ class _CommentWidgetState extends State<CommentWidget> {
             ],
           ),
           const SizedBox(height: 6),
-
-          // Isi komentar
           Text(comment.content),
           const SizedBox(height: 6),
-
-          // Tombol aksi
           Row(
             children: [
-              TextButton(
-                onPressed: () {
-                  setState(() => showReplyForm = !showReplyForm);
-                },
-                child: const Text("Balas"),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (comment.userHasLiked) {
-                    widget.onUnlike?.call(comment.id);
-                  } else {
-                    widget.onLike?.call(comment.id);
-                  }
-                },
-                child: Text(comment.userHasLiked ? "❤️ Unlike" : "🤍 Like"),
-              ),
-              if (comment.isOwner)
+              if (widget.isLoggedIn)
+                TextButton(
+                  onPressed: () {
+                    setState(() => showReplyForm = !showReplyForm);
+                  },
+                  child: const Text("Balas"),
+                ),
+              if (widget.isLoggedIn)
+                TextButton.icon(
+                  onPressed: () {
+                    if (comment.userHasLiked) {
+                      widget.onUnlike?.call(comment.id);
+                    } else {
+                      widget.onLike?.call(comment.id);
+                    }
+                  },
+                  icon: Icon(
+                    Icons.favorite,
+                    color: comment.userHasLiked ? Colors.red : Colors.grey,
+                    size: 18,
+                  ),
+                  label: Text(comment.userHasLiked ? "Unlike" : "Like"),
+                ),
+              if (widget.isLoggedIn && comment.isOwner)
                 TextButton(
                   onPressed: () {
                     widget.onDelete?.call(comment.id);
@@ -85,9 +89,7 @@ class _CommentWidgetState extends State<CommentWidget> {
               Text("(${comment.likeCount})", style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
-
-          // Form balasan
-          if (showReplyForm)
+          if (showReplyForm && widget.isLoggedIn)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Column(
@@ -118,8 +120,6 @@ class _CommentWidgetState extends State<CommentWidget> {
                 ],
               ),
             ),
-
-          // Replies
           if (comment.replies.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 12, top: 12),
@@ -127,6 +127,7 @@ class _CommentWidgetState extends State<CommentWidget> {
                 children: comment.replies
                     .map((reply) => CommentWidget(
                           comment: reply,
+                          isLoggedIn: widget.isLoggedIn,
                           onReply: widget.onReply,
                           onLike: widget.onLike,
                           onUnlike: widget.onUnlike,

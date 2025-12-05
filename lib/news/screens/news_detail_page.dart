@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:ligapass/news/models/news.dart';
 import 'package:ligapass/news/models/comment.dart';
@@ -5,6 +6,7 @@ import 'package:ligapass/news/services/api_service.dart';
 import 'package:ligapass/news/widgets/comment_widget.dart';
 import 'package:ligapass/news/widgets/news_card.dart';
 import 'package:ligapass/config/endpoints.dart';
+import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
@@ -18,7 +20,8 @@ class NewsDetailPage extends StatefulWidget {
 }
 
 class _NewsDetailPageState extends State<NewsDetailPage> {
-  late Future<List<Comment>> _commentsFuture;
+  List<Comment> _comments = [];
+  bool _isLoadingComments = true;
   Future<List<News>> _recommendedFuture = Future.value([]);
   final _commentController = TextEditingController();
 
@@ -26,16 +29,27 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   void initState() {
     super.initState();
     final request = context.read<CookieRequest>();
-    print("🔍 CSRF Token: ${request.headers['X-CSRFToken']}");
-    print("🔍 Cookie: ${request.cookies}");
-    _commentsFuture = ApiService.fetchComments(widget.news.id);
+    _loadComments(request);
     _recommendedFuture = ApiService.fetchRecommendations(widget.news.id);
   }
 
-  void refreshComments() {
-    setState(() {
-      _commentsFuture = ApiService.fetchComments(widget.news.id);
-    });
+  Future<void> _loadComments([CookieRequest? req]) async {
+    final request = req ?? context.read<CookieRequest>();
+    setState(() => _isLoadingComments = true);
+    try {
+      final data = await ApiService.fetchComments(
+        widget.news.id,
+        request: request,
+      );
+      if (!mounted) return;
+      setState(() {
+        _comments = data;
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingComments = false);
+      }
+    }
   }
 
   Future<void> postComment(String content, {int? parentId}) async {
@@ -48,7 +62,7 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
     });
 
     if (response['success'] == true) {
-      refreshComments();
+      await _loadComments(request);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Komentar berhasil dikirim")),
       );
@@ -60,46 +74,70 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   }
 
   Future<void> likeComment(int id) async {
-    final request = context.read<CookieRequest>(); // Ambil session login & cookie CSRF
-    final url = Endpoints.likeComment(id); // Dapatkan endpoint yang tepat
-
-    final response = await request.post(url, {}); // Kirim POST kosong (karena view Django tidak butuh data)
-
-    if (response['liked'] != null) {
-      refreshComments(); // Refresh daftar komentar agar UI berubah
-    } else {
-      // Optional: kasih feedback kalau gagal
+    final request = context.read<CookieRequest>();
+    try {
+      final liked = await ApiService.toggleLikeComment(id, request);
+      _updateLocalLikeState(id, liked);
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gagal menyukai komentar.")),
+        SnackBar(content: Text("Gagal menyukai komentar: $e")),
       );
     }
   }
 
+  void _updateLocalLikeState(int id, bool liked) {
+    Comment updateComment(Comment c) {
+      final updatedReplies = c.replies.map(updateComment).toList();
+
+      if (c.id == id) {
+        final newCount = max(0, c.likeCount + (liked ? 1 : -1));
+        return Comment(
+          id: c.id,
+          user: c.user,
+          content: c.content,
+          createdAt: c.createdAt,
+          likeCount: newCount,
+          userHasLiked: liked,
+          isOwner: c.isOwner,
+          replies: updatedReplies,
+        );
+      }
+
+      return Comment(
+        id: c.id,
+        user: c.user,
+        content: c.content,
+        createdAt: c.createdAt,
+        likeCount: c.likeCount,
+        userHasLiked: c.userHasLiked,
+        isOwner: c.isOwner,
+        replies: updatedReplies,
+      );
+    }
+
+    setState(() {
+      _comments = _comments.map(updateComment).toList();
+    });
+  }
+
   Future<void> deleteComment(int id) async {
     final request = context.read<CookieRequest>();
-    final url = Endpoints.deleteComment(id);
-
     try {
-      final response = await request.post(url, {});
-
-      if (response['success'] == true) {
-        refreshComments();
+      final ok = await ApiService.deleteComment(id, request);
+      if (ok) {
+        await _loadComments(request);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Komentar berhasil dihapus")),
         );
       } else {
-        // Kalau Django kasih error message khusus
-        final errorMessage = response['error'] ?? 'Gagal menghapus komentar.';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
+          const SnackBar(content: Text("Gagal menghapus komentar.")),
         );
       }
     } catch (e) {
-      // Error jaringan atau status 403/500 yang dilempar sebagai exception
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Gagal menghapus komentar (server error)")),
       );
-      print("Error deleteComment: $e");
     }
   }
 
@@ -112,15 +150,16 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   @override
   Widget build(BuildContext context) {
     final news = widget.news;
+    final isLoggedIn = context.watch<CookieRequest>().loggedIn;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Detail Berita")),
       body: SingleChildScrollView(
+        key: PageStorageKey('news-detail-scroll-${news.id}'),
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Gambar thumbnail
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
@@ -136,38 +175,26 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
               ),
             ),
             const SizedBox(height: 12),
-
-            // Judul
             Text(
               news.title,
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 6),
-
-            // Tanggal & view
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("📅 ${news.createdAt}", style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                Text("👁️ ${news.views}x dilihat", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(news.createdAt, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text('${news.views}x dilihat', style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
-
             const SizedBox(height: 16),
-
-            // Isi konten
             Text(news.content, style: const TextStyle(fontSize: 16)),
-
             const SizedBox(height: 32),
-
-            // Berita lainnya
             const Text(
               "Berita Lainnya",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-
             SizedBox(
               height: 370,
               child: FutureBuilder<List<News>>(
@@ -204,73 +231,59 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                 },
               ),
             ),
-
             const SizedBox(height: 32),
-
-            // Komentar
             const Divider(),
-            const Text("💬 Komentar", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Komentar", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-
-            // Form komentar baru
-            TextField(
-              controller: _commentController,
-              decoration: InputDecoration(
-                hintText: "Tulis komentar...",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            if (isLoggedIn) ...[
+              TextField(
+                controller: _commentController,
+                decoration: InputDecoration(
+                  hintText: "Tulis komentar...",
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                maxLines: null,
               ),
-              maxLines: null,
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final content = _commentController.text.trim();
-                  if (content.isEmpty) return;
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final content = _commentController.text.trim();
+                    if (content.isEmpty) return;
 
-                  await postComment(content);
-                  _commentController.clear();
-                },
-                child: const Text("Kirim Komentar"),
+                    await postComment(content);
+                    _commentController.clear();
+                  },
+                  child: const Text("Kirim Komentar"),
+                ),
               ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Komentar utama
-            FutureBuilder<List<Comment>>(
-              future: _commentsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Text("Gagal memuat komentar: ${snapshot.error}");
-                }
-
-                final comments = snapshot.data ?? [];
-                if (comments.isEmpty) {
-                  return const Text("Belum ada komentar.");
-                }
-
-                return Column(
-                  children: comments.map(
-                    (comment) => CommentWidget(
-                      comment: comment,
-                      onReply: postComment,
-                      onLike: likeComment,
-                      onUnlike: likeComment, // toggle
-                      onDelete: deleteComment,
-                      onRefresh: refreshComments,
-                    ),
-                  ).toList(),
-                );
-              },
-            ),
+              const SizedBox(height: 24),
+            ],
+            if (_isLoadingComments)
+              const Center(child: CircularProgressIndicator())
+            else if (_comments.isEmpty)
+              const Text("Belum ada komentar.")
+            else
+              Column(
+                children: _comments
+                    .map(
+                      (comment) => CommentWidget(
+                        comment: comment,
+                        isLoggedIn: isLoggedIn,
+                        onReply: postComment,
+                        onLike: likeComment,
+                        onUnlike: likeComment,
+                        onDelete: deleteComment,
+                        onRefresh: () => _loadComments(),
+                      ),
+                    )
+                    .toList(),
+              ),
           ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/news'),
     );
   }
 }
