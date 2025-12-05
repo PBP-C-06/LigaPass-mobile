@@ -36,15 +36,30 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
       "${Endpoints.base}/reviews/analytics/user/data/?period=$selectedPeriod",
     );
 
-    final res = await http.get(url, headers: {"Cookie": widget.sessionCookie});
-    final data = jsonDecode(res.body);
+    try {
+      final res = await http.get(
+        url,
+        headers: {"Cookie": widget.sessionCookie},
+      );
 
-    setState(() {
-      spendingData = data["spendingData"];
-      hadir = data["attendance"]["hadir"];
-      tidakHadir = data["attendance"]["tidak_hadir"];
-      loading = false;
-    });
+      if (res.statusCode != 200) {
+        debugPrint("Analytics API error: ${res.statusCode}");
+        setState(() => loading = false);
+        return;
+      }
+
+      final data = jsonDecode(res.body);
+
+      setState(() {
+        spendingData = data["spendingData"] ?? [];
+        hadir = data["attendance"]?["hadir"] ?? 0;
+        tidakHadir = data["attendance"]?["tidak_hadir"] ?? 0;
+        loading = false;
+      });
+    } catch (e) {
+      debugPrint("Error loading analytics: $e");
+      setState(() => loading = false);
+    }
   }
 
   Widget buildAttendanceChart() {
@@ -171,9 +186,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
 
                   borderData: FlBorderData(show: false),
 
-                  
                   titlesData: FlTitlesData(
-                    
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -187,7 +200,6 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       ),
                     ),
 
-                 
                     rightTitles: AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
@@ -225,7 +237,6 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     );
   }
 
-  
   @override
   Widget build(BuildContext context) {
     if (loading) {
