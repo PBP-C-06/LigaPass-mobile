@@ -99,10 +99,15 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
 
       if (response.statusCode == 201) {
         if (!mounted) return;
+        
+        // Update hasProfile di jsonData agar tidak redirect kembali ke create profile
+        request.jsonData['hasProfile'] = true;
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profil berhasil dibuat!")),
         );
-        Navigator.pop(context);
+        // Redirect ke home page setelah profile dibuat
+        Navigator.of(context).pushReplacementNamed("/home");
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -322,7 +327,8 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                                 onPressed: _loading
                                     ? null
                                     : () async {
-                                        if (!_formKey.currentState!.validate()) {
+                                        if (!_formKey.currentState!
+                                            .validate()) {
                                           return;
                                         }
                                         await submitProfile(
