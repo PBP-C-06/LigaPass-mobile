@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-const String baseUrl = "http://localhost:8000";
+import '../../config/endpoints.dart';
 
 class UserAnalyticsPanel extends StatefulWidget {
   final String sessionCookie;
@@ -34,7 +34,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     setState(() => loading = true);
 
     final url = Uri.parse(
-      "$baseUrl/reviews/analytics/user/data/?period=$selectedPeriod",
+      "${Endpoints.base}/reviews/analytics/user/data/?period=$selectedPeriod",
     );
 
     final res = await http.get(url, headers: {"Cookie": widget.sessionCookie});
