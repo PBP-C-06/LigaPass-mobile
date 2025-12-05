@@ -8,6 +8,7 @@ import 'package:ligapass/config/api_config.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'google_sign_in_button_stub.dart'
     if (dart.library.html) 'google_sign_in_button_web.dart'
@@ -111,6 +112,9 @@ class _LoginPageState extends State<LoginPage> {
         request.loggedIn = true;
         request.jsonData = response;
 
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("userRole", response["role"]);
+
         final String? warning = response["warning"] as String?;
         final String profileStatus =
             response["profile_status"] as String? ?? "active";
@@ -173,6 +177,10 @@ class _LoginPageState extends State<LoginPage> {
     if (response["status"] == "success") {
       request.loggedIn = true;
       request.jsonData = response;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString("userRole", response["role"]);
+      
       // Redirect ke home page setelah login berhasil
       navigator.pushReplacementNamed("/home");
     } else {
@@ -232,6 +240,9 @@ class _LoginPageState extends State<LoginPage> {
       if (response["status"] == "success") {
         request.loggedIn = true;
         request.jsonData = response;
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("userRole", response["role"]);
 
         final String? warning = response["warning"] as String?;
         final String profileStatus =
@@ -347,19 +358,30 @@ class _LoginPageState extends State<LoginPage> {
     final navigator = Navigator.of(context);
     final baseUrl = ApiConfig.baseUrl;
     bool shouldNavigate = false;
+
     setState(() {
       isLoading = true;
       errorMessage = null;
       successMessage = null;
     });
+
     try {
       await request.logout("$baseUrl/auth/flutter-logout/");
+
       if (mounted) {
         setState(() {
           successMessage = "Logout berhasil.";
         });
       }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
       shouldNavigate = true;
+    } catch (e) {
+      setState(() {
+        errorMessage = "Gagal logout: $e";
+      });
     } finally {
       if (mounted) {
         setState(() => isLoading = false);

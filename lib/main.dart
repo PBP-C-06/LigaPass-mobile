@@ -3,6 +3,7 @@ import 'package:ligapass/admin/manage_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ligapass/news/news_page.dart';
 import 'package:ligapass/onboarding/screens/onboarding_screen.dart';
+import 'package:ligapass/news/screens/news_create_page.dart';
 import 'package:ligapass/profiles/screens/create_profile_page.dart';
 import 'package:ligapass/profiles/screens/redirect_login.dart';
 import 'package:ligapass/profiles/screens/user_profile_page.dart';
@@ -67,6 +68,7 @@ class LigaPassApp extends StatelessWidget {
               '/tickets': (_) => const MyTicketsScreen(),
               '/manage': (_) => const AdminManagePage(),
               '/assistant': (_) => const ChatbotPage(),
+              '/news/create': (_) => const NewsCreatePage(),
             },
             onGenerateRoute: (settings) {
               final req = Provider.of<CookieRequest>(context, listen: false);
