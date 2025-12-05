@@ -9,6 +9,10 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'google_sign_in_button_stub.dart'
+    if (dart.library.html) 'google_sign_in_button_web.dart'
+    as gsi_button;
+
 const String _googleClientId =
     "496589546073-lhasinbg2db22bkti40suvgaqjqti4t2.apps.googleusercontent.com";
 
@@ -125,7 +129,8 @@ class _LoginPageState extends State<LoginPage> {
         if (redirect != null && redirect.contains("create_profile")) {
           navigator.pushReplacementNamed("/create-profile");
         } else {
-          navigator.pushReplacementNamed("/profile");
+          // Redirect ke home page setelah login berhasil
+          navigator.pushReplacementNamed("/home");
         }
       } else if (response["status"] == "banned") {
         request.loggedIn = false;
@@ -168,7 +173,8 @@ class _LoginPageState extends State<LoginPage> {
     if (response["status"] == "success") {
       request.loggedIn = true;
       request.jsonData = response;
-      navigator.pushReplacementNamed("/profile");
+      // Redirect ke home page setelah login berhasil
+      navigator.pushReplacementNamed("/home");
     } else {
       request.loggedIn = false;
       setState(
@@ -245,7 +251,8 @@ class _LoginPageState extends State<LoginPage> {
         if (redirect != null && redirect.contains("create_profile")) {
           navigator.pushReplacementNamed("/create-profile");
         } else {
-          navigator.pushReplacementNamed("/profile");
+          // Redirect ke home page setelah login berhasil
+          navigator.pushReplacementNamed("/home");
         }
       } else if (response["status"] == "banned") {
         request.loggedIn = false;
@@ -274,40 +281,20 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildGoogleSignInButton() {
     if (kIsWeb) {
-      return SizedBox(
-        width: double.infinity,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.blueGrey.withValues(alpha: 0.25)),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: isLoading ? null : () => _performGoogleLogin(context),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset("assets/google.png", height: 24),
-                    const SizedBox(width: 10),
-                    const Text(
-                      "Login dengan Google",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF374151),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blueGrey.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
-          ),
+          ],
         ),
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+        child: gsi_button.renderButton(),
       );
     }
 
@@ -326,7 +313,7 @@ class _LoginPageState extends State<LoginPage> {
           Image.asset("assets/google.png", height: 24),
           const SizedBox(width: 10),
           const Text(
-            "Login dengan Google",
+            "Continue with Google",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ],
@@ -512,8 +499,10 @@ class _LoginPageState extends State<LoginPage> {
                                 value!.isEmpty ? "Password required" : null,
                           ),
                           const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            spacing: 8,
+                            runSpacing: 4,
                             children: [
                               TextButton(
                                 onPressed: () {

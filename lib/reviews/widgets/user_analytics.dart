@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-const String baseUrl = "http://localhost:8000";
+import '../../config/endpoints.dart';
 
 class UserAnalyticsPanel extends StatefulWidget {
-  const UserAnalyticsPanel({super.key});
+  final String sessionCookie;
+
+  const UserAnalyticsPanel({super.key, required this.sessionCookie});
 
   @override
   State<UserAnalyticsPanel> createState() => _UserAnalyticsPanelState();
@@ -30,17 +32,34 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
   Future<void> loadAnalytics() async {
     setState(() => loading = true);
 
-    final request = context.read<CookieRequest>();
-    final response = await request.get(
-      "$baseUrl/reviews/analytics/user/data/?period=$selectedPeriod",
+    final url = Uri.parse(
+      "${Endpoints.base}/reviews/analytics/user/data/?period=$selectedPeriod",
     );
 
-    setState(() {
-      spendingData = response["spendingData"];
-      hadir = response["attendance"]["hadir"];
-      tidakHadir = response["attendance"]["tidak_hadir"];
-      loading = false;
-    });
+    try {
+      final res = await http.get(
+        url,
+        headers: {"Cookie": widget.sessionCookie},
+      );
+
+      if (res.statusCode != 200) {
+        debugPrint("Analytics API error: ${res.statusCode}");
+        setState(() => loading = false);
+        return;
+      }
+
+      final data = jsonDecode(res.body);
+
+      setState(() {
+        spendingData = data["spendingData"] ?? [];
+        hadir = data["attendance"]?["hadir"] ?? 0;
+        tidakHadir = data["attendance"]?["tidak_hadir"] ?? 0;
+        loading = false;
+      });
+    } catch (e) {
+      debugPrint("Error loading analytics: $e");
+      setState(() => loading = false);
+    }
   }
 
   Widget buildAttendanceChart() {
@@ -167,9 +186,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
 
                   borderData: FlBorderData(show: false),
 
-                  
                   titlesData: FlTitlesData(
-                    
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -183,7 +200,6 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       ),
                     ),
 
-                 
                     rightTitles: AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
@@ -221,7 +237,6 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     );
   }
 
-  
   @override
   Widget build(BuildContext context) {
     if (loading) {

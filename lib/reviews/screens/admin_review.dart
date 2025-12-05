@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+
+import '../../config/endpoints.dart';
 
 class AdminReviewSection extends StatefulWidget {
   final String matchId;
@@ -13,7 +14,7 @@ class AdminReviewSection extends StatefulWidget {
 }
 
 class _AdminReviewSectionState extends State<AdminReviewSection> {
-  final BASE_URL = "http://localhost:8000";
+  final String baseUrl = Endpoints.base;
 
   List reviews = [];
   bool isLoading = true;
@@ -30,9 +31,10 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
     final request = context.read<CookieRequest>();
     setState(() => isLoading = true);
 
-    final url = "$BASE_URL/reviews/api/${widget.matchId}/admin_list/";
+    final url = "$baseUrl/reviews/api/${widget.matchId}/admin_list/";
     final response = await request.get(url);
 
+    if (!mounted) return;
     setState(() {
       reviews = response["reviews"] ?? [];
       averageRating = (response["average_rating"] ?? 0).toDouble();   
@@ -45,10 +47,11 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
     final request = context.read<CookieRequest>();
 
     final response = await request.post(
-      "$BASE_URL/reviews/api/reply/$reviewId/",
+      "$baseUrl/reviews/api/reply/$reviewId/",
       {"reply_text": text},
     );
 
+    if (!mounted) return;
     if (response["status"] == "success") {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Berhasil menambahkan balasan")),
@@ -61,10 +64,11 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
     final request = context.read<CookieRequest>();
 
     final response = await request.post(
-      "$BASE_URL/reviews/api/reply/$replyId/edit/",
+      "$baseUrl/reviews/api/reply/$replyId/edit/",
       {"reply_text": text},
     );
 
+    if (!mounted) return;
     if (response["status"] == "success") {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Balasan berhasil diperbarui")),
@@ -77,10 +81,11 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
   final request = context.read<CookieRequest>();
 
   final response = await request.post(
-      "$BASE_URL/reviews/api/reply/$replyId/delete/",
+      "$baseUrl/reviews/api/reply/$replyId/delete/",
       {},
     );
 
+    if (!mounted) return;
     if (response["status"] == "success") {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Balasan berhasil dihapus")),
@@ -231,7 +236,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
@@ -269,7 +274,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
