@@ -1,14 +1,17 @@
-import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 import '../../config/endpoints.dart';
 
 class UserAnalyticsPanel extends StatefulWidget {
-  final String sessionCookie;
+  final VoidCallback onClose;
 
-  const UserAnalyticsPanel({super.key, required this.sessionCookie});
+  const UserAnalyticsPanel({
+    super.key,
+    required this.onClose,
+  });
 
   @override
   State<UserAnalyticsPanel> createState() => _UserAnalyticsPanelState();
@@ -32,23 +35,12 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
   Future<void> loadAnalytics() async {
     setState(() => loading = true);
 
-    final url = Uri.parse(
-      "${Endpoints.base}/reviews/analytics/user/data/?period=$selectedPeriod",
-    );
+    final request = context.read<CookieRequest>(); 
+    final url =
+        "${Endpoints.base}/reviews/analytics/user/data/?period=$selectedPeriod";
 
     try {
-      final res = await http.get(
-        url,
-        headers: {"Cookie": widget.sessionCookie},
-      );
-
-      if (res.statusCode != 200) {
-        debugPrint("Analytics API error: ${res.statusCode}");
-        setState(() => loading = false);
-        return;
-      }
-
-      final data = jsonDecode(res.body);
+      final data = await request.get(url);
 
       setState(() {
         spendingData = data["spendingData"] ?? [];
@@ -57,7 +49,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
         loading = false;
       });
     } catch (e) {
-      debugPrint("Error loading analytics: $e");
+      debugPrint("Error load user analytics: $e");
       setState(() => loading = false);
     }
   }
@@ -72,13 +64,21 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Statistik Kehadiran",
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Statistik Kehadiran",
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: widget.onClose,
+                ),
+              ],
             ),
             const SizedBox(height: 20),
 
-            // Pie Chart
             SizedBox(
               height: 180,
               child: Stack(
@@ -102,19 +102,19 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       ],
                     ),
                   ),
+
                   Text(
                     "${percent.toStringAsFixed(0)}%",
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
 
-            const SizedBox(height: 12),
-
+            const SizedBox(height: 10),
             Row(
               children: const [
                 _Dot(color: Color(0xFF2D9CDB)),
@@ -138,7 +138,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Title + dropdown
+            // Title + dropdown periode
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -161,16 +161,16 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
               ],
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
             SizedBox(
               height: 220,
               child: BarChart(
                 BarChartData(
+                  minY: 0,
                   barGroups: spendingData.asMap().entries.map((entry) {
                     final index = entry.key;
-                    final item = entry.value;
-                    final value = (item["total_spent"] as num).toDouble();
+                    final value = (entry.value["total_spent"] as num).toDouble();
 
                     return BarChartGroupData(
                       x: index,
@@ -187,11 +187,13 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                   borderData: FlBorderData(show: false),
 
                   titlesData: FlTitlesData(
+                    // ✔ LEFT y-axis
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 42,
+                        reservedSize: 40,
                         getTitlesWidget: (value, _) {
+                          if (value < 0) return const SizedBox.shrink();
                           return Text(
                             value.toInt().toString(),
                             style: const TextStyle(fontSize: 10),
@@ -203,11 +205,10 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                     rightTitles: AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
-
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        getTitlesWidget: (value, meta) {
+                        getTitlesWidget: (value, _) {
                           final index = value.toInt();
                           if (index < 0 || index >= spendingData.length) {
                             return const SizedBox.shrink();
@@ -223,7 +224,6 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                       ),
                     ),
 
-                    // TOP: off
                     topTitles: AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
@@ -237,6 +237,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
     );
   }
 
+  // ===================== BUILD =====================
   @override
   Widget build(BuildContext context) {
     if (loading) {
@@ -268,10 +269,8 @@ class _Dot extends StatelessWidget {
     return Container(
       width: 12,
       height: 12,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(6),
-      ),
+      decoration:
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
     );
   }
 }
