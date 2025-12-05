@@ -88,6 +88,9 @@ class LigaPassApp extends StatelessWidget {
                   if (!hasProfile && role != "admin" && role != "journalist") {
                     return MaterialPageRoute(
                       builder: (_) => const CreateProfilePage(),
+                      settings: RouteSettings(arguments: {
+                        'username': req.jsonData['username'],  // pastikan sendir
+                      }),
                     );
                   }
                   // Jika sudah punya profile
