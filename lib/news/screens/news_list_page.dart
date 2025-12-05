@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import '../models/news.dart';
 import '../services/api_service.dart';
 import '../widgets/news_card.dart';
+import 'package:ligapass/news/screens/news_detail_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+
 
 class NewsListScreen extends StatefulWidget {
   const NewsListScreen({super.key});
@@ -252,7 +254,17 @@ class _NewsListScreenState extends State<NewsListScreen> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) => Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: NewsCard(news: newsList[index]),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NewsDetailPage(news: newsList[index]),
+                        ),
+                      );
+                    },
+                    child: NewsCard(news: newsList[index]),
+                  ),
                 ),
                 childCount: newsList.length,
               ),

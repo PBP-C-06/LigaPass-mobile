@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -18,86 +19,79 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _dobController = TextEditingController();
+
   XFile? _pickedImage;
-  Uint8List? _selectedImageBytes; // fallback untuk web
+  Uint8List? _selectedImageBytes;
   String? _selectedImageName;
   DateTime? _selectedDob;
   bool _loading = false;
-  String? _username; // Username dari register page
+
+  late String username;
+  late String firstName;
+  late String lastName;
+  late String email;
+  late String role;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Get username from arguments (passed from register page)
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args != null && args is Map<String, dynamic>) {
-      _username = args['username'] as String?;
-    }
+    final req = context.read<CookieRequest>();
+    final data = req.jsonData;
+
+    // Ambil data user dari jsonData
+    username = data['username'] ?? '';
+    firstName = data['first_name'] ?? '';
+    lastName = data['last_name'] ?? '';
+    email = data['email'] ?? '';
+    role = data['role'] ?? '';
   }
 
   Future<void> submitProfile(
-    CookieRequest request,
-    String phone,
-    String dob,
-    XFile? image,
-  ) async {
+      CookieRequest request, String phone, String dob, XFile? image) async {
     setState(() => _loading = true);
 
     try {
       final uri = ApiConfig.uri("/profiles/flutter-create-profile/");
-      var requestMultipart = http.MultipartRequest("POST", uri);
 
-      requestMultipart.fields['phone'] = phone;
-      requestMultipart.fields['date_of_birth'] = dob;
+      var req = http.MultipartRequest("POST", uri);
 
-      // Send username as fallback for web (where session cookies may not work)
-      if (_username != null && _username!.isNotEmpty) {
-        requestMultipart.fields['username'] = _username!;
-        debugPrint("DEBUG: Sending username = $_username");
-      } else {
-        debugPrint("DEBUG: WARNING - username is null or empty!");
+      // Tambahkan semua field dari jsonData
+      req.fields['username'] = username;
+      req.fields['first_name'] = firstName;
+      req.fields['last_name'] = lastName;
+      req.fields['email'] = email;
+      req.fields['role'] = role;
+
+      req.fields['phone'] = phone;
+      req.fields['date_of_birth'] = dob;
+
+      // Tambahkan gambar jika ada
+      if (kIsWeb && _selectedImageBytes != null) {
+        req.files.add(http.MultipartFile.fromBytes(
+          'profile_picture',
+          _selectedImageBytes!,
+          filename: _selectedImageName ?? 'profile.jpg',
+        ));
+      } else if (!kIsWeb && image != null) {
+        req.files.add(await http.MultipartFile.fromPath(
+          'profile_picture',
+          image.path,
+        ));
       }
 
-      if (_selectedImageBytes != null && kIsWeb) {
-        requestMultipart.files.add(
-          http.MultipartFile.fromBytes(
-            'profile_picture',
-            _selectedImageBytes!,
-            filename: _selectedImageName ?? 'profile_picture.jpg',
-          ),
-        );
-      } else if (image != null) {
-        requestMultipart.files.add(
-          await http.MultipartFile.fromPath('profile_picture', image.path),
-        );
-      }
+      // Header
+      req.headers['Accept'] = 'application/json';
+      req.headers['Referer'] = ApiConfig.baseUrl;
 
-      // Debug: print cookies
-      debugPrint("=== DEBUG COOKIES ===");
-      debugPrint("Cookies count: ${request.cookies.length}");
-      request.cookies.forEach((key, value) {
-        debugPrint("Cookie: $key = ${value.value}");
-      });
-      debugPrint("loggedIn: ${request.loggedIn}");
-      debugPrint("=== END DEBUG ===");
+      print("=== DEBUG MULTIPART HEADERS ===");
+      print(req.headers);
+      print("=== DEBUG MULTIPART FIELDS ===");
+      req.fields.forEach((k, v) => print("$k: $v"));
 
-      final cookieHeader = request.cookies.entries
-          .map((entry) => "${entry.key}=${entry.value.value}")
-          .join("; ");
-      if (cookieHeader.isNotEmpty) {
-        requestMultipart.headers['Cookie'] = cookieHeader;
-      }
-      debugPrint("Cookie Header sent: $cookieHeader");
-      final csrfCookie = request.cookies['csrftoken'];
-      if (csrfCookie != null) {
-        requestMultipart.headers['X-CSRFToken'] = csrfCookie.value;
-      }
-      requestMultipart.headers['Accept'] = 'application/json';
+      final streamed = await req.send();
+      final responseBody = await streamed.stream.bytesToString();
 
-      var response = await requestMultipart.send();
-      final resBody = await response.stream.bytesToString();
-
-      if (response.statusCode == 201) {
+      if (streamed.statusCode == 201) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profil berhasil dibuat!")),
@@ -106,14 +100,14 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal membuat profil: $resBody")),
+          SnackBar(content: Text("Gagal membuat profil: $responseBody")),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Terjadi kesalahan: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Terjadi kesalahan: $e")),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
