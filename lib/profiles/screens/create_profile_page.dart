@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/config/api_config.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -19,16 +20,15 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   final _phoneController = TextEditingController();
   final _dobController = TextEditingController();
   XFile? _pickedImage;
-  Uint8List? _selectedImageBytes; // fallback untuk web
+  Uint8List? _selectedImageBytes;
   String? _selectedImageName;
   DateTime? _selectedDob;
   bool _loading = false;
-  String? _username; // Username dari register page
+  String? _username;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Get username from arguments (passed from register page)
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args != null && args is Map<String, dynamic>) {
       _username = args['username'] as String?;
@@ -50,10 +50,8 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       requestMultipart.fields['phone'] = phone;
       requestMultipart.fields['date_of_birth'] = dob;
 
-      // Send username as fallback for web (where session cookies may not work)
       if (_username != null && _username!.isNotEmpty) {
         requestMultipart.fields['username'] = _username!;
-      } else {
       }
 
       if (_selectedImageBytes != null && kIsWeb) {
@@ -69,10 +67,6 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
           await http.MultipartFile.fromPath('profile_picture', image.path),
         );
       }
-
-      // Debug: print cookies
-      request.cookies.forEach((key, value) {
-      });
 
       final cookieHeader = request.cookies.entries
           .map((entry) => "${entry.key}=${entry.value.value}")
@@ -91,14 +85,11 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
 
       if (response.statusCode == 201) {
         if (!mounted) return;
-        
-        // Update hasProfile di jsonData agar tidak redirect kembali ke create profile
         request.jsonData['hasProfile'] = true;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profil berhasil dibuat!")),
         );
-        // Redirect ke home page setelah profile dibuat
         Navigator.of(context).pushReplacementNamed("/home");
       } else {
         if (!mounted) return;
@@ -153,6 +144,47 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
     super.dispose();
   }
 
+  Widget _infoRow(String title, String value) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      decoration: BoxDecoration(
+        color: const Color(0xfff9fafb),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xff6b7280),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: Color(0xff1f2937),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
@@ -183,12 +215,92 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    /// ===============================
+                    /// USER PROFILE CARD (NEW UI ONLY)
+                    /// ===============================
+                    Builder(
+                      builder: (context) {
+                        final data = request.jsonData;
+                        final username = data['username'] ?? '-';
+                        final email = data['email'] ?? '-';
+                        final first = data['first_name'] ?? '';
+                        final last = data['last_name'] ?? '';
+                        final fullName = '$first $last'.trim().isEmpty ? '-' : '$first $last';
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 28, horizontal: 22),
+                          margin: const EdgeInsets.only(bottom: 24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 18,
+                                offset: Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Profil User",
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff1f2937),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Divider(color: Colors.grey, thickness: 1),
+                              const SizedBox(height: 22),
+
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 45,
+                                    backgroundColor: Colors.grey.shade200,
+                                    child: Icon(Icons.person,
+                                        size: 50, color: Colors.grey.shade500),
+                                  ),
+                                  const SizedBox(width: 22),
+                                  Expanded(
+                                    child: Text(
+                                      username,
+                                      style: const TextStyle(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xff1f2937),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 30),
+                              Divider(color: Colors.grey, thickness: 1),
+                              const SizedBox(height: 30),
+
+                              _infoRow("Nama Lengkap", fullName),
+                              const SizedBox(height: 16),
+                              _infoRow("Email", email),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
+                    /// ===============================
+                    /// FORM PROFIL (ORIGINAL, UNTOUCHED)
+                    /// ===============================
+                    Form(
+                      key: _formKey,
+                      child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -213,6 +325,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                               ),
                             ),
                             const SizedBox(height: 16),
+
                             TextFormField(
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
@@ -232,6 +345,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                               },
                             ),
                             const SizedBox(height: 16),
+
                             TextFormField(
                               controller: _dobController,
                               readOnly: true,
@@ -250,6 +364,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                               },
                             ),
                             const SizedBox(height: 16),
+
                             Row(
                               children: [
                                 ClipRRect(
@@ -276,10 +391,10 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF1d4ed8),
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 14,
-                                      ),
+                                          vertical: 14),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius:
+                                            BorderRadius.circular(12),
                                       ),
                                     ),
                                     onPressed: _pickImage,
@@ -293,6 +408,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                                 ),
                               ],
                             ),
+
                             if (_pickedImage == null) ...[
                               const SizedBox(height: 8),
                               const Text(
@@ -303,7 +419,9 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                                 ),
                               ),
                             ],
+
                             const SizedBox(height: 24),
+
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
@@ -323,6 +441,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                                             .validate()) {
                                           return;
                                         }
+
                                         await submitProfile(
                                           request,
                                           _phoneController.text.trim(),
@@ -342,11 +461,12 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                           ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }
 }
