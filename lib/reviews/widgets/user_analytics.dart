@@ -32,7 +32,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
 
     final request = context.read<CookieRequest>();
     final response = await request.get(
-      "$BASE_URL/reviews/analytics/user/data/?period=$selectedPeriod",
+      "$baseUrl/reviews/analytics/user/data/?period=$selectedPeriod",
     );
 
     setState(() {
