@@ -44,3 +44,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /reference-web
+
+# Keystore files (never commit signing keys)
+*.keystore
+*.jks

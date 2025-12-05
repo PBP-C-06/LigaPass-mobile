@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -55,9 +53,9 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       // Send username as fallback for web (where session cookies may not work)
       if (_username != null && _username!.isNotEmpty) {
         requestMultipart.fields['username'] = _username!;
-        print("DEBUG: Sending username = $_username");
+        debugPrint("DEBUG: Sending username = $_username");
       } else {
-        print("DEBUG: WARNING - username is null or empty!");
+        debugPrint("DEBUG: WARNING - username is null or empty!");
       }
 
       if (_selectedImageBytes != null && kIsWeb) {
@@ -75,13 +73,13 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       }
 
       // Debug: print cookies
-      print("=== DEBUG COOKIES ===");
-      print("Cookies count: ${request.cookies.length}");
+      debugPrint("=== DEBUG COOKIES ===");
+      debugPrint("Cookies count: ${request.cookies.length}");
       request.cookies.forEach((key, value) {
-        print("Cookie: $key = ${value.value}");
+        debugPrint("Cookie: $key = ${value.value}");
       });
-      print("loggedIn: ${request.loggedIn}");
-      print("=== END DEBUG ===");
+      debugPrint("loggedIn: ${request.loggedIn}");
+      debugPrint("=== END DEBUG ===");
 
       final cookieHeader = request.cookies.entries
           .map((entry) => "${entry.key}=${entry.value.value}")
@@ -89,7 +87,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       if (cookieHeader.isNotEmpty) {
         requestMultipart.headers['Cookie'] = cookieHeader;
       }
-      print("Cookie Header sent: $cookieHeader");
+      debugPrint("Cookie Header sent: $cookieHeader");
       final csrfCookie = request.cookies['csrftoken'];
       if (csrfCookie != null) {
         requestMultipart.headers['X-CSRFToken'] = csrfCookie.value;
@@ -324,8 +322,9 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                                 onPressed: _loading
                                     ? null
                                     : () async {
-                                        if (!_formKey.currentState!.validate())
+                                        if (!_formKey.currentState!.validate()) {
                                           return;
+                                        }
                                         await submitProfile(
                                           request,
                                           _phoneController.text.trim(),

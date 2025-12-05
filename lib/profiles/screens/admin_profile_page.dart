@@ -100,14 +100,18 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     }
   }
 
-  String _resolveImageUrl(String? picPath) {
-    if (picPath == null || picPath.isEmpty) {
-      return '$baseUrl/static/images/default-profile-picture.png';
-    }
-    if (picPath.startsWith("http")) return picPath;
-    if (!picPath.startsWith("/")) return "$baseUrl/$picPath";
-    return "$baseUrl$picPath";
+  ImageProvider resolveImage(String? picPath) {
+  if (picPath == null || picPath.isEmpty || !picPath.startsWith("/")) {
+    return const AssetImage("assets/profile_images/default-profile-picture.png");
   }
+
+  if (picPath.startsWith("http")) {
+    return NetworkImage(picPath);
+  }
+
+  return NetworkImage("$baseUrl$picPath");
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +158,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                               loading: loadingProfiles,
                               search: search,
                               filter: filter,
-                              resolveImage: _resolveImageUrl,
+                              resolveImage: resolveImage,
                               searchController: _searchController,
 
                               onSearchChanged: (val) {
@@ -203,19 +207,12 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                             GestureDetector(
                               onTap: () {
-                                final request = context.read<CookieRequest>();
-
-                                final sessionCookie = request.cookies.entries
-                                    .map((e) => "${e.key}=${e.value}")
-                                    .join("; ");
-
                                 showModalBottomSheet(
                                   context: context,
                                   isScrollControlled: true,
                                   backgroundColor: Colors.transparent,
                                   builder: (context) {
                                     return AdminAnalyticsPanel(
-                                      sessionCookie: sessionCookie,
                                       onClose: () => Navigator.pop(context),
                                     );
                                   },
@@ -230,7 +227,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                   borderRadius: BorderRadius.circular(14),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
+                                      color: Colors.black.withValues(alpha: 0.08),
                                       offset: const Offset(0, 3),
                                       blurRadius: 8,
                                     ),

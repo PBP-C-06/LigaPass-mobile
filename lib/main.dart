@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ligapass/admin/manage_page.dart';
 import 'package:ligapass/news/news_page.dart';
 import 'package:ligapass/onboarding/screens/onboarding_screen.dart';
 import 'package:ligapass/profiles/screens/create_profile_page.dart';
@@ -12,6 +13,7 @@ import 'package:ligapass/bookings/screens/my_tickets_screen.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
+import 'assistant/screens/chatbot_page.dart';
 import 'authentication/screens/login.dart';
 import 'authentication/screens/register.dart';
 import 'config/env.dart';
@@ -63,6 +65,8 @@ class LigaPassApp extends StatelessWidget {
               '/news': (_) => const NewsPage(),
               '/reviews': (_) => const ReviewsPage(),
               '/tickets': (_) => const MyTicketsScreen(),
+              '/manage': (_) => const AdminManagePage(),
+              '/assistant': (_) => const ChatbotPage(),
             },
             onGenerateRoute: (settings) {
               final req = Provider.of<CookieRequest>(context, listen: false);

@@ -1,29 +1,25 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+
+import '../../config/endpoints.dart';
 
 class AdminReviewSection extends StatefulWidget {
   final String matchId;
-  final String sessionCookie;
-  final Function(String message) onSuccess;
-  final Function(String message) onError;
 
-  const AdminReviewSection({
-    super.key,
-    required this.matchId,
-    required this.sessionCookie,
-    required this.onSuccess,
-    required this.onError,
-  });
+  const AdminReviewSection({super.key, required this.matchId});
 
   @override
   State<AdminReviewSection> createState() => _AdminReviewSectionState();
 }
 
 class _AdminReviewSectionState extends State<AdminReviewSection> {
-  final BASE_URL = "http://localhost:8000"; 
-  bool isLoading = true;
+  final String baseUrl = Endpoints.base;
+
   List reviews = [];
+  bool isLoading = true;
+  double averageRating = 0.0;
+  int totalReviews = 0;
 
   @override
   void initState() {
@@ -32,77 +28,69 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
   }
 
   Future<void> fetchReviews() async {
+    final request = context.read<CookieRequest>();
     setState(() => isLoading = true);
 
-    final url = "$BASE_URL/reviews/api/${
-      widget.matchId
-    }/admin_list/"; 
+    final url = "$baseUrl/reviews/api/${widget.matchId}/admin_list/";
+    final response = await request.get(url);
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Cookie": widget.sessionCookie,
-      },
-    );
-
-    if (response.statusCode == 200) {
-      setState(() {
-        reviews = jsonDecode(response.body);
-        isLoading = false;
-      });
-    } else {
-      widget.onError("Gagal memuat review");
-      setState(() => isLoading = false);
-    }
+    if (!mounted) return;
+    setState(() {
+      reviews = response["reviews"] ?? [];
+      averageRating = (response["average_rating"] ?? 0).toDouble();   
+      totalReviews = response["total_reviews"] ?? 0;     
+      isLoading = false;
+    });
   }
 
   Future<void> sendReply(String reviewId, String text) async {
-    final response = await http.post(
-      Uri.parse("$BASE_URL/reviews/api/reply/$reviewId/"),
-      headers: {
-        "Cookie": widget.sessionCookie,
-      },
-      body: {"reply_text": text},
+    final request = context.read<CookieRequest>();
+
+    final response = await request.post(
+      "$baseUrl/reviews/api/reply/$reviewId/",
+      {"reply_text": text},
     );
 
-    if (response.statusCode == 200) {
-      widget.onSuccess("Balasan dikirim");
+    if (!mounted) return;
+    if (response["status"] == "success") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Berhasil menambahkan balasan")),
+      );
       fetchReviews();
-    } else {
-      widget.onError("Gagal mengirim balasan");
     }
   }
 
-  Future<void> updateReply(String reviewId, String text) async {
-    final response = await http.put(
-      Uri.parse("$BASE_URL/reviews/api/reply/$reviewId/edit/"),
-      headers: {
-        "Cookie": widget.sessionCookie,
-      },
-      body: {"reply_text": text},
+  Future<void> updateReply(String replyId, String text) async {
+    final request = context.read<CookieRequest>();
+
+    final response = await request.post(
+      "$baseUrl/reviews/api/reply/$replyId/edit/",
+      {"reply_text": text},
     );
 
-    if (response.statusCode == 200) {
-      widget.onSuccess("Balasan diperbarui");
+    if (!mounted) return;
+    if (response["status"] == "success") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Balasan berhasil diperbarui")),
+      );
       fetchReviews();
-    } else {
-      widget.onError("Gagal memperbarui balasan");
     }
   }
 
-  Future<void> deleteReply(String reviewId) async {
-    final response = await http.delete(
-      Uri.parse("$BASE_URL/reviews/api/reply/$reviewId/delete/"),
-      headers: {
-        "Cookie": widget.sessionCookie,
-      },
+  Future<void> deleteReply(String replyId) async {
+  final request = context.read<CookieRequest>();
+
+  final response = await request.post(
+      "$baseUrl/reviews/api/reply/$replyId/delete/",
+      {},
     );
 
-    if (response.statusCode == 200) {
-      widget.onSuccess("Balasan dihapus");
+    if (!mounted) return;
+    if (response["status"] == "success") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Balasan berhasil dihapus")),
+      );
       fetchReviews();
-    } else {
-      widget.onError("Gagal menghapus balasan");
     }
   }
 
@@ -113,12 +101,20 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
       context: context,
       builder: (_) => AlertDialog(
         title: Text(initialText == null ? "Balas Review" : "Edit Balasan"),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: "Tulis balasan admin...",
-          ),
-        ),
+        content: SizedBox(
+                height: 80, // tinggi area input agar tidak terlalu besar
+                child: TextField(
+                  controller: controller,
+                  minLines: 1,
+                  maxLines: null, // unlimited, bisa scroll
+                  keyboardType: TextInputType.multiline,
+                  decoration: const InputDecoration(
+                    hintText: "Tuliskan balasan admin...",
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  ),
+                ),
+              ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -140,37 +136,73 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
     );
   }
 
-  Widget _buildRatingStars(int rating) {
+  Widget _stars(int rating, {double size = 16}) {
     return Row(
-      children: List.generate(5, (i) {
-        return Icon(
+      children: List.generate(
+        5,
+        (i) => Icon(
           i < rating ? Icons.star : Icons.star_border,
           color: Colors.amber,
-          size: 18,
-        );
-      }),
+          size: size,
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(20),
-        child: Center(child: CircularProgressIndicator()),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ==== RATING AVERAGE ====
-        if (reviews.isNotEmpty)
-          _buildRatingSummary(),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,                         
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [                            
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 3,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,   
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center, 
+                children: [
+                  Text(
+                    averageRating.toStringAsFixed(1),
+                    style: const TextStyle(
+                      fontSize: 28,                       
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),              
+                  _stars(averageRating.round(), size: 18),
+                  const SizedBox(height: 4),
+                  Text(
+                    "$totalReviews Reviews",
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
 
-        const SizedBox(height: 16),
-
-        // ==== LIST REVIEW ====
         ...reviews.map((review) {
           final reply = review["reply"];
 
@@ -180,124 +212,69 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: const [
-                BoxShadow(
-                  blurRadius: 3,
-                  color: Colors.black12,
-                )
-              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // USER
-                Text(
-                  review["username"] ?? "Unknown User",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
+                Text(review["user"] ?? "-",
+                    style:
+                        const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-
-                // RATING
-                _buildRatingStars(review["rating"]),
-
+                _stars(review["rating"] ?? 0),
                 const SizedBox(height: 6),
-
-                // COMMENT
-                Text(
-                  review["comment"] ?? "-",
-                  style: const TextStyle(fontSize: 14),
-                ),
+                Text(review["comment"] ?? ""),
 
                 const SizedBox(height: 10),
 
-                // REPLY
-                if (reply != null)
+                if (reply == null)
+                  ElevatedButton(
+                    onPressed: () =>
+                        showReplyDialog(review["id"].toString()),
+                    child: const Text("Balas Review"),
+                  )
+                else
                   Container(
-                    width: double.infinity,
                     padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(top: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF2F7FF),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "Balasan Admin:",
+                          "LigaPass :",
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: Colors.blue,
-                          ),
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue),
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          reply["reply_text"],
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        const SizedBox(height: 6),
+                        Text(reply["reply_text"] ?? ""),
 
                         Row(
                           children: [
                             TextButton(
                               onPressed: () => showReplyDialog(
-                                review["id"],
+                                reply["id"].toString(),
                                 initialText: reply["reply_text"],
                               ),
                               child: const Text("Edit"),
                             ),
                             TextButton(
-                              onPressed: () => deleteReply(review["id"]),
-                              child: const Text(
-                                "Hapus",
-                                style: TextStyle(color: Colors.red),
-                              ),
+                              onPressed: () => deleteReply(
+                                  reply["id"].toString()),
+                              child: const Text("Hapus",
+                                  style: TextStyle(color: Colors.red)),
                             ),
                           ],
-                        ),
+                        )
                       ],
                     ),
-                  )
-                else
-                  ElevatedButton(
-                    onPressed: () => showReplyDialog(review["id"]),
-                    child: const Text("Balas Review"),
                   ),
               ],
             ),
           );
         }),
-      ],
-    );
-  }
-
-  // ========================
-  // RATING SUMMARY
-  // ========================
-  Widget _buildRatingSummary() {
-    double avg = 0;
-
-    for (var r in reviews) {
-      avg += (r["rating"] ?? 0).toDouble();
-    }
-
-    avg /= reviews.length;
-
-    return Row(
-      children: [
-        _buildRatingStars(avg.round()),
-        const SizedBox(width: 6),
-        Text(
-          "${avg.toStringAsFixed(1)}/5.0",
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        )
       ],
     );
   }
