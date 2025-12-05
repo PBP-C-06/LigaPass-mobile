@@ -96,9 +96,7 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isLoadingNews = true);
     try {
       final url = '${ApiConfig.baseUrl}/news/api/news/?page=1&per_page=5';
-      debugPrint('Loading news from: $url');
       final response = await http.get(Uri.parse(url));
-      debugPrint('News response status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted) {
@@ -113,14 +111,11 @@ class _HomePageState extends State<HomePage> {
             _latestNews = List<Map<String, dynamic>>.from(newsList);
             _isLoadingNews = false;
           });
-          debugPrint('Loaded ${_latestNews.length} news items');
         }
       } else {
-        debugPrint('News API error: ${response.statusCode}');
         if (mounted) setState(() => _isLoadingNews = false);
       }
     } catch (e) {
-      debugPrint('Error loading news: $e');
       if (mounted) setState(() => _isLoadingNews = false);
     }
   }
@@ -131,9 +126,7 @@ class _HomePageState extends State<HomePage> {
       // Use the calendar API with status filter
       final url =
           '${ApiConfig.baseUrl}/matches/api/calendar/?page=1&per_page=10&status=Upcoming';
-      debugPrint('Loading upcoming matches from: $url');
       final response = await http.get(Uri.parse(url));
-      debugPrint('Matches response status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted) {
@@ -155,14 +148,11 @@ class _HomePageState extends State<HomePage> {
             _upcomingMatches = matches;
             _isLoadingMatches = false;
           });
-          debugPrint('Loaded ${_upcomingMatches.length} upcoming matches');
         }
       } else {
-        debugPrint('Matches API error: ${response.statusCode}');
         if (mounted) setState(() => _isLoadingMatches = false);
       }
     } catch (e) {
-      debugPrint('Error loading matches: $e');
       if (mounted) setState(() => _isLoadingMatches = false);
     }
   }
@@ -171,9 +161,7 @@ class _HomePageState extends State<HomePage> {
     try {
       // Use the flutter team logos endpoint that exists
       final url = '${ApiConfig.baseUrl}/matches/api/flutter/team-logos/';
-      debugPrint('Loading teams from: $url');
       final response = await http.get(Uri.parse(url));
-      debugPrint('Teams response status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted) {
@@ -187,12 +175,10 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _teams = List<Map<String, dynamic>>.from(teamsList);
           });
-          debugPrint('Loaded ${_teams.length} teams');
           _startTeamAutoScroll();
         }
       }
     } catch (e) {
-      debugPrint('Error loading teams: $e');
     }
   }
 

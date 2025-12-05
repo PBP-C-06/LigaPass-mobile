@@ -159,7 +159,6 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
         });
       }
     } catch (e) {
-      debugPrint('Error loading booking details: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
