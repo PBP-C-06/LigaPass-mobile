@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+
+import '../../config/endpoints.dart';
 
 class AdminReviewSection extends StatefulWidget {
   final String matchId;
@@ -13,7 +14,7 @@ class AdminReviewSection extends StatefulWidget {
 }
 
 class _AdminReviewSectionState extends State<AdminReviewSection> {
-  final BASE_URL = "http://localhost:8000";
+  final String baseUrl = Endpoints.base;
 
   List reviews = [];
   bool isLoading = true;
@@ -30,7 +31,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
     final request = context.read<CookieRequest>();
     setState(() => isLoading = true);
 
-    final url = "$BASE_URL/reviews/api/${widget.matchId}/admin_list/";
+    final url = "$baseUrl/reviews/api/${widget.matchId}/admin_list/";
     final response = await request.get(url);
 
     setState(() {
@@ -45,7 +46,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
     final request = context.read<CookieRequest>();
 
     final response = await request.post(
-      "$BASE_URL/reviews/api/reply/$reviewId/",
+      "$baseUrl/reviews/api/reply/$reviewId/",
       {"reply_text": text},
     );
 
@@ -61,7 +62,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
     final request = context.read<CookieRequest>();
 
     final response = await request.post(
-      "$BASE_URL/reviews/api/reply/$replyId/edit/",
+      "$baseUrl/reviews/api/reply/$replyId/edit/",
       {"reply_text": text},
     );
 
@@ -77,7 +78,7 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
   final request = context.read<CookieRequest>();
 
   final response = await request.post(
-      "$BASE_URL/reviews/api/reply/$replyId/delete/",
+      "$baseUrl/reviews/api/reply/$replyId/delete/",
       {},
     );
 
