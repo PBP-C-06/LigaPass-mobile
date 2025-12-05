@@ -1,15 +1,13 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:http/http.dart' as http;
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class AdminAnalyticsPanel extends StatefulWidget {
-  final String sessionCookie;
   final VoidCallback onClose;
 
   const AdminAnalyticsPanel({
     super.key,
-    required this.sessionCookie,
     required this.onClose,
   });
 
@@ -18,41 +16,74 @@ class AdminAnalyticsPanel extends StatefulWidget {
 }
 
 class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
-  String selectedPeriod = "monthly"; // daily, weekly, monthly
+  // Filter terpisah
+  String revenuePeriod = "monthly";
+  String ticketPeriod = "monthly";
 
   List<dynamic> revenueData = [];
   List<dynamic> ticketsData = [];
-  bool isLoading = true;
 
-  static const String baseUrl = "http://localhost:8000";
+  bool isLoadingRevenue = true;
+  bool isLoadingTickets = true;
+
+  final String BASE_URL = "http://localhost:8000";
 
   @override
   void initState() {
     super.initState();
-    fetchAnalytics();
+    fetchRevenue();
+    fetchTickets();
   }
 
-  Future<void> fetchAnalytics() async {
-    setState(() => isLoading = true);
 
-    final url = "$baseUrl/reviews/analytics/admin/data/?period=$selectedPeriod";
+  Future<void> fetchRevenue() async {
+    setState(() => isLoadingRevenue = true);
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {"Cookie": widget.sessionCookie},
-    );
+    final request = context.read<CookieRequest>();
+    final url = "$BASE_URL/reviews/analytics/admin/data/?period=$revenuePeriod";
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        revenueData = data["revenueData"];
-        ticketsData = data["ticketsData"];
-        isLoading = false;
-      });
-    } else {
-      setState(() => isLoading = false);
-      debugPrint("Error fetching admin analytics: ${response.body}");
+    final response = await request.get(url);
+
+    setState(() {
+      revenueData = response["revenueData"] ?? [];
+      isLoadingRevenue = false;
+    });
+  }
+
+  Future<void> fetchTickets() async {
+    setState(() => isLoadingTickets = true);
+
+    final request = context.read<CookieRequest>();
+    final url = "$BASE_URL/reviews/analytics/admin/data/?period=$ticketPeriod";
+
+    final response = await request.get(url);
+
+    setState(() {
+      ticketsData = response["ticketsData"] ?? [];
+      isLoadingTickets = false;
+    });
+  }
+
+ 
+  double _getMaxY(List<dynamic> data, String key) {
+    if (data.isEmpty) return 1;
+
+    double maxVal = 0;
+    for (final item in data) {
+      final v = (item[key] ?? 0).toDouble();
+      if (v > maxVal) maxVal = v;
     }
+    if (maxVal <= 0) return 1;
+    return maxVal * 1.2; // beri sedikit ruang di atas
+  }
+
+  // Helper: interval grid & label Y
+  double _getInterval(double maxY) {
+    if (maxY <= 5) return 1;
+    if (maxY <= 10) return 2;
+    if (maxY <= 50) return 10;
+    if (maxY <= 100) return 20;
+    return maxY / 5;
   }
 
   @override
@@ -73,7 +104,7 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Analisis Admin",
+                "Analisis",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -88,56 +119,53 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
           ),
           const SizedBox(height: 12),
 
-          // FILTER DROPDOWN
-          Align(
-            alignment: Alignment.centerRight,
-            child: DropdownButton<String>(
-              value: selectedPeriod,
-              onChanged: (value) {
-                setState(() => selectedPeriod = value!);
-                fetchAnalytics();
-              },
-              items: const [
-                DropdownMenuItem(value: "daily", child: Text("Harian")),
-                DropdownMenuItem(value: "weekly", child: Text("Mingguan")),
-                DropdownMenuItem(value: "monthly", child: Text("Bulanan")),
+          Expanded(
+            child: ListView(
+              children: [
+                _buildCard(
+                  title: "Total Pendapatan",
+                  dropdownValue: revenuePeriod,
+                  onDropdownChange: (v) {
+                    setState(() => revenuePeriod = v);
+                    fetchRevenue();
+                  },
+                  child: isLoadingRevenue
+                      ? const Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : _buildRevenueChart(),
+                ),
+                const SizedBox(height: 20),
+
+                _buildCard(
+                  title: "Tiket Terjual",
+                  dropdownValue: ticketPeriod,
+                  onDropdownChange: (v) {
+                    setState(() => ticketPeriod = v);
+                    fetchTickets();
+                  },
+                  child: isLoadingTickets
+                      ? const Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : _buildTicketsChart(),
+                ),
               ],
             ),
           ),
-
-          const SizedBox(height: 20),
-
-          // LOADING STATE
-          if (isLoading)
-            const Expanded(child: Center(child: CircularProgressIndicator()))
-          else
-            Expanded(
-              child: ListView(
-                children: [
-                  // ==== REVENUE CHART ====
-                  _buildCard(
-                    title: "Total Pendapatan",
-                    child: _buildRevenueChart(),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // ==== TICKETS SOLD CHART ====
-                  _buildCard(
-                    title: "Tiket Terjual",
-                    child: _buildTicketsChart(),
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );
   }
 
-  // =======================
-  // CARD WRAPPER
-  // =======================
-  Widget _buildCard({required String title, required Widget child}) {
+  Widget _buildCard({
+    required String title,
+    required Widget child,
+    required String dropdownValue,
+    required Function(String) onDropdownChange,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -147,53 +175,75 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          // Title + dropdown periode
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              DropdownButton<String>(
+                value: dropdownValue,
+                underline: const SizedBox(),
+                items: const [
+                  DropdownMenuItem(value: "daily", child: Text("Harian")),
+                  DropdownMenuItem(value: "weekly", child: Text("Mingguan")),
+                  DropdownMenuItem(value: "monthly", child: Text("Bulanan")),
+                ],
+                onChanged: (v) {
+                  if (v != null) onDropdownChange(v);
+                },
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           child,
         ],
       ),
     );
   }
 
-  // =======================
-  // REVENUE CHART
-  // =======================
+
   Widget _buildRevenueChart() {
-    if (revenueData.isEmpty) {
-      return const Text("Tidak ada data.");
-    }
+    if (revenueData.isEmpty) return const Text("Tidak ada data.");
+
+    final maxY = _getMaxY(revenueData, "total_revenue");
+    final interval = _getInterval(maxY);
 
     return SizedBox(
       height: 200,
       child: BarChart(
         BarChartData(
+          minY: 0,
+          maxY: maxY,
           barGroups: revenueData.asMap().entries.map((entry) {
-            final index = entry.key;
-            final data = entry.value;
             return BarChartGroupData(
-              x: index,
+              x: entry.key,
               barRods: [
                 BarChartRodData(
-                  toY: (data["total_revenue"] ?? 0).toDouble(),
+                  toY: (entry.value["total_revenue"] ?? 0).toDouble(),
                   color: Colors.blue,
                 ),
               ],
             );
           }).toList(),
+          gridData: FlGridData(
+            show: true,
+            horizontalInterval: interval,
+          ),
           titlesData: FlTitlesData(
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  int index = value.toInt();
+                getTitlesWidget: (value, _) {
+                  final index = value.toInt();
                   if (index < 0 || index >= revenueData.length) {
                     return const SizedBox.shrink();
                   }
                   return Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       revenueData[index]["date"],
                       style: const TextStyle(fontSize: 10),
@@ -202,48 +252,74 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
                 },
               ),
             ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: interval,
+                reservedSize: 40,
+                getTitlesWidget: (value, _) {
+                  if (value < 0) return const SizedBox.shrink();
+                  return Text(
+                    value.toInt().toString(),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.black87,
+                    ),
+                  );
+                },
+              ),
+            ),
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
           ),
+          borderData: FlBorderData(show: false),
         ),
       ),
     );
   }
 
-  // =======================
-  // TICKETS SOLD CHART
-  // =======================
   Widget _buildTicketsChart() {
-    if (ticketsData.isEmpty) {
-      return const Text("Tidak ada data.");
-    }
+    if (ticketsData.isEmpty) return const Text("Tidak ada data.");
+
+    final maxY = _getMaxY(ticketsData, "tickets_sold");
+    final interval = _getInterval(maxY);
 
     return SizedBox(
       height: 200,
       child: BarChart(
         BarChartData(
+          minY: 0,
+          maxY: maxY,
           barGroups: ticketsData.asMap().entries.map((entry) {
-            final index = entry.key;
-            final data = entry.value;
             return BarChartGroupData(
-              x: index,
+              x: entry.key,
               barRods: [
                 BarChartRodData(
-                  toY: (data["tickets_sold"] ?? 0).toDouble(),
+                  toY: (entry.value["tickets_sold"] ?? 0).toDouble(),
                   color: Colors.orange,
                 ),
               ],
             );
           }).toList(),
+          gridData: FlGridData(
+            show: true,
+            horizontalInterval: interval,
+          ),
           titlesData: FlTitlesData(
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  int index = value.toInt();
+                getTitlesWidget: (value, _) {
+                  final index = value.toInt();
                   if (index < 0 || index >= ticketsData.length) {
                     return const SizedBox.shrink();
                   }
                   return Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       ticketsData[index]["date"],
                       style: const TextStyle(fontSize: 10),
@@ -252,7 +328,31 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
                 },
               ),
             ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: interval,
+                reservedSize: 32,
+                getTitlesWidget: (value, _) {
+                  if (value < 0) return const SizedBox.shrink();
+                  return Text(
+                    value.toInt().toString(),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.black87,
+                    ),
+                  );
+                },
+              ),
+            ),
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
           ),
+          borderData: FlBorderData(show: false),
         ),
       ),
     );
