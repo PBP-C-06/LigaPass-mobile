@@ -6,7 +6,9 @@ import 'package:http/http.dart' as http;
 import '../../config/endpoints.dart';
 
 class UserAnalyticsPanel extends StatefulWidget {
-  const UserAnalyticsPanel({super.key});
+  final String sessionCookie;
+
+  const UserAnalyticsPanel({super.key, required this.sessionCookie});
 
   @override
   State<UserAnalyticsPanel> createState() => _UserAnalyticsPanelState();
@@ -34,10 +36,13 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
       "${Endpoints.base}/reviews/analytics/user/data/?period=$selectedPeriod",
     );
 
+    final res = await http.get(url, headers: {"Cookie": widget.sessionCookie});
+    final data = jsonDecode(res.body);
+
     setState(() {
-      spendingData = response["spendingData"];
-      hadir = response["attendance"]["hadir"];
-      tidakHadir = response["attendance"]["tidak_hadir"];
+      spendingData = data["spendingData"];
+      hadir = data["attendance"]["hadir"];
+      tidakHadir = data["attendance"]["tidak_hadir"];
       loading = false;
     });
   }

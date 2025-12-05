@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
-const String BASE_URL = "http://localhost:8000"; 
+import '../../config/endpoints.dart';
 
 class UserReviewSection extends StatefulWidget {
   final String matchId;
@@ -36,8 +36,9 @@ class _UserReviewSectionState extends State<UserReviewSection> {
     setState(() => isLoading = true);
 
     final response = await widget.request
-        .get("$BASE_URL/reviews/api/${widget.matchId}/list/");
+        .get("${Endpoints.base}/reviews/api/${widget.matchId}/list/");
 
+    if (!mounted) return;
     setState(() {
       myReview = response["my_review"];
       otherReviews = (response["reviews"] ?? []) as List<dynamic>;
@@ -47,13 +48,14 @@ class _UserReviewSectionState extends State<UserReviewSection> {
 
   Future<void> createReview(int rating, String comment) async {
     final response = await widget.request.post(
-      "$BASE_URL/reviews/api/${widget.matchId}/create/",
+      "${Endpoints.base}/reviews/api/${widget.matchId}/create/",
       {
         "rating": rating.toString(),
         "comment": comment,
       },
     );
 
+    if (!mounted) return;
     if (response["ok"] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Review berhasil ditambahkan")),
@@ -70,13 +72,14 @@ class _UserReviewSectionState extends State<UserReviewSection> {
 
   Future<void> updateReview(int rating, String comment) async {
     final response = await widget.request.post(
-      "$BASE_URL/reviews/api/${widget.matchId}/update/",
+      "${Endpoints.base}/reviews/api/${widget.matchId}/update/",
       {
         "rating": rating.toString(),
         "comment": comment,
       },
     );
 
+    if (!mounted) return;
     if (response["ok"] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Review berhasil diperbarui")),
@@ -331,7 +334,7 @@ class _UserReviewSectionState extends State<UserReviewSection> {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

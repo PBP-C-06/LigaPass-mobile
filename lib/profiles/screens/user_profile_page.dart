@@ -91,6 +91,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
             final profile = snapshot.data!;
             final role = request.jsonData['role'];
             String currentStatus = profile.status;
+            final sessionCookie = request.cookies.entries
+                .map((e) => "${e.key}=${e.value}")
+                .join("; ");
 
             // Parse full name into first and last name
             final nameParts = profile.fullName.split(' ');
@@ -126,9 +129,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       onEditSuccess: _refreshProfile,
                     ),
 
-                  UserAnalyticsPanel(
-                    
-                  ),
+                  UserAnalyticsPanel(sessionCookie: sessionCookie),
 
                   const LogoutButton(),
                 ],
