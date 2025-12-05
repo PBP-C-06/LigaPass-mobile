@@ -28,7 +28,8 @@ class BookingPaymentScreen extends StatefulWidget {
   State<BookingPaymentScreen> createState() => _BookingPaymentScreenState();
 }
 
-class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
+class _BookingPaymentScreenState extends State<BookingPaymentScreen>
+    with SingleTickerProviderStateMixin {
   Timer? _statusTimer;
   String _paymentStatus = 'PENDING';
   bool _isLoading = false;
@@ -37,15 +38,23 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
   Map<String, dynamic> _paymentData = {};
   String? _errorMessage;
 
+  // Animation for hourglass
+  late AnimationController _hourglassController;
+
   @override
   void initState() {
     super.initState();
+    _hourglassController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     _initializePayment();
   }
 
   @override
   void dispose() {
     _statusTimer?.cancel();
+    _hourglassController.dispose();
     super.dispose();
   }
 
@@ -316,12 +325,19 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
     // Show loading while initializing payment
     if (_isInitializingPayment) {
       return Scaffold(
+        backgroundColor: const Color(0xFFEFF6FF),
         appBar: AppBar(
-          title: const Text('Payment'),
-          backgroundColor: const Color(0xFF2563EB),
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: const Text(
+            'Pembayaran',
+            style: TextStyle(
+              color: Color(0xFF2563EB),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          centerTitle: true,
         ),
-        backgroundColor: const Color(0xFFF3F4F6),
         body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -329,7 +345,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
               CircularProgressIndicator(color: Color(0xFF2563EB)),
               SizedBox(height: 20),
               Text(
-                'Initializing payment...',
+                'Memproses pembayaran...',
                 style: TextStyle(color: Color(0xFF6B7280), fontSize: 16),
               ),
             ],
@@ -341,23 +357,46 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
     // Show error if failed to initialize
     if (_errorMessage != null) {
       return Scaffold(
+        backgroundColor: const Color(0xFFEFF6FF),
         appBar: AppBar(
-          title: const Text('Payment'),
-          backgroundColor: const Color(0xFF2563EB),
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF2563EB)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Pembayaran',
+            style: TextStyle(
+              color: Color(0xFF2563EB),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          centerTitle: true,
         ),
-        backgroundColor: const Color(0xFFF3F4F6),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 64),
-                const SizedBox(height: 20),
-                Text(
-                  'Payment Error',
-                  style: const TextStyle(
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.error_outline,
+                    color: Colors.red.shade400,
+                    size: 48,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Pembayaran Gagal',
+                  style: TextStyle(
                     color: Color(0xFF111827),
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -370,13 +409,20 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
                   style: const TextStyle(color: Color(0xFF6B7280)),
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
-                    foregroundColor: Colors.white,
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Kembali'),
                   ),
-                  child: const Text('Go Back'),
                 ),
               ],
             ),
@@ -386,13 +432,20 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFFEFF6FF),
       appBar: AppBar(
-        title: const Text('Payment'),
-        backgroundColor: const Color(0xFF2563EB),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        elevation: 0,
         automaticallyImplyLeading: false,
+        title: const Text(
+          'Pembayaran',
+          style: TextStyle(
+            color: Color(0xFF2563EB),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
       ),
-      backgroundColor: const Color(0xFFF3F4F6),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -416,19 +469,24 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
               ),
               child: Column(
                 children: [
-                  Icon(
-                    _paymentStatus == 'PENDING'
-                        ? Icons.hourglass_top
-                        : _paymentStatus == 'CONFIRMED'
-                        ? Icons.check_circle
-                        : Icons.cancel,
-                    size: 48,
-                    color: _paymentStatus == 'PENDING'
-                        ? Colors.orange
-                        : _paymentStatus == 'CONFIRMED'
-                        ? Colors.green
-                        : Colors.red,
-                  ),
+                  _paymentStatus == 'PENDING'
+                      ? RotationTransition(
+                          turns: _hourglassController,
+                          child: const Icon(
+                            Icons.hourglass_empty,
+                            size: 48,
+                            color: Colors.orange,
+                          ),
+                        )
+                      : Icon(
+                          _paymentStatus == 'CONFIRMED'
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          size: 48,
+                          color: _paymentStatus == 'CONFIRMED'
+                              ? Colors.green
+                              : Colors.red,
+                        ),
                   const SizedBox(height: 12),
                   Text(
                     _paymentStatus == 'PENDING'
@@ -585,7 +643,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
         ],
       ),
       child: Column(
@@ -665,7 +723,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
         ],
       ),
       child: Column(
@@ -747,7 +805,7 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
         ],
       ),
       child: Column(

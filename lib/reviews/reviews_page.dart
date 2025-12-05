@@ -101,7 +101,9 @@ class _ReviewsPageState extends State<ReviewsPage> {
                   onPressed: () {
                     if (rating == 0 || commentController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Rating & komentar wajib diisi")),
+                        const SnackBar(
+                          content: Text("Rating & komentar wajib diisi"),
+                        ),
                       );
                       return;
                     }
@@ -122,7 +124,7 @@ class _ReviewsPageState extends State<ReviewsPage> {
                   },
                   child: const Text("Kirim"),
                 ),
-              )
+              ),
             ],
           ),
         );
@@ -157,9 +159,7 @@ class _ReviewsPageState extends State<ReviewsPage> {
                   const SizedBox(width: 10),
                   Text(
                     review["username"] + (review["isMe"] ? " (You)" : ""),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -168,9 +168,7 @@ class _ReviewsPageState extends State<ReviewsPage> {
               Row(
                 children: List.generate(5, (i) {
                   return Icon(
-                    i < review["rating"]
-                        ? Icons.star
-                        : Icons.star_border,
+                    i < review["rating"] ? Icons.star : Icons.star_border,
                     color: Colors.amber,
                     size: 20,
                   );
@@ -182,10 +180,7 @@ class _ReviewsPageState extends State<ReviewsPage> {
           const SizedBox(height: 8),
 
           /// Comment
-          Text(
-            review["comment"],
-            style: const TextStyle(fontSize: 14),
-          ),
+          Text(review["comment"], style: const TextStyle(fontSize: 14)),
 
           const SizedBox(height: 6),
 
@@ -202,7 +197,9 @@ class _ReviewsPageState extends State<ReviewsPage> {
               decoration: BoxDecoration(
                 color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(10),
-                border: Border(left: BorderSide(color: Colors.blue.shade400, width: 4)),
+                border: Border(
+                  left: BorderSide(color: Colors.blue.shade400, width: 4),
+                ),
               ),
               child: Text(
                 review["reply"],
@@ -219,7 +216,15 @@ class _ReviewsPageState extends State<ReviewsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("User Reviews"),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          "User Reviews",
+          style: TextStyle(
+            color: Color(0xFF1d4ed8),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       bottomNavigationBar: const AppBottomNav(currentRoute: "/reviews"),
 
@@ -229,13 +234,22 @@ class _ReviewsPageState extends State<ReviewsPage> {
         label: const Text("Tambah Review"),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            const SizedBox(height: 10),
-            ...reviews.map(_buildReviewItem),
-          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: ListView(
+            children: [
+              const SizedBox(height: 10),
+              ...reviews.map(_buildReviewItem),
+            ],
+          ),
         ),
       ),
     );

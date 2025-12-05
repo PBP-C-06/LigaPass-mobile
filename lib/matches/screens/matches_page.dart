@@ -4,7 +4,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../../common/widgets/app_bottom_nav.dart';
-import '../../bookings/screens/booking_create_screen.dart';
+import '../../bookings/screens/ticket_price_screen.dart';
 import '../models/match.dart';
 import '../models/match_filter.dart';
 import '../state/matches_notifier.dart';
@@ -112,11 +112,22 @@ class _MatchesPageState extends State<MatchesPage> {
     }
 
     if (!mounted) return;
+    final dateText = match.kickoff != null
+        ? DateFormat('EEEE, dd MMM yyyy • HH:mm').format(match.kickoff!)
+        : match.dateText;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => BookingCreateScreen(
+        builder: (_) => TicketPriceScreen(
           matchId: match.id,
-          matchTitle: '${match.homeTeamName} vs ${match.awayTeamName}',
+          homeTeam: match.homeTeamName,
+          awayTeam: match.awayTeamName,
+          homeTeamLogo: match.homeLogoUrl,
+          awayTeamLogo: match.awayLogoUrl,
+          venue: match.venueDisplay,
+          matchDate: dateText,
+          matchStatus: match.status.name,
+          homeScore: match.displayHomeGoals,
+          awayScore: match.displayAwayGoals,
         ),
       ),
     );
@@ -130,75 +141,88 @@ class _MatchesPageState extends State<MatchesPage> {
         elevation: 0,
         title: const Text(
           'LigaPass Matches',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Color(0xFF1d4ed8),
+            fontWeight: FontWeight.w700,
+          ),
         ),
         centerTitle: true,
       ),
-      body: RefreshIndicator(
-        onRefresh: () => context.read<MatchesNotifier>().loadMatches(),
-        child: Consumer<MatchesNotifier>(
-          builder: (context, state, _) {
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _FilterCard(
-                  searchController: _searchController,
-                  startDateText: _formatDate(_startDate),
-                  endDateText: _formatDate(_endDate),
-                  onPickStart: () => _pickDate(isStart: true),
-                  onPickEnd: () => _pickDate(isStart: false),
-                  statuses: _selectedStatuses,
-                  onToggleStatus: (status, isSelected) {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedStatuses = {..._selectedStatuses, status};
-                      } else {
-                        _selectedStatuses = {..._selectedStatuses}..remove(status);
-                        if (_selectedStatuses.isEmpty) {
-                          _selectedStatuses = const {MatchStatus.upcoming};
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
+          ),
+        ),
+        child: RefreshIndicator(
+          onRefresh: () => context.read<MatchesNotifier>().loadMatches(),
+          child: Consumer<MatchesNotifier>(
+            builder: (context, state, _) {
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _FilterCard(
+                    searchController: _searchController,
+                    startDateText: _formatDate(_startDate),
+                    endDateText: _formatDate(_endDate),
+                    onPickStart: () => _pickDate(isStart: true),
+                    onPickEnd: () => _pickDate(isStart: false),
+                    statuses: _selectedStatuses,
+                    onToggleStatus: (status, isSelected) {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedStatuses = {..._selectedStatuses, status};
+                        } else {
+                          _selectedStatuses = {..._selectedStatuses}
+                            ..remove(status);
+                          if (_selectedStatuses.isEmpty) {
+                            _selectedStatuses = const {MatchStatus.upcoming};
+                          }
                         }
+                      });
+                    },
+                    perPage: _perPage,
+                    onPerPageChanged: (value) {
+                      if (value != null) {
+                        setState(() => _perPage = value);
                       }
-                    });
-                  },
-                  perPage: _perPage,
-                  onPerPageChanged: (value) {
-                    if (value != null) {
-                      setState(() => _perPage = value);
-                    }
-                  },
-                  onApply: _applyFilters,
-                  onReset: _resetFilters,
-                  isLoading: state.isLoading,
-                ),
-                const SizedBox(height: 12),
-                if (state.error != null)
-                  _ErrorBanner(
-                    message: state.error!,
-                    onRetry: () => state.loadMatches(resetPage: true),
-                  )
-                else if (state.isLoading && state.matches.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (state.matches.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: Center(
-                      child: Text(
-                        'Tidak ada pertandingan sesuai filter.',
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                    },
+                    onApply: _applyFilters,
+                    onReset: _resetFilters,
+                    isLoading: state.isLoading,
+                  ),
+                  const SizedBox(height: 12),
+                  if (state.error != null)
+                    _ErrorBanner(
+                      message: state.error!,
+                      onRetry: () => state.loadMatches(resetPage: true),
+                    )
+                  else if (state.isLoading && state.matches.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (state.matches.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(
+                        child: Text(
+                          'Tidak ada pertandingan sesuai filter.',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                       ),
-                    ),
-                  )
-                else
-                  ...[
+                    )
+                  else ...[
                     ...state.matches.map(
                       (match) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: MatchCard(
                           match: match,
-                          onTap: () => Navigator.of(context).pushNamed('/match', arguments: match),
+                          onTap: () => Navigator.of(
+                            context,
+                          ).pushNamed('/match', arguments: match),
                           onBuy: () => _handleBuy(match),
                         ),
                       ),
@@ -207,16 +231,21 @@ class _MatchesPageState extends State<MatchesPage> {
                     _PaginationControls(
                       pagination: state.pagination,
                       onPrevious: state.pagination?.hasPrevious == true
-                          ? () => state.goToPage((state.pagination!.currentPage - 1))
+                          ? () => state.goToPage(
+                              (state.pagination!.currentPage - 1),
+                            )
                           : null,
                       onNext: state.pagination?.hasNext == true
-                          ? () => state.goToPage((state.pagination!.currentPage + 1))
+                          ? () => state.goToPage(
+                              (state.pagination!.currentPage + 1),
+                            )
                           : null,
                     ),
                   ],
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
       bottomNavigationBar: const AppBottomNav(currentRoute: '/matches'),
@@ -268,7 +297,9 @@ class _FilterCard extends StatelessWidget {
               decoration: InputDecoration(
                 labelText: 'Cari tim',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onSubmitted: (_) => onApply(),
             ),
@@ -277,9 +308,21 @@ class _FilterCard extends StatelessWidget {
               spacing: 10,
               runSpacing: 8,
               children: [
-                _statusChip('Upcoming', MatchStatus.upcoming, statuses.contains(MatchStatus.upcoming)),
-                _statusChip('Ongoing', MatchStatus.ongoing, statuses.contains(MatchStatus.ongoing)),
-                _statusChip('Finished', MatchStatus.finished, statuses.contains(MatchStatus.finished)),
+                _statusChip(
+                  'Upcoming',
+                  MatchStatus.upcoming,
+                  statuses.contains(MatchStatus.upcoming),
+                ),
+                _statusChip(
+                  'Ongoing',
+                  MatchStatus.ongoing,
+                  statuses.contains(MatchStatus.ongoing),
+                ),
+                _statusChip(
+                  'Finished',
+                  MatchStatus.finished,
+                  statuses.contains(MatchStatus.finished),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -290,7 +333,9 @@ class _FilterCard extends StatelessWidget {
                     onPressed: onPickStart,
                     icon: const Icon(Icons.date_range),
                     label: Text(startDateText),
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -299,7 +344,9 @@ class _FilterCard extends StatelessWidget {
                     onPressed: onPickEnd,
                     icon: const Icon(Icons.event),
                     label: Text(endDateText),
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
               ],
@@ -316,10 +363,17 @@ class _FilterCard extends StatelessWidget {
                     initialValue: perPage,
                     decoration: InputDecoration(
                       labelText: 'Entri per halaman',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     items: MatchFilter.allowedPerPage
-                        .map((value) => DropdownMenuItem(value: value, child: Text('$value')))
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text('$value'),
+                          ),
+                        )
                         .toList(),
                     onChanged: onPerPageChanged,
                   ),
@@ -414,7 +468,10 @@ class _ErrorBanner extends StatelessWidget {
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             TextButton.icon(

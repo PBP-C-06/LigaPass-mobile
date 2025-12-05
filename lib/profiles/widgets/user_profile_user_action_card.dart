@@ -1,13 +1,32 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:ligapass/profiles/screens/redirect_login.dart';
+import 'package:ligapass/profiles/screens/user_edit.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
 class UserProfileUserActionCard extends StatelessWidget {
   final String userId;
+  final String? username;
+  final String? email;
+  final String? firstName;
+  final String? lastName;
+  final String? phone;
+  final String? dateOfBirth;
+  final String? profilePicture;
+  final VoidCallback? onEditSuccess;
 
-  const UserProfileUserActionCard({super.key, required this.userId});
+  const UserProfileUserActionCard({
+    super.key,
+    required this.userId,
+    this.username,
+    this.email,
+    this.firstName,
+    this.lastName,
+    this.phone,
+    this.dateOfBirth,
+    this.profilePicture,
+    this.onEditSuccess,
+  });
 
   // Delete profile, return true jika berhasil
   Future<bool> _deleteProfile(
@@ -76,13 +95,25 @@ class UserProfileUserActionCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => RedirectLoginPage(), // PLACEHOLDER
+                    builder: (context) => UserEditPage(
+                      userId: userId,
+                      initialUsername: username,
+                      initialEmail: email,
+                      initialFirstName: firstName,
+                      initialLastName: lastName,
+                      initialPhone: phone,
+                      initialDateOfBirth: dateOfBirth,
+                      initialProfilePicture: profilePicture,
+                    ),
                   ),
                 );
+                if (result == true && onEditSuccess != null) {
+                  onEditSuccess!();
+                }
               },
               icon: const Icon(Icons.edit, color: Colors.white),
               label: const Text(

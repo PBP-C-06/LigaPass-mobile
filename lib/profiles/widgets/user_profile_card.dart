@@ -59,10 +59,28 @@ class UserProfileCard extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 45,
                   backgroundColor: Colors.grey.shade200,
-                  backgroundImage: NetworkImage(
-                    profile.profilePicture == null || profile.profilePicture!.isEmpty
-                        ? "http://localhost:8000/static/images/default-profile-picture.png"
-                        : "http://localhost:8000${profile.profilePicture}", 
+                  child: ClipOval(
+                    child: profile.profilePicture == null || profile.profilePicture!.isEmpty
+                        ? Image.asset(
+                            'assets/profile_images/default-profile-picture.png',
+                            width: 90,
+                            height: 90,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.network(
+                            "http://localhost:8000${profile.profilePicture}",
+                            width: 90,
+                            height: 90,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/profile_images/default-profile-picture.png',
+                                width: 90,
+                                height: 90,
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          ),
                   ),
                 ),
               ),

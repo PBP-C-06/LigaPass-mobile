@@ -3,6 +3,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 
+import '../../config/api_config.dart';
+
 List<Ticket> ticketListFromJson(String str) =>
     List<Ticket>.from(json.decode(str).map((x) => Ticket.fromJson(x)));
 
@@ -12,6 +14,7 @@ String ticketListToJson(List<Ticket> data) =>
 class Ticket {
   final String id; // UUID
   final String bookingId;
+  final String matchId; // Match UUID for reviews
   final String seatCategory;
   final String matchTitle;
   final String homeTeam;
@@ -22,13 +25,15 @@ class Ticket {
   final String? venue;
   final String? city;
   final bool isUsed;
-  final bool isMatchFinished; // NEW: Check if match already finished
+  final bool isMatchFinished; // Check if match already finished
+  final bool hasReviewed; // Check if user already reviewed this match
   final DateTime generatedAt;
   final String qrCode; // Base64 or URL
 
   Ticket({
     required this.id,
     required this.bookingId,
+    required this.matchId,
     required this.seatCategory,
     required this.matchTitle,
     required this.homeTeam,
@@ -40,6 +45,7 @@ class Ticket {
     this.city,
     required this.isUsed,
     this.isMatchFinished = false,
+    this.hasReviewed = false,
     required this.generatedAt,
     required this.qrCode,
   });
@@ -48,13 +54,14 @@ class Ticket {
     id: json['id']?.toString() ?? json['pk']?.toString() ?? '',
     bookingId:
         json['booking_id']?.toString() ?? json['booking']?.toString() ?? '',
+    matchId: json['match_id']?.toString() ?? '',
     seatCategory:
         json['seat_category'] ?? json['ticket_type']?.toString() ?? 'Regular',
     matchTitle: json['match_title'] ?? '',
     homeTeam: json['home_team'] ?? '',
     awayTeam: json['away_team'] ?? '',
-    homeTeamLogo: json['home_team_logo'],
-    awayTeamLogo: json['away_team_logo'],
+    homeTeamLogo: _resolveLogo(json['home_team_logo']),
+    awayTeamLogo: _resolveLogo(json['away_team_logo']),
     matchDate: json['match_date'] != null
         ? DateTime.tryParse(json['match_date']) ?? DateTime.now()
         : DateTime.now(),
@@ -62,6 +69,7 @@ class Ticket {
     city: json['city'],
     isUsed: json['is_used'] ?? false,
     isMatchFinished: json['is_match_finished'] ?? false,
+    hasReviewed: json['has_reviewed'] ?? false,
     generatedAt: json['generated_at'] != null
         ? DateTime.tryParse(json['generated_at']) ?? DateTime.now()
         : DateTime.now(),
@@ -71,6 +79,7 @@ class Ticket {
   Map<String, dynamic> toJson() => {
     'id': id,
     'booking_id': bookingId,
+    'match_id': matchId,
     'seat_category': seatCategory,
     'match_title': matchTitle,
     'home_team': homeTeam,
@@ -82,6 +91,7 @@ class Ticket {
     'city': city,
     'is_used': isUsed,
     'is_match_finished': isMatchFinished,
+    'has_reviewed': hasReviewed,
     'generated_at': generatedAt.toIso8601String(),
     'qr_code': qrCode,
   };
@@ -100,6 +110,9 @@ class Ticket {
   /// Check if ticket is still valid for entry
   bool get isValid => !isUsed && !isMatchFinished;
 
+  /// Check if user can review this match (match finished and not yet reviewed)
+  bool get canReview => isMatchFinished && !hasReviewed;
+
   /// Get category color based on seat type
   Color get categoryColor {
     switch (seatCategory.toUpperCase()) {
@@ -110,6 +123,13 @@ class Ticket {
       default:
         return const Color(0xFFbfdbfe); // Blue
     }
+  }
+
+  static String? _resolveLogo(dynamic url) {
+    if (url == null) return null;
+    final value = url.toString();
+    if (value.isEmpty) return null;
+    return ApiConfig.resolveUrl(value);
   }
 }
 

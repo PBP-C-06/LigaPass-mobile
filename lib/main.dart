@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ligapass/admin/manage_page.dart';
 import 'package:ligapass/news/news_page.dart';
+import 'package:ligapass/onboarding/screens/onboarding_screen.dart';
 import 'package:ligapass/news/screens/news_create_page.dart';
 import 'package:ligapass/profiles/screens/create_profile_page.dart';
 import 'package:ligapass/profiles/screens/redirect_login.dart';
@@ -11,10 +14,12 @@ import 'package:ligapass/bookings/screens/my_tickets_screen.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
+import 'assistant/screens/chatbot_page.dart';
 import 'authentication/screens/login.dart';
 import 'authentication/screens/register.dart';
 import 'config/env.dart';
 import 'core/theme/app_theme.dart';
+import 'home/home_page.dart';
 import 'matches/models/match.dart';
 import 'matches/repositories/matches_repository.dart';
 import 'matches/screens/match_detail_page.dart';
@@ -22,12 +27,17 @@ import 'matches/screens/matches_page.dart';
 import 'matches/services/matches_api_client.dart';
 import 'matches/state/matches_notifier.dart';
 
-void main() {
-  runApp(const LigaPassApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+  runApp(LigaPassApp(showOnboarding: !onboardingComplete));
 }
 
 class LigaPassApp extends StatelessWidget {
-  const LigaPassApp({super.key});
+  final bool showOnboarding;
+
+  const LigaPassApp({super.key, this.showOnboarding = false});
 
   @override
   Widget build(BuildContext context) {
@@ -46,14 +56,18 @@ class LigaPassApp extends StatelessWidget {
             title: Env.appName,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light,
-            initialRoute: '/matches',
+            initialRoute: showOnboarding ? '/onboarding' : '/home',
             routes: {
+              '/onboarding': (_) => const OnboardingScreen(),
+              '/home': (_) => const HomePage(),
               '/login': (_) => const LoginPage(),
               '/register': (_) => const RegisterPage(),
               '/matches': (_) => const MatchesPage(),
               '/news': (_) => const NewsPage(),
               '/reviews': (_) => const ReviewsPage(),
               '/tickets': (_) => const MyTicketsScreen(),
+              '/manage': (_) => const AdminManagePage(),
+              '/assistant': (_) => const ChatbotPage(),
               '/news/create': (_) => const NewsCreatePage(),
             },
             onGenerateRoute: (settings) {
@@ -97,6 +111,14 @@ class LigaPassApp extends StatelessWidget {
                 final match = settings.arguments as Match;
                 return MaterialPageRoute(
                   builder: (_) => MatchDetailPage(match: match),
+                );
+              }
+
+              // Route untuk create-profile (dari register page dengan username argument)
+              if (settings.name == '/create-profile') {
+                return MaterialPageRoute(
+                  builder: (_) => const CreateProfilePage(),
+                  settings: settings, // Pass settings agar arguments tersedia
                 );
               }
 
