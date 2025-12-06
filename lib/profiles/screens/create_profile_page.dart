@@ -27,13 +27,18 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   String? _username;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args != null && args is Map<String, dynamic>) {
-      _username = args['username'] as String?;
-    }
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args != null && args is Map<String, dynamic>) {
+        setState(() {
+          _username = args['username'] as String?;
+        });
+      }
+    });
   }
+
 
   Future<void> submitProfile(
     CookieRequest request,
@@ -218,13 +223,10 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    /// ===============================
-                    /// USER PROFILE CARD (NEW UI ONLY)
-                    /// ===============================
                     Builder(
                       builder: (context) {
                         final data = request.jsonData;
-                        final username = data['username'] ?? '-';
+                        final username = _username ?? data['username'] ?? '-';
                         final email = data['email'] ?? '-';
                         final first = data['first_name'] ?? '';
                         final last = data['last_name'] ?? '';
@@ -233,239 +235,236 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                         return Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 28, horizontal: 22),
-                          margin: const EdgeInsets.only(bottom: 24),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 18,
-                                offset: Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Profil User",
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff1f2937),
+                                margin: const EdgeInsets.only(bottom: 24),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 18,
+                                      offset: Offset(0, 6),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(height: 12),
-                              Divider(color: Colors.grey, thickness: 1),
-                              const SizedBox(height: 22),
-
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 45,
-                                    backgroundColor: Colors.grey.shade200,
-                                    child: Icon(Icons.person,
-                                        size: 50, color: Colors.grey.shade500),
-                                  ),
-                                  const SizedBox(width: 22),
-                                  Expanded(
-                                    child: Text(
-                                      username,
-                                      style: const TextStyle(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.w600,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "Profil User",
+                                      style: TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
                                         color: Color(0xff1f2937),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Divider(color: Colors.grey, thickness: 1),
+                                    const SizedBox(height: 22),
+
+                                    Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 45,
+                                          backgroundColor: Colors.grey.shade200,
+                                          child: Icon(Icons.person,
+                                              size: 50, color: Colors.grey.shade500),
+                                        ),
+                                        const SizedBox(width: 22),
+                                        Expanded(
+                                          child: Text(
+                                            username,
+                                            style: const TextStyle(
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xff1f2937),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    const SizedBox(height: 30),
+                                    Divider(color: Colors.grey, thickness: 1),
+                                    const SizedBox(height: 30),
+
+                                    _infoRow("Nama Lengkap", fullName),
+                                    const SizedBox(height: 16),
+                                    _infoRow("Email", email),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+
+                          Form(
+                            key: _formKey,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 12,
+                                    offset: Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Lengkapi Profil",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1d4ed8),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  TextFormField(
+                                    controller: _phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    decoration: const InputDecoration(
+                                      labelText: "Nomor Telepon",
+                                      prefixIcon: Icon(Icons.phone),
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.trim().isEmpty) {
+                                        return "Nomor telepon wajib diisi";
+                                      }
+                                      if (value.trim().length < 8) {
+                                        return "Nomor telepon tidak valid";
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  TextFormField(
+                                    controller: _dobController,
+                                    readOnly: true,
+                                    onTap: _pickDate,
+                                    decoration: const InputDecoration(
+                                      labelText: "Tanggal Lahir",
+                                      prefixIcon: Icon(Icons.cake_outlined),
+                                      border: OutlineInputBorder(),
+                                      suffixIcon: Icon(Icons.calendar_today),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return "Tanggal lahir wajib diisi";
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          width: 96,
+                                          height: 96,
+                                          color: const Color(0xFFE5E7EB),
+                                          child: _selectedImageBytes != null
+                                              ? Image.memory(
+                                                  _selectedImageBytes!,
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : const Icon(
+                                                  Icons.person,
+                                                  size: 48,
+                                                  color: Color(0xFF9CA3AF),
+                                                ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFF1d4ed8),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 14),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          onPressed: _pickImage,
+                                          icon: const Icon(Icons.upload_file),
+                                          label: Text(
+                                            _pickedImage == null
+                                                ? "Upload Foto Profil"
+                                                : "Ganti Foto Profil",
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  if (_pickedImage == null) ...[
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      "Opsional: unggah foto profil agar akun lebih mudah dikenali.",
+                                      style: TextStyle(
+                                        color: Color(0xFF6B7280),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+
+                                  const SizedBox(height: 24),
+
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF2563EB),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                      onPressed: _loading
+                                          ? null
+                                          : () async {
+                                              if (!_formKey.currentState!
+                                                  .validate()) {
+                                                return;
+                                              }
+
+                                              await submitProfile(
+                                                request,
+                                                _phoneController.text.trim(),
+                                                _dobController.text.trim(),
+                                                _pickedImage,
+                                              );
+                                            },
+                                      child: const Text(
+                                        "Simpan Profil",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-
-                              const SizedBox(height: 30),
-                              Divider(color: Colors.grey, thickness: 1),
-                              const SizedBox(height: 30),
-
-                              _infoRow("Nama Lengkap", fullName),
-                              const SizedBox(height: 16),
-                              _infoRow("Email", email),
-                            ],
+                            ),
                           ),
-                        );
-                      },
-                    ),
-
-                    /// ===============================
-                    /// FORM PROFIL (ORIGINAL, UNTOUCHED)
-                    /// ===============================
-                    Form(
-                      key: _formKey,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 12,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Lengkapi Profil",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1d4ed8),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            TextFormField(
-                              controller: _phoneController,
-                              keyboardType: TextInputType.phone,
-                              decoration: const InputDecoration(
-                                labelText: "Nomor Telepon",
-                                prefixIcon: Icon(Icons.phone),
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return "Nomor telepon wajib diisi";
-                                }
-                                if (value.trim().length < 8) {
-                                  return "Nomor telepon tidak valid";
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-
-                            TextFormField(
-                              controller: _dobController,
-                              readOnly: true,
-                              onTap: _pickDate,
-                              decoration: const InputDecoration(
-                                labelText: "Tanggal Lahir",
-                                prefixIcon: Icon(Icons.cake_outlined),
-                                border: OutlineInputBorder(),
-                                suffixIcon: Icon(Icons.calendar_today),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Tanggal lahir wajib diisi";
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-
-                            Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Container(
-                                    width: 96,
-                                    height: 96,
-                                    color: const Color(0xFFE5E7EB),
-                                    child: _selectedImageBytes != null
-                                        ? Image.memory(
-                                            _selectedImageBytes!,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : const Icon(
-                                            Icons.person,
-                                            size: 48,
-                                            color: Color(0xFF9CA3AF),
-                                          ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF1d4ed8),
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    onPressed: _pickImage,
-                                    icon: const Icon(Icons.upload_file),
-                                    label: Text(
-                                      _pickedImage == null
-                                          ? "Upload Foto Profil"
-                                          : "Ganti Foto Profil",
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            if (_pickedImage == null) ...[
-                              const SizedBox(height: 8),
-                              const Text(
-                                "Opsional: unggah foto profil agar akun lebih mudah dikenali.",
-                                style: TextStyle(
-                                  color: Color(0xFF6B7280),
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-
-                            const SizedBox(height: 24),
-
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2563EB),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                onPressed: _loading
-                                    ? null
-                                    : () async {
-                                        if (!_formKey.currentState!
-                                            .validate()) {
-                                          return;
-                                        }
-
-                                        await submitProfile(
-                                          request,
-                                          _phoneController.text.trim(),
-                                          _dobController.text.trim(),
-                                          _pickedImage,
-                                        );
-                                      },
-                                child: const Text(
-                                  "Simpan Profil",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-      ),
+            ),
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }

@@ -182,7 +182,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNav(currentRoute: '/assistant'),
+      bottomNavigationBar: const AppBottomNav(
+        currentRoute: '/assistant',
+        showAssistantButton: false,
+      ),
     );
   }
 

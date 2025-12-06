@@ -181,7 +181,7 @@ class _UserEditPageState extends State<UserEditPage> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
