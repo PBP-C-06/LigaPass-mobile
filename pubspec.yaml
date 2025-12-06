@@ -80,6 +80,8 @@ flutter:
     - assets/banners/banner1.jpeg
     - assets/banners/banner2.jpeg
     - assets/banners/banner3.jpeg
+    - assets/images/logo.png
+    - assets/images/favicon.ico
     - assets/profile_images/Admin.png
     - assets/profile_images/default-profile-picture.png
     - assets/profile_images/Journalist.png
