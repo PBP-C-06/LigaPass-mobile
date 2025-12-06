@@ -252,7 +252,10 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNav(currentRoute: '/home'),
+      bottomNavigationBar: const AppBottomNav(
+        currentRoute: '/home',
+        showAssistantButton: true,
+      ),
     );
   }
 

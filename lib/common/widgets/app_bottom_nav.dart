@@ -19,9 +19,14 @@ class _NavItem {
 }
 
 class AppBottomNav extends StatelessWidget {
-  const AppBottomNav({super.key, required this.currentRoute});
+  const AppBottomNav({
+    super.key,
+    required this.currentRoute,
+    this.showAssistantButton = false,
+  });
 
   final String currentRoute;
+  final bool showAssistantButton;
 
   Future<void> _handleTap(
     BuildContext context,
@@ -65,7 +70,7 @@ class AppBottomNav extends StatelessWidget {
           label: 'Manage',
           requiresLogin: true,
           adminOnly: true,
-        )
+      )
       else
         const _NavItem(
           route: '/tickets',
@@ -73,11 +78,6 @@ class AppBottomNav extends StatelessWidget {
           label: 'Tiket',
           requiresLogin: true,
         ),
-      const _NavItem(
-        route: '/assistant',
-        icon: Icons.chat_bubble_outline,
-        label: 'Assist',
-      ),
       const _NavItem(
         route: '/news',
         icon: Icons.article_outlined,
@@ -95,7 +95,7 @@ class AppBottomNav extends StatelessWidget {
       (item) => item.route == currentRoute,
     );
 
-    return BottomNavigationBar(
+    final bar = BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: currentIndex == -1 ? 0 : currentIndex,
       onTap: (index) => _handleTap(context, navItems[index], loggedIn, role),
@@ -107,6 +107,55 @@ class AppBottomNav extends StatelessWidget {
             ),
           )
           .toList(),
+    );
+
+    if (!showAssistantButton) return bar;
+
+    const baseHeight = kBottomNavigationBarHeight;
+
+    return SizedBox(
+      height: baseHeight + 8,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(child: bar),
+          Positioned(
+            right: 18,
+            top: -64,
+            child: _AssistantButton(
+              onTap: () => Navigator.pushNamed(context, '/assistant'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AssistantButton extends StatelessWidget {
+  const _AssistantButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFF2563EB),
+      elevation: 10,
+      shape: const CircleBorder(),
+      shadowColor: Colors.black.withOpacity(0.18),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: const Padding(
+          padding: EdgeInsets.all(14),
+          child: Icon(
+            Icons.chat_bubble_outline,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
+      ),
     );
   }
 }
