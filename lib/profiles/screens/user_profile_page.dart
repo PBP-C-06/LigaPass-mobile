@@ -91,10 +91,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
             final profile = snapshot.data!;
             final role = request.jsonData['role'];
             String currentStatus = profile.status;
-            final sessionCookie = request.cookies.entries
-                .map((e) => "${e.key}=${e.value}")
-                .join("; ");
-
             // Parse full name into first and last name
             final nameParts = profile.fullName.split(' ');
             final firstName = nameParts.isNotEmpty ? nameParts.first : '';
@@ -128,7 +124,51 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       profilePicture: profile.profilePicture,
                       onEditSuccess: _refreshProfile,
                     ),
-
+                    GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) {
+                            return UserAnalyticsPanel(
+                              onClose: () => Navigator.pop(context),
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1d4ed8),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              offset: const Offset(0, 3),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.analytics, color: Colors.white),
+                            SizedBox(width: 10),
+                            Text(
+                              "Lihat User Analytics",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   const LogoutButton(),
                 ],
               ),
