@@ -5,7 +5,7 @@ class News {
   final String thumbnail;
   final String category;
   final bool isFeatured;
-  final int views;
+  int views;
   final String createdAt;
 
   News({

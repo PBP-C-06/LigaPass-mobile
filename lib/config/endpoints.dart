@@ -21,4 +21,5 @@ class Endpoints {
     '$base/news/api/news/$id/recommendations/';
   static String likeComment(int id) => '$base/news/api/comment/$id/like/';
   static String deleteComment(int id) => '$base/news/api/comment/$id/delete/';
+  static String currentUser = '$base/news/api/user/';
 }

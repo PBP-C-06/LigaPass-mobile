@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/news.dart';
 import '../services/api_service.dart';
 import '../widgets/news_card.dart';
+import 'package:ligapass/news/screens/news_create_page.dart';
 import 'package:ligapass/news/screens/news_detail_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -193,7 +194,10 @@ class _NewsListScreenState extends State<NewsListScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: ElevatedButton.icon(
           onPressed: () {
-            Navigator.pushNamed(context, '/news/create');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NewsCreatePage()),
+            );
           },
           icon: const Icon(Icons.add),
           label: const Text("Tambah Berita"),
@@ -214,61 +218,74 @@ class _NewsListScreenState extends State<NewsListScreen> {
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
     final isLoggedIn = request.loggedIn;
+
     if (loading || userRoleLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return SafeArea(
-      child: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            floating: false,
-            expandedHeight: 100.0,
-            backgroundColor: Colors.white.withAlpha(230),
-            elevation: 1,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              title: Text(
-                "Berita",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(child: buildFilterCard()),
-
-          // Tampilkan tombol hanya kalau sudah login dan role-nya journalist
-          if (isLoggedIn && userRole == 'journalist') buildAddNewsButton(),
-
-          if (newsList.isEmpty)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: Text("Tidak ada berita ditemukan")),
-            )
-          else
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NewsDetailPage(news: newsList[index]),
-                        ),
-                      );
-                    },
-                    child: NewsCard(news: newsList[index]),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFf6f9ff),
+            Color(0xFFe8f0ff),
+            Color(0xFFdce6ff),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              floating: false,
+              expandedHeight: 100.0,
+              backgroundColor: Colors.white.withAlpha(230),
+              elevation: 1,
+              flexibleSpace: FlexibleSpaceBar(
+                centerTitle: true,
+                title: Text(
+                  "Berita",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                childCount: newsList.length,
               ),
             ),
-        ],
+            SliverToBoxAdapter(child: buildFilterCard()),
+
+            if (isLoggedIn && userRole == 'journalist') buildAddNewsButton(),
+
+            if (newsList.isEmpty)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: Text("Tidak ada berita ditemukan")),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NewsDetailPage(news: newsList[index]),
+                          ),
+                        );
+                      },
+                      child: NewsCard(news: newsList[index]),
+                    ),
+                  ),
+                  childCount: newsList.length,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -26,8 +26,8 @@ class Comment {
       content: json['content'],
       createdAt: json['created_at'],
       likeCount: json['like_count'],
-      userHasLiked: json['user_has_liked'],
-      isOwner: json['is_owner'],
+      userHasLiked: json['user_has_liked'] ?? false,
+      isOwner: json['is_owner'] ?? false,
       replies: (json['replies'] as List).map((r) => Comment.fromJson(r)).toList(),
     );
   }
