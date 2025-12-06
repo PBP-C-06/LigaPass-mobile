@@ -82,12 +82,9 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
         }
       }
 
-      // Untuk menghitung pagination setelah di fetch
       setState(() {
         totalPages = (profiles.length / 5).ceil();
         if (totalPages < 1) totalPages = 1;
-
-        // Reset to page awal jika search / filter berubah
         currentPage = 1;
       });
     } catch (e) {
@@ -108,10 +105,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   if (picPath.startsWith("http")) {
     return NetworkImage(picPath);
   }
-
   return NetworkImage("$baseUrl$picPath");
 }
-
 
   @override
   Widget build(BuildContext context) {
