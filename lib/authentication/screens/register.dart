@@ -52,16 +52,20 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => isLoading = false);
 
     if (response["status"] == "success") {
-      request.loggedIn = true;
-      request.jsonData = response;
-      if (!mounted) return;
-      // User baru register, harus buat profile dulu
-      // Pass username ke create-profile page
-      navigator.pushReplacementNamed(
-        "/create-profile",
-        arguments: {"username": _usernameController.text},
-      );
-    } else {
+  request.loggedIn = true;
+  request.jsonData = response;
+
+  request.jsonData['username'] = _usernameController.text;
+  request.jsonData['first_name'] = _fnameController.text;
+  request.jsonData['last_name'] = _lnameController.text;
+  request.jsonData['email'] = _emailController.text;
+
+  if (!mounted) return;
+  navigator.pushReplacementNamed(
+    "/create-profile",
+    arguments: {"username": _usernameController.text},
+  );
+} else {
       request.loggedIn = false;
       setState(() => errorMessage = response["errors"].toString());
     }
