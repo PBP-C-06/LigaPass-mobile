@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/matches/models/match.dart';
 import 'package:ligapass/bookings/screens/ticket_price_screen.dart';
+import 'package:ligapass/news/models/news.dart';
+import 'package:ligapass/news/widgets/news_card_vertical.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../config/api_config.dart';
 import 'package:http/http.dart' as http;
@@ -752,126 +754,11 @@ class _HomePageState extends State<HomePage> {
           else
             Column(
               children: _latestNews
-                  .map((news) => _buildNewsCard(news))
+                  .take(6)
+                  .map((json) => NewsListCard(news: News.fromJson(json)))
                   .toList(),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNewsCard(Map<String, dynamic> news) {
-    // Django response uses 'thumbnail' field
-    final imageUrl =
-        news['thumbnail'] ?? news['image_url'] ?? news['image'] ?? '';
-    final title = news['title'] ?? '';
-    final category = news['category'] ?? 'Berita';
-
-    String resolvedImageUrl = imageUrl;
-    if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
-      resolvedImageUrl = ApiConfig.resolveUrl(imageUrl);
-    }
-
-    return GestureDetector(
-      onTap: () {
-        // Navigate to news detail if needed
-        Navigator.pushNamed(context, '/news');
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        height: 90,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Image
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                bottomLeft: Radius.circular(10),
-              ),
-              child: SizedBox(
-                width: 90,
-                height: 90,
-                child: resolvedImageUrl.isNotEmpty
-                    ? Image.network(
-                        resolvedImageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: const Color(0xFFE5E7EB),
-                          child: const Icon(
-                            Icons.newspaper,
-                            color: Color(0xFF9CA3AF),
-                            size: 32,
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color: const Color(0xFFE5E7EB),
-                        child: const Icon(
-                          Icons.newspaper,
-                          color: Color(0xFF9CA3AF),
-                          size: 32,
-                        ),
-                      ),
-              ),
-            ),
-            // Content
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Category Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        category.toString().toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Title
-                    Flexible(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

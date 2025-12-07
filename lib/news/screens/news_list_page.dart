@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
-
 class NewsListScreen extends StatefulWidget {
   const NewsListScreen({super.key});
 
@@ -193,11 +192,12 @@ class _NewsListScreenState extends State<NewsListScreen> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            final result = await Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const NewsCreatePage()),
+              MaterialPageRoute(builder: (_) => const CreateNewsPage()),
             );
+            if (result == true) fetchData();
           },
           icon: const Icon(Icons.add),
           label: const Text("Tambah Berita"),
@@ -270,13 +270,14 @@ class _NewsListScreenState extends State<NewsListScreen> {
                   (context, index) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: InkWell(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => NewsDetailPage(news: newsList[index]),
                           ),
                         );
+                        if (result == true) fetchData();
                       },
                       child: NewsCard(news: newsList[index]),
                     ),

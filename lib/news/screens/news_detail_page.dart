@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'dart:ui'; // <-- wajib untuk BackdropFilter
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:ligapass/news/models/news.dart';
@@ -9,6 +9,7 @@ import 'package:ligapass/news/widgets/comment_widget.dart';
 import 'package:ligapass/config/endpoints.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/news/widgets/news_card_vertical.dart';
+import 'package:ligapass/news/screens/news_edit_page.dart';
 import 'package:provider/provider.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -27,6 +28,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   bool _isLoadingComments = true;
   Future<List<News>> _recommendedFuture = Future.value([]);
   final _commentController = TextEditingController();
+  News? _fullNews;
+  bool _loadingFullNews = true;
   String _commentSort = 'latest';
   bool isSuspended = false;
 
@@ -34,10 +37,119 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   void initState() {
     super.initState();
     final request = context.read<CookieRequest>();
+    _loadFullNews();
     _loadComments(request);
     _recommendedFuture = ApiService.fetchRecommendations(widget.news.id);
     _increaseViewCount();
     _checkUserStatus();
+  }
+
+  Future<void> _loadFullNews() async {
+    try {
+      final request = context.read<CookieRequest>();
+      final url = Endpoints.newsDetail(widget.news.id);
+      final response = await request.get(url);
+
+      if (response is Map && response['id'] != null) {
+        setState(() {
+          _fullNews = News.fromJson(response.cast<String, dynamic>());
+          _loadingFullNews = false;
+        });
+      } else {
+        debugPrint("Gagal load detail: ${response.toString()}");
+      }
+    } catch (e) {
+      debugPrint("Gagal load detail berita: $e");
+    }
+  }
+
+
+  Future<void> _deleteNews() async {
+    final request = context.read<CookieRequest>();
+    try {
+      final response = await request.post(
+        Endpoints.deleteNews(widget.news.id),
+        {},
+      );
+
+      if (response['status'] == 'success') {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Berita berhasil dihapus")),
+        );
+        Navigator.pop(context, true); // Kembali ke halaman sebelumnya
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal menghapus: ${response['message']}")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Terjadi kesalahan: $e")),
+      );
+    }
+  }
+
+  void _showDeleteConfirmation() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.warning_rounded, size: 48, color: Colors.redAccent),
+              const SizedBox(height: 12),
+              const Text(
+                "Hapus Berita?",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Tindakan ini tidak dapat dibatalkan. Apakah Anda yakin ingin menghapus berita ini?",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey.shade700,
+                        side: BorderSide(color: Colors.grey.shade300),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text("Batal"),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _deleteNews();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text("Hapus", style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _checkUserStatus() async {
@@ -187,9 +299,14 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final news = widget.news;
+    final news = _fullNews ?? widget.news;
     final isLoggedIn = context.watch<CookieRequest>().loggedIn;
 
+    if (_loadingFullNews) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60),
@@ -313,10 +430,13 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                   child: Image.network(
                     news.thumbnail,
                     width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        Image.asset('assets/placeholder.png', height: 200, fit: BoxFit.cover),
+                    fit: BoxFit.contain, 
+                    alignment: Alignment.center,
+                    errorBuilder: (_, __, ___) => Image.asset(
+                      'assets/placeholder.png',
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),
@@ -325,6 +445,41 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
 
               Text(parseHtmlString(news.content),
                   style: const TextStyle(fontSize: 16, height: 1.6)),
+
+
+              const SizedBox(height: 24),
+              // Tombol edit & hapus berita
+              if (_fullNews?.isOwner == true) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () async {
+                        final updated = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditNewsPage(news: _fullNews!.toJson()),
+                          ),
+                        );
+
+                        if (updated == true) {
+                          _loadFullNews();
+                          _loadComments();
+                          _recommendedFuture = ApiService.fetchRecommendations(widget.news.id);
+                        }
+                      },
+                      icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                      label: const Text("Edit", style: TextStyle(color: Colors.blueAccent)),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: _showDeleteConfirmation,
+                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                      label: const Text("Hapus", style: TextStyle(color: Colors.redAccent)),
+                    ),
+                  ],
+                ),
+              ],
 
               const SizedBox(height: 32),
               const Divider(color: Color.fromARGB(255, 206, 221, 248), thickness: 2),
@@ -378,8 +533,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _commentSort,
-                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                        style: const TextStyle(fontSize: 15, color: Colors.black),
+                        icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
+                        style: const TextStyle(fontSize: 15, color: Colors.black, fontWeight: FontWeight.bold),
                         items: const [
                           DropdownMenuItem(value: 'latest', child: Text('Terbaru')),
                           DropdownMenuItem(value: 'popular', child: Text('Populer')),
@@ -397,7 +552,68 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
 
               const SizedBox(height: 12),
 
-              if (isLoggedIn && !isSuspended) ...[
+              // Komentar Input Area
+              if (!isLoggedIn) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blueAccent.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Login diperlukan",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "Silakan login untuk dapat menulis komentar pada berita ini.",
+                        style: TextStyle(color: Colors.black87),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      FilledButton.icon(
+                        icon: const Icon(Icons.login),
+                        label: const Text("Login Sekarang"),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/login');
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (isSuspended) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          "Akun Anda saat ini ditangguhkan dan tidak dapat mengirim komentar.",
+                          style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else ...[
+                // FORM KOMENTAR (user aktif)
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -449,12 +665,6 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 24),
-              ] else if (isLoggedIn && isSuspended) ...[
-                const Text(
-                  "Akun Anda ditangguhkan. Anda tidak dapat mengirim komentar.",
-                  style: TextStyle(color: Colors.red),
                 ),
               ],
 

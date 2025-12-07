@@ -7,6 +7,7 @@ class News {
   final bool isFeatured;
   int views;
   final String createdAt;
+  final bool isOwner;
 
   News({
     required this.id,
@@ -17,6 +18,7 @@ class News {
     required this.isFeatured,
     required this.views,
     required this.createdAt,
+    required this.isOwner
   });
 
   factory News.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,21 @@ class News {
       isFeatured: json['is_featured'],
       views: json['news_views'],
       createdAt: json['created_at'],
+      isOwner: json['is_owner'] ?? false,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'content': content,
+      'thumbnail': thumbnail,
+      'category': category,
+      'is_featured': isFeatured,
+      'news_views': views,
+      'created_at': createdAt,
+      'is_owner': isOwner,
+    };
   }
 }
