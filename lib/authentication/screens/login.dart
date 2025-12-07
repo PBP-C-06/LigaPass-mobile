@@ -183,10 +183,11 @@ class _LoginPageState extends State<LoginPage> {
       navigator.pushReplacementNamed("/home");
     } else {
       request.loggedIn = false;
-      setState(
-        () => errorMessage =
-            response["message"] ?? response["errors"]?.toString(),
-      );
+      setState(() {
+        errorMessage = response["message"] ??
+            _formatErrors(response["errors"]) ??
+            "Login gagal. Cek kembali kredensial Anda.";
+      });
     }
   }
 
@@ -643,4 +644,27 @@ class _LoginPageState extends State<LoginPage> {
       bottomNavigationBar: const AppBottomNav(currentRoute: '/login'),
     );
   }
+}
+
+String? _formatErrors(dynamic errors) {
+  if (errors == null) return null;
+  if (errors is String && errors.trim().isNotEmpty) return errors;
+  if (errors is Map) {
+    // Flatten map of field: [messages]
+    final parts = <String>[];
+    errors.forEach((key, value) {
+      final label = key.toString();
+      if (value is List) {
+        parts.add("$label: ${value.join(', ')}");
+      } else {
+        parts.add("$label: $value");
+      }
+    });
+    if (parts.isNotEmpty) return parts.join("\n");
+  }
+  if (errors is List) {
+    final nonEmpty = errors.whereType<String>().where((e) => e.trim().isNotEmpty).toList();
+    if (nonEmpty.isNotEmpty) return nonEmpty.join("\n");
+  }
+  return null;
 }

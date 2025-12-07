@@ -137,7 +137,7 @@ class _CommentWidgetState extends State<CommentWidget> {
                 ),
 
               if (widget.isLoggedIn && comment.isOwner) ...[
-                const SizedBox(width: 12), // Tambahkan ini untuk jarak antar tombol
+                const SizedBox(width: 12),
                 TextButton.icon(
                   onPressed: () {
                     widget.onDelete?.call(comment.id);

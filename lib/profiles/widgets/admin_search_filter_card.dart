@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:ligapass/profiles/models/profile.dart';
 import 'package:ligapass/profiles/screens/user_profile_page.dart';
 
@@ -243,5 +244,5 @@ String resolveUrl(String? path) {
   if (path == null || path.isEmpty) {
     return "assets/profile_images/default-profile-picture.png";
   }
-  return "http://localhost:8000$path";
+  return ApiConfig.resolveUrl(path);
 }

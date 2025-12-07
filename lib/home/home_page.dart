@@ -252,9 +252,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+      floatingActionButton: AppBottomNav.buildAssistantFAB(context),
       bottomNavigationBar: const AppBottomNav(
         currentRoute: '/home',
-        showAssistantButton: true,
       ),
     );
   }

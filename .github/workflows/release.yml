@@ -44,7 +44,9 @@ jobs:
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --split-per-abi
+        run: >
+          flutter build apk --split-per-abi
+          --dart-define=API_BASE_URL=https://jaysen-lestari-ligapass.pbp.cs.ui.ac.id/
 
       - name: Decode keystore
         run: echo "${{ secrets.KEY_JKS }}" | base64 -d > release-keystore.jks

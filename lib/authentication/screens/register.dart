@@ -67,7 +67,11 @@ class _RegisterPageState extends State<RegisterPage> {
   );
 } else {
       request.loggedIn = false;
-      setState(() => errorMessage = response["errors"].toString());
+      setState(() {
+        errorMessage = response["message"] ??
+            _formatErrors(response["errors"]) ??
+            "Registrasi gagal. Periksa data Anda.";
+      });
     }
   }
 
@@ -165,4 +169,26 @@ class _RegisterPageState extends State<RegisterPage> {
       bottomNavigationBar: const AppBottomNav(currentRoute: '/register'),
     );
   }
+}
+
+String? _formatErrors(dynamic errors) {
+  if (errors == null) return null;
+  if (errors is String && errors.trim().isNotEmpty) return errors;
+  if (errors is Map) {
+    final parts = <String>[];
+    errors.forEach((key, value) {
+      if (value is List) {
+        parts.add("${key.toString()}: ${value.join(', ')}");
+      } else {
+        parts.add("${key.toString()}: $value");
+      }
+    });
+    if (parts.isNotEmpty) return parts.join("\n");
+  }
+  if (errors is List) {
+    final msgs =
+        errors.whereType<String>().where((m) => m.trim().isNotEmpty).toList();
+    if (msgs.isNotEmpty) return msgs.join("\n");
+  }
+  return null;
 }
