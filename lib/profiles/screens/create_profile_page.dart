@@ -9,8 +9,9 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
 class CreateProfilePage extends StatefulWidget {
-  const CreateProfilePage({super.key});
-
+  final String username;
+  const CreateProfilePage({super.key, required this.username,});
+  
   @override
   State<CreateProfilePage> createState() => _CreateProfilePageState();
 }
@@ -29,16 +30,8 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final args = ModalRoute.of(context)?.settings.arguments;
-      if (args != null && args is Map<String, dynamic>) {
-        setState(() {
-          _username = args['username'] as String?;
-        });
-      }
-    });
+    _username = widget.username;
   }
-
 
   Future<void> submitProfile(
     CookieRequest request,
@@ -93,13 +86,13 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
         request.jsonData['hasProfile'] = true;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profil berhasil dibuat!")),
+          const SnackBar(content: Text("Profil berhasil dibuat!"), backgroundColor: Colors.green),
         );
         Navigator.of(context).pushReplacementNamed("/home");
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal membuat profil: $resBody")),
+          SnackBar(content: Text("Gagal membuat profil: $resBody"), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
@@ -260,7 +253,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                     Builder(
                       builder: (context) {
                         final data = request.jsonData;
-                        final username = _username ?? data['username'] ?? '-';
+                        final username = _username ?? widget.username;
                         final email = data['email'] ?? '-';
                         final first = data['first_name'] ?? '';
                         final last = data['last_name'] ?? '';

@@ -60,18 +60,15 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       _googleSignInInitialized = true;
 
-      _authSubscription = GoogleSignIn.instance.authenticationEvents.listen(
-        (event) {
-          if (!mounted) return;
-          if (event is GoogleSignInAuthenticationEventSignIn) {
-            _handleGoogleSignInResult(event.user);
-          }
-        },
-        onError: (error) {
-        },
-      );
-    } catch (e) {
-    }
+      _authSubscription = GoogleSignIn.instance.authenticationEvents.listen((
+        event,
+      ) {
+        if (!mounted) return;
+        if (event is GoogleSignInAuthenticationEventSignIn) {
+          _handleGoogleSignInResult(event.user);
+        }
+      }, onError: (error) {});
+    } catch (e) {}
   }
 
   Future<void> _handleGoogleSignInResult(GoogleSignInAccount user) async {
@@ -105,10 +102,11 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (!mounted) return;
-
+      
       if (response["status"] == "success") {
         request.loggedIn = true;
         request.jsonData = response;
+        final username = request.jsonData['username']; 
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("userRole", response["role"]);
@@ -129,7 +127,10 @@ class _LoginPageState extends State<LoginPage> {
 
         final String? redirect = response["redirect_url"] as String?;
         if (redirect != null && redirect.contains("create_profile")) {
-          navigator.pushReplacementNamed("/create-profile");
+          navigator.pushReplacementNamed(
+            "/create-profile",
+            arguments: {"username": username},
+          );
         } else {
           // Redirect ke home page setelah login berhasil
           navigator.pushReplacementNamed("/home");
@@ -178,13 +179,14 @@ class _LoginPageState extends State<LoginPage> {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString("userRole", response["role"]);
-      
+
       // Redirect ke home page setelah login berhasil
       navigator.pushReplacementNamed("/home");
     } else {
       request.loggedIn = false;
       setState(() {
-        errorMessage = response["message"] ??
+        errorMessage =
+            response["message"] ??
             _formatErrors(response["errors"]) ??
             "Login gagal. Cek kembali kredensial Anda.";
       });
@@ -259,7 +261,10 @@ class _LoginPageState extends State<LoginPage> {
 
         final String? redirect = response["redirect_url"] as String?;
         if (redirect != null && redirect.contains("create_profile")) {
-          navigator.pushReplacementNamed("/create-profile");
+          navigator.pushReplacementNamed(
+            "/create-profile",
+            arguments: {"username": response["username"]},
+          );
         } else {
           // Redirect ke home page setelah login berhasil
           navigator.pushReplacementNamed("/home");
@@ -663,7 +668,10 @@ String? _formatErrors(dynamic errors) {
     if (parts.isNotEmpty) return parts.join("\n");
   }
   if (errors is List) {
-    final nonEmpty = errors.whereType<String>().where((e) => e.trim().isNotEmpty).toList();
+    final nonEmpty = errors
+        .whereType<String>()
+        .where((e) => e.trim().isNotEmpty)
+        .toList();
     if (nonEmpty.isNotEmpty) return nonEmpty.join("\n");
   }
   return null;
