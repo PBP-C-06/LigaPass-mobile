@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ligapass/admin/manage_page.dart';
 import 'package:ligapass/news/news_page.dart';
+import 'package:ligapass/news/screens/news_manage_page.dart';
 import 'package:ligapass/onboarding/screens/onboarding_screen.dart';
 import 'package:ligapass/profiles/screens/create_profile_page.dart';
 import 'package:ligapass/profiles/screens/redirect_login.dart';
@@ -66,6 +67,7 @@ class LigaPassApp extends StatelessWidget {
               '/reviews': (_) => const ReviewsPage(),
               '/tickets': (_) => const MyTicketsScreen(),
               '/manage': (_) => const AdminManagePage(),
+              '/news-manage': (_) => const NewsManagePage(),
               '/assistant': (_) => const ChatbotPage(),
             },
             onGenerateRoute: (settings) {
