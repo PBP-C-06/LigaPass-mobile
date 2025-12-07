@@ -29,7 +29,7 @@ class UserProfileCard extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: Text(
-              "Profil User",
+              "Profil Pengguna",
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,

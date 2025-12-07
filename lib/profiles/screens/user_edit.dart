@@ -130,7 +130,6 @@ class _UserEditPageState extends State<UserEditPage> {
       final uri = ApiConfig.uri("/profiles/flutter-edit/${widget.userId}/");
       var multipartRequest = http.MultipartRequest("POST", uri);
 
-      // Add form fields
       multipartRequest.fields['username'] = _usernameController.text.trim();
       multipartRequest.fields['email'] = _emailController.text.trim();
       multipartRequest.fields['first_name'] = _firstNameController.text.trim();
@@ -138,7 +137,6 @@ class _UserEditPageState extends State<UserEditPage> {
       multipartRequest.fields['phone'] = _phoneController.text.trim();
       multipartRequest.fields['date_of_birth'] = _dobController.text.trim();
 
-      // Add profile picture if selected
       if (_selectedImageBytes != null && kIsWeb) {
         multipartRequest.files.add(
           http.MultipartFile.fromBytes(
@@ -156,7 +154,6 @@ class _UserEditPageState extends State<UserEditPage> {
         );
       }
 
-      // Add cookies and CSRF token
       final cookieHeader = request.cookies.entries
           .map((entry) => "${entry.key}=${entry.value.value}")
           .join("; ");
@@ -208,60 +205,59 @@ class _UserEditPageState extends State<UserEditPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Edit Profil",
+          "Ubah Profil",
           style: TextStyle(
-            color: Color(0xFF1d4ed8),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.bold,
           ),
         ),
         elevation: 0,
         backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1d4ed8),
-        iconTheme: const IconThemeData(color: Color(0xFF1d4ed8)),
+        foregroundColor: Colors.black87,
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
-          ),
-        ),
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Profile Picture Section
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 12,
-                              offset: Offset(0, 6),
+      backgroundColor: const Color(0xFFF5F6F7),
+
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Ubah Profil",
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            const Text(
-                              "Foto Profil",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1d4ed8),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            GestureDetector(
+                          ),
+                          
+                          const SizedBox(height: 10),
+                          Divider(color: Colors.grey, thickness: 1),
+                          const SizedBox(height: 20),
+
+                          Center(
+                            child: GestureDetector(
                               onTap: _pickImage,
                               child: Stack(
                                 children: [
@@ -277,29 +273,18 @@ class _UserEditPageState extends State<UserEditPage> {
                                               fit: BoxFit.cover,
                                             )
                                           : widget.initialProfilePicture != null
-                                          ? Image.network(
-                                              widget.initialProfilePicture!
-                                                      .startsWith('http')
-                                                  ? widget
-                                                        .initialProfilePicture!
-                                                  : '${ApiConfig.baseUrl}${widget.initialProfilePicture}',
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) => const Icon(
-                                                    Icons.person,
-                                                    size: 48,
-                                                    color: Color(0xFF9CA3AF),
-                                                  ),
-                                            )
-                                          : const Icon(
-                                              Icons.person,
-                                              size: 48,
-                                              color: Color(0xFF9CA3AF),
-                                            ),
+                                              ? Image.network(
+                                                  widget.initialProfilePicture!
+                                                          .startsWith('http')
+                                                      ? widget.initialProfilePicture!
+                                                      : '${ApiConfig.baseUrl}${widget.initialProfilePicture}',
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : const Icon(
+                                                  Icons.person,
+                                                  size: 48,
+                                                  color: Color(0xFF9CA3AF),
+                                                ),
                                     ),
                                   ),
                                   Positioned(
@@ -307,173 +292,172 @@ class _UserEditPageState extends State<UserEditPage> {
                                     right: 0,
                                     child: Container(
                                       padding: const EdgeInsets.all(8),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF1d4ed8),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFF2563EB),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: const Icon(
-                                        Icons.camera_alt,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
+                                      child: const Icon(Icons.camera_alt,
+                                          color: Colors.white, size: 20),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
+                          ),
+
+                          const SizedBox(height: 10),
+                          Center(
+                            child: Text(
                               "Ketuk untuk mengubah foto",
                               style: TextStyle(
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade700,
                                 fontSize: 12,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          _inputField(
+                            label: "Nama Depan",
+                            controller: _firstNameController,
+                            icon: Icons.person_outline,
+                          ),
+                          const SizedBox(height: 16),
+
+                          _inputField(
+                            label: "Nama Belakang",
+                            controller: _lastNameController,
+                            icon: Icons.person_outline,
+                          ),
+                          const SizedBox(height: 16),
+
+                          _inputField(
+                            label: "Username",
+                            controller: _usernameController,
+                            icon: Icons.alternate_email,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return "Username wajib diisi";
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          _inputField(
+                            label: "Email",
+                            controller: _emailController,
+                            icon: Icons.email,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return "Email wajib diisi";
+                              }
+                              if (!v.contains('@')) return "Email tidak valid";
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          _inputField(
+                            label: "Nomor Telepon",
+                            controller: _phoneController,
+                            icon: Icons.phone,
+                            keyboard: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 16),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Tanggal Lahir",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: _dobController,
+                                readOnly: true,
+                                onTap: _pickDate,
+                                decoration: InputDecoration(
+                                  prefixIcon: const Icon(Icons.cake_outlined),
+                                  suffixIcon: const Icon(Icons.calendar_today),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
                       ),
-                      const SizedBox(height: 16),
+                    ),
 
-                      // Form Fields
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 12,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Informasi Pribadi",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1d4ed8),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
-                            // First Name
-                            TextFormField(
-                              controller: _firstNameController,
-                              decoration: const InputDecoration(
-                                labelText: "Nama Depan",
-                                prefixIcon: Icon(Icons.person_outline),
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Last Name
-                            TextFormField(
-                              controller: _lastNameController,
-                              decoration: const InputDecoration(
-                                labelText: "Nama Belakang",
-                                prefixIcon: Icon(Icons.person_outline),
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Username
-                            TextFormField(
-                              controller: _usernameController,
-                              decoration: const InputDecoration(
-                                labelText: "Username",
-                                prefixIcon: Icon(Icons.alternate_email),
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return "Username wajib diisi";
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Email
-                            TextFormField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                labelText: "Email",
-                                prefixIcon: Icon(Icons.email_outlined),
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return "Email wajib diisi";
-                                }
-                                if (!value.contains('@')) {
-                                  return "Email tidak valid";
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Phone
-                            TextFormField(
-                              controller: _phoneController,
-                              keyboardType: TextInputType.phone,
-                              decoration: const InputDecoration(
-                                labelText: "Nomor Telepon",
-                                prefixIcon: Icon(Icons.phone),
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Date of Birth
-                            TextFormField(
-                              controller: _dobController,
-                              readOnly: true,
-                              onTap: _pickDate,
-                              decoration: const InputDecoration(
-                                labelText: "Tanggal Lahir",
-                                prefixIcon: Icon(Icons.cake_outlined),
-                                border: OutlineInputBorder(),
-                                suffixIcon: Icon(Icons.calendar_today),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Submit Button
-                      ElevatedButton(
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _loading ? null : _submitEdit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Color(0xFF2563EB),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        onPressed: _loading ? null : _submitEdit,
                         child: const Text(
                           "Simpan Perubahan",
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w600,
                             color: Colors.white,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-      ),
+            ),
+    );
+  }
+
+  Widget _inputField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    TextInputType? keyboard,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          validator: validator,
+          keyboardType: keyboard,
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

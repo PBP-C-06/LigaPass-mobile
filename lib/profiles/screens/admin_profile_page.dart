@@ -115,7 +115,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Admin Profile",
+          "Profil",
           style: TextStyle(
             color: Color(0xFF1d4ed8),
             fontWeight: FontWeight.bold,
@@ -140,14 +140,12 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    AdminProfileCard(adminProfile: adminProfile!),
-
-                    const SizedBox(height: 20),
-
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
+                            AdminProfileCard(adminProfile: adminProfile!),
+                            const SizedBox(height: 10),
                             AdminSearchFilterCard(
                               userProfiles: profiles,
                               loading: loadingProfiles,
@@ -174,7 +172,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                 );
                               },
 
-                              // Pagination
                               currentPage: currentPage,
                               totalPages: totalPages,
                               onNextPage: () {
@@ -245,6 +242,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                 ),
                               ),
                             ),
+                            // Untuk button logout
                             const LogoutButton(),
                           ],
                         ),
@@ -254,7 +252,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 ),
               ),
       ),
-
+      // Untuk botton navbar
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }

@@ -28,7 +28,7 @@ class JournalistProfileCard extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: Text(
-              "Profil Journalist",
+              "Profil Jurnalis",
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -92,12 +92,12 @@ class JournalistProfileCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 25),
           Divider(color: Colors.grey, thickness: 1),
-          const SizedBox(height: 30),
+          const SizedBox(height: 25),
 
           const Text(
-            "Informasi Tentang Journalist",
+            "Informasi Tentang Jurnalis",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,

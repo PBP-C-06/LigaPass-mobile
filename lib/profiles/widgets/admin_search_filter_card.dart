@@ -194,13 +194,11 @@ class AdminSearchFilterCard extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder: (context) => UserProfilePage(
                                     id: p.id,
-                                    // Oper callback ke halaman detail
                                     onUserDeleted: onUserDeleted,
                                   ),
                                 ),
                               );
 
-                              // Kalau user dihapus, panggil callback onUserDeleted
                               if (deleted == true) {
                                 onUserDeleted?.call(p.id);
                               }
@@ -208,7 +206,7 @@ class AdminSearchFilterCard extends StatelessWidget {
                             child: const Text(
                               "Detail",
                               style: TextStyle(
-                                color: Color(0xff2563eb),
+                                color: Color(0xFF2563EB),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
