@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:ligapass/profiles/screens/user_edit.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -28,16 +29,15 @@ class UserProfileUserActionCard extends StatelessWidget {
     this.onEditSuccess,
   });
 
-  // Delete profile, return true jika berhasil
   Future<bool> _deleteProfile(
     BuildContext context,
     CookieRequest request,
   ) async {
     try {
-      final url = "http://localhost:8000/profiles/flutter-delete/$userId/";
+      final url = ApiConfig.uri("profiles/flutter-delete/$userId/").toString();
       final response = await request.postJson(
         url,
-        jsonEncode({}), // endpoint tidak butuh data tambahan
+        jsonEncode({}), 
       );
 
       if (!context.mounted) return false;
@@ -45,12 +45,13 @@ class UserProfileUserActionCard extends StatelessWidget {
       if (response['ok'] == true) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(response['message'])));
+        ).showSnackBar(SnackBar(content: Text(response['message']),backgroundColor: Colors.green,));
         return true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Gagal menghapus profil: ${response['message']}"),
+            backgroundColor: Colors.red,
           ),
         );
         return false;
@@ -59,7 +60,8 @@ class UserProfileUserActionCard extends StatelessWidget {
       if (!context.mounted) return false;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Terjadi kesalahan: $e")));
+      ).showSnackBar(SnackBar(content: Text("Terjadi kesalahan: $e"), 
+      backgroundColor: Colors.red,));
       return false;
     }
   }
@@ -70,7 +72,7 @@ class UserProfileUserActionCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(24),
-      margin: const EdgeInsets.symmetric(vertical: 12),
+      margin: const EdgeInsets.only(top: 10, bottom: 2),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -85,12 +87,11 @@ class UserProfileUserActionCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Edit Button
           Expanded(
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                backgroundColor: Colors.blueAccent,
+                backgroundColor: Color(0xFF2563EB),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -117,7 +118,7 @@ class UserProfileUserActionCard extends StatelessWidget {
               },
               icon: const Icon(Icons.edit, color: Colors.white),
               label: const Text(
-                "Edit",
+                "Ubah",
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -127,7 +128,6 @@ class UserProfileUserActionCard extends StatelessWidget {
           ),
           const SizedBox(width: 16),
 
-          // Delete Button
           Expanded(
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
@@ -163,7 +163,7 @@ class UserProfileUserActionCard extends StatelessWidget {
 
                 if (confirm == true) {
                   if (!context.mounted) return;
-                  final ctx = context; // simpan context lokal
+                  final ctx = context;
                   final success = await _deleteProfile(ctx, request);
                   if (success) {
                     if (!context.mounted) return;
@@ -175,7 +175,7 @@ class UserProfileUserActionCard extends StatelessWidget {
               },
               icon: const Icon(Icons.delete, color: Colors.white),
               label: const Text(
-                "Delete",
+                "Hapus",
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

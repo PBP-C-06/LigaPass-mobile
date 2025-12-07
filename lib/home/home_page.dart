@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/matches/models/match.dart';
 import 'package:ligapass/bookings/screens/ticket_price_screen.dart';
+import 'package:ligapass/news/models/news.dart';
+import 'package:ligapass/news/widgets/news_card_vertical.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../config/api_config.dart';
 import 'package:http/http.dart' as http;
@@ -96,9 +98,7 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isLoadingNews = true);
     try {
       final url = '${ApiConfig.baseUrl}/news/api/news/?page=1&per_page=5';
-      debugPrint('Loading news from: $url');
       final response = await http.get(Uri.parse(url));
-      debugPrint('News response status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted) {
@@ -113,14 +113,11 @@ class _HomePageState extends State<HomePage> {
             _latestNews = List<Map<String, dynamic>>.from(newsList);
             _isLoadingNews = false;
           });
-          debugPrint('Loaded ${_latestNews.length} news items');
         }
       } else {
-        debugPrint('News API error: ${response.statusCode}');
         if (mounted) setState(() => _isLoadingNews = false);
       }
     } catch (e) {
-      debugPrint('Error loading news: $e');
       if (mounted) setState(() => _isLoadingNews = false);
     }
   }
@@ -131,9 +128,7 @@ class _HomePageState extends State<HomePage> {
       // Use the calendar API with status filter
       final url =
           '${ApiConfig.baseUrl}/matches/api/calendar/?page=1&per_page=10&status=Upcoming';
-      debugPrint('Loading upcoming matches from: $url');
       final response = await http.get(Uri.parse(url));
-      debugPrint('Matches response status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted) {
@@ -155,14 +150,11 @@ class _HomePageState extends State<HomePage> {
             _upcomingMatches = matches;
             _isLoadingMatches = false;
           });
-          debugPrint('Loaded ${_upcomingMatches.length} upcoming matches');
         }
       } else {
-        debugPrint('Matches API error: ${response.statusCode}');
         if (mounted) setState(() => _isLoadingMatches = false);
       }
     } catch (e) {
-      debugPrint('Error loading matches: $e');
       if (mounted) setState(() => _isLoadingMatches = false);
     }
   }
@@ -171,9 +163,7 @@ class _HomePageState extends State<HomePage> {
     try {
       // Use the flutter team logos endpoint that exists
       final url = '${ApiConfig.baseUrl}/matches/api/flutter/team-logos/';
-      debugPrint('Loading teams from: $url');
       final response = await http.get(Uri.parse(url));
-      debugPrint('Teams response status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted) {
@@ -187,12 +177,10 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _teams = List<Map<String, dynamic>>.from(teamsList);
           });
-          debugPrint('Loaded ${_teams.length} teams');
           _startTeamAutoScroll();
         }
       }
     } catch (e) {
-      debugPrint('Error loading teams: $e');
     }
   }
 
@@ -266,7 +254,10 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNav(currentRoute: '/home'),
+      floatingActionButton: AppBottomNav.buildAssistantFAB(context),
+      bottomNavigationBar: const AppBottomNav(
+        currentRoute: '/home',
+      ),
     );
   }
 
@@ -763,126 +754,11 @@ class _HomePageState extends State<HomePage> {
           else
             Column(
               children: _latestNews
-                  .map((news) => _buildNewsCard(news))
+                  .take(6)
+                  .map((json) => NewsListCard(news: News.fromJson(json)))
                   .toList(),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNewsCard(Map<String, dynamic> news) {
-    // Django response uses 'thumbnail' field
-    final imageUrl =
-        news['thumbnail'] ?? news['image_url'] ?? news['image'] ?? '';
-    final title = news['title'] ?? '';
-    final category = news['category'] ?? 'Berita';
-
-    String resolvedImageUrl = imageUrl;
-    if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
-      resolvedImageUrl = ApiConfig.resolveUrl(imageUrl);
-    }
-
-    return GestureDetector(
-      onTap: () {
-        // Navigate to news detail if needed
-        Navigator.pushNamed(context, '/news');
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        height: 90,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Image
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                bottomLeft: Radius.circular(10),
-              ),
-              child: SizedBox(
-                width: 90,
-                height: 90,
-                child: resolvedImageUrl.isNotEmpty
-                    ? Image.network(
-                        resolvedImageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: const Color(0xFFE5E7EB),
-                          child: const Icon(
-                            Icons.newspaper,
-                            color: Color(0xFF9CA3AF),
-                            size: 32,
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color: const Color(0xFFE5E7EB),
-                        child: const Icon(
-                          Icons.newspaper,
-                          color: Color(0xFF9CA3AF),
-                          size: 32,
-                        ),
-                      ),
-              ),
-            ),
-            // Content
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Category Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        category.toString().toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Title
-                    Flexible(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

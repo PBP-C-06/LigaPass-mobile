@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
-
-const String baseUrl = 'http://localhost:8000';
 
 class LogoutButton extends StatelessWidget {
   const LogoutButton({super.key});
@@ -15,11 +14,13 @@ class LogoutButton extends StatelessWidget {
 
         return SizedBox(
           width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              await request.logout("$baseUrl/auth/flutter-logout/");
-              if (!context.mounted) return;
-              Navigator.pushReplacementNamed(context, '/login');
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                await request.logout(
+                  ApiConfig.uri("auth/flutter-logout/").toString(),
+                );
+                if (!context.mounted) return;
+                Navigator.pushReplacementNamed(context, '/login');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFef4444),

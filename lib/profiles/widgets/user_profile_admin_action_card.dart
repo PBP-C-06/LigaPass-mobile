@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -31,7 +32,9 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
 
   Future<void> _changeStatus(CookieRequest request) async {
     try {
-      final url = "http://localhost:8000/profiles/admin/flutter-edit/${widget.userId}/";
+      final url = ApiConfig.uri(
+        "profiles/admin/flutter-edit/${widget.userId}/",
+      ).toString();
       final response = await request.postJson(
         url,
         jsonEncode({"status": _selectedStatus}),
@@ -40,25 +43,32 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
       if (response['ok'] == true) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'])),
+          SnackBar(content: Text(response['message']),
+          backgroundColor: Colors.green,
+          ),
         );
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal update status: ${response['message']}")),
+          SnackBar(content: Text("Gagal update status: ${response['message']}"),
+          backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Terjadi kesalahan: $e")),
+        SnackBar(content: Text("Terjadi kesalahan: $e"),
+        backgroundColor: Colors.red,
+        ),
       );
     }
   }
 
   Future<void> _deleteUser(CookieRequest request) async {
     try {
-      final url = "http://localhost:8000/profiles/flutter-delete/${widget.userId}/";
+      final url =
+          ApiConfig.uri("profiles/flutter-delete/${widget.userId}/").toString();
       final response = await request.postJson(url, jsonEncode({}));
 
       if (!context.mounted) return;
@@ -71,21 +81,26 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'])),
+          SnackBar(content: Text(response['message']),
+          backgroundColor: Colors.green,
+          ),
         );
 
-        // Kembali ke halaman sebelumnya
         Navigator.pop(context, true);
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal menghapus user: ${response['message']}")),
+          SnackBar(content: Text("Gagal menghapus user: ${response['message']}"),
+          backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Terjadi kesalahan: $e")),
+        SnackBar(content: Text("Terjadi kesalahan: $e"),
+        backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -106,7 +121,6 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
       ),
       child: Column(
         children: [
-          // Dropdown untuk pilih status
           DropdownButtonFormField<String>(
             decoration: InputDecoration(
               labelText: "Ubah Status User",
@@ -114,7 +128,7 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            initialValue: _selectedStatus, // ganti value jadi initialValue
+            initialValue: _selectedStatus, 
             items: _statuses.map((status) => DropdownMenuItem(
               value: status,
               child: Text(status),
@@ -129,13 +143,12 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
           ),
           const SizedBox(height: 16),
 
-          // Tombol Update Status
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                backgroundColor: Colors.blueAccent,
+                backgroundColor: Color(0xFF2563EB),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -144,14 +157,13 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
                 await _changeStatus(request);
               },
               child: const Text(
-                "Update Status",
+                "Ubah Status",
                 style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 15),
 
-          // Tombol Delete User
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -189,7 +201,7 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
                 }
               },
               child: const Text(
-                "Delete User",
+                "Hapus Pengguna",
                 style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
               ),
             ),

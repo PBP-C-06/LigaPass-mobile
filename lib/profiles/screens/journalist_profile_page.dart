@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/common/widgets/logout_button.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:ligapass/profiles/models/admin_journalist_profile.dart';
 import 'package:ligapass/profiles/widgets/journalist_profile_card.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +16,7 @@ class JournalistProfilePage extends StatefulWidget {
 
 class _JournalistProfilePageState extends State<JournalistProfilePage> {
   Future<AdminJournalistProfile> fetchProfile(CookieRequest request) async {
-    String url = "http://localhost:8000/profiles/json/journalist/";
+    final url = ApiConfig.uri("profiles/json/journalist/").toString();
     final response = await request.get(url);
     return AdminJournalistProfile.fromJson(response);
   }
@@ -27,7 +28,7 @@ class _JournalistProfilePageState extends State<JournalistProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Journalist Profile",
+          "Profil",
           style: TextStyle(
             color: Color(0xFF1d4ed8),
             fontWeight: FontWeight.bold,
@@ -56,21 +57,29 @@ class _JournalistProfilePageState extends State<JournalistProfilePage> {
             final profile = snapshot.data!;
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  JournalistProfileCard(profile: profile),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      JournalistProfileCard(profile: profile),
 
-                  const SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
-                  const LogoutButton(),
-                ],
+                      const LogoutButton(),
+                    ],
+                  ),
+                ),
               ),
             );
           },
         ),
       ),
+      // Untuk botton navbar
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }

@@ -19,9 +19,14 @@ class _NavItem {
 }
 
 class AppBottomNav extends StatelessWidget {
-  const AppBottomNav({super.key, required this.currentRoute});
+  const AppBottomNav({
+    super.key,
+    required this.currentRoute,
+    this.showAssistantButton = true,
+  });
 
   final String currentRoute;
+  final bool showAssistantButton;
 
   Future<void> _handleTap(
     BuildContext context,
@@ -66,6 +71,13 @@ class AppBottomNav extends StatelessWidget {
           requiresLogin: true,
           adminOnly: true,
         )
+      else if (role == 'journalist')
+        const _NavItem(
+          route: '/news-manage',
+          icon: Icons.edit_note,
+          label: 'Manage',
+          requiresLogin: true,
+        )
       else
         const _NavItem(
           route: '/tickets',
@@ -73,11 +85,6 @@ class AppBottomNav extends StatelessWidget {
           label: 'Tiket',
           requiresLogin: true,
         ),
-      const _NavItem(
-        route: '/assistant',
-        icon: Icons.chat_bubble_outline,
-        label: 'Assist',
-      ),
       const _NavItem(
         route: '/news',
         icon: Icons.article_outlined,
@@ -95,7 +102,7 @@ class AppBottomNav extends StatelessWidget {
       (item) => item.route == currentRoute,
     );
 
-    return BottomNavigationBar(
+    final bar = BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: currentIndex == -1 ? 0 : currentIndex,
       onTap: (index) => _handleTap(context, navItems[index], loggedIn, role),
@@ -107,6 +114,29 @@ class AppBottomNav extends StatelessWidget {
             ),
           )
           .toList(),
+    );
+
+    if (!showAssistantButton) return bar;
+
+    // Return just the bar - the FAB will be handled by Scaffold
+    return bar;
+  }
+
+  /// Build a floating action button for the assistant
+  /// Use this in Scaffold's floatingActionButton property
+  static Widget buildAssistantFAB(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20), // turunkan posisi
+      child: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, '/assistant'),
+        backgroundColor: const Color(0xFF2563EB),
+        elevation: 8,
+        child: const Icon(
+          Icons.chat_bubble,
+          color: Colors.white,
+          size: 24,
+        ),
+      ),
     );
   }
 }

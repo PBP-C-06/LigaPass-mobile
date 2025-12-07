@@ -53,9 +53,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       // Send username as fallback for web (where session cookies may not work)
       if (_username != null && _username!.isNotEmpty) {
         requestMultipart.fields['username'] = _username!;
-        debugPrint("DEBUG: Sending username = $_username");
       } else {
-        debugPrint("DEBUG: WARNING - username is null or empty!");
       }
 
       if (_selectedImageBytes != null && kIsWeb) {
@@ -73,13 +71,8 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       }
 
       // Debug: print cookies
-      debugPrint("=== DEBUG COOKIES ===");
-      debugPrint("Cookies count: ${request.cookies.length}");
       request.cookies.forEach((key, value) {
-        debugPrint("Cookie: $key = ${value.value}");
       });
-      debugPrint("loggedIn: ${request.loggedIn}");
-      debugPrint("=== END DEBUG ===");
 
       final cookieHeader = request.cookies.entries
           .map((entry) => "${entry.key}=${entry.value.value}")
@@ -87,7 +80,6 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       if (cookieHeader.isNotEmpty) {
         requestMultipart.headers['Cookie'] = cookieHeader;
       }
-      debugPrint("Cookie Header sent: $cookieHeader");
       final csrfCookie = request.cookies['csrftoken'];
       if (csrfCookie != null) {
         requestMultipart.headers['X-CSRFToken'] = csrfCookie.value;
@@ -99,10 +91,15 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
 
       if (response.statusCode == 201) {
         if (!mounted) return;
+        
+        // Update hasProfile di jsonData agar tidak redirect kembali ke create profile
+        request.jsonData['hasProfile'] = true;
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profil berhasil dibuat!")),
         );
-        Navigator.pop(context);
+        // Redirect ke home page setelah profile dibuat
+        Navigator.of(context).pushReplacementNamed("/home");
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -322,7 +319,8 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                                 onPressed: _loading
                                     ? null
                                     : () async {
-                                        if (!_formKey.currentState!.validate()) {
+                                        if (!_formKey.currentState!
+                                            .validate()) {
                                           return;
                                         }
                                         await submitProfile(

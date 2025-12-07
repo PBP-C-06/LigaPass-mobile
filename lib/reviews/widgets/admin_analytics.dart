@@ -91,78 +91,78 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      padding: const EdgeInsets.all(16),
-      height: MediaQuery.of(context).size.height * 0.9,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FBFF),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // HEADER
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Analisis",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+Widget build(BuildContext context) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: const BoxDecoration(
+      color: Color(0xFFF8FBFF),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min, // ✅ penting
+      children: [
+        // HEADER
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Analisis",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: widget.onClose,
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: widget.onClose,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // ✅ LIST KONTEN
+        Flexible(
+          child: ListView(
+            shrinkWrap: true,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              _buildCard(
+                title: "Total Pendapatan",
+                dropdownValue: revenuePeriod,
+                onDropdownChange: (v) {
+                  setState(() => revenuePeriod = v);
+                  fetchRevenue();
+                },
+                child: isLoadingRevenue
+                    ? const Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    : _buildRevenueChart(),
+              ),
+              const SizedBox(height: 20),
+              _buildCard(
+                title: "Tiket Terjual",
+                dropdownValue: ticketPeriod,
+                onDropdownChange: (v) {
+                  setState(() => ticketPeriod = v);
+                  fetchTickets();
+                },
+                child: isLoadingTickets
+                    ? const Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    : _buildTicketsChart(),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-
-          Expanded(
-            child: ListView(
-              children: [
-                _buildCard(
-                  title: "Total Pendapatan",
-                  dropdownValue: revenuePeriod,
-                  onDropdownChange: (v) {
-                    setState(() => revenuePeriod = v);
-                    fetchRevenue();
-                  },
-                  child: isLoadingRevenue
-                      ? const Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      : _buildRevenueChart(),
-                ),
-                const SizedBox(height: 20),
-
-                _buildCard(
-                  title: "Tiket Terjual",
-                  dropdownValue: ticketPeriod,
-                  onDropdownChange: (v) {
-                    setState(() => ticketPeriod = v);
-                    fetchTickets();
-                  },
-                  child: isLoadingTickets
-                      ? const Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      : _buildTicketsChart(),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildCard({
     required String title,

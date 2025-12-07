@@ -11,5 +11,17 @@ class Endpoints {
   static const String logout = '$base/auth/logout/';
 
   // TODO: Tambahkan endpoint modul lain ketika sudah siap.
-  static const String newsList = 'http://localhost:8000/news/api/news/';
+  static const String newsList = '$base/news/api/news/';
+  static const String createNews = '$base/news/api/news/create-json/';
+  static String currentUser = '$base/news/api/user/';
+
+  static String newsDetail(int id) => '$base/news/api/news/$id/';
+  static String newsComments(int id, {String sort = 'latest'}) =>
+      '$base/news/api/news/$id/comments/?sort=$sort';
+  static String newsRecommendations(int id) =>
+    '$base/news/api/news/$id/recommendations/';
+  static String likeComment(int id) => '$base/news/api/comment/$id/like/';
+  static String deleteComment(int id) => '$base/news/api/comment/$id/delete/';
+  static String editNews(int id) => "$base/news/api/news/$id/edit-json/";
+  static String deleteNews(int id) => "$base/news/api/news/$id/delete/";
 }

@@ -52,18 +52,26 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => isLoading = false);
 
     if (response["status"] == "success") {
-      request.loggedIn = true;
-      request.jsonData = response;
-      if (!mounted) return;
-      // User baru register, harus buat profile dulu
-      // Pass username ke create-profile page
-      navigator.pushReplacementNamed(
-        "/create-profile",
-        arguments: {"username": _usernameController.text},
-      );
-    } else {
+  request.loggedIn = true;
+  request.jsonData = response;
+
+  request.jsonData['username'] = _usernameController.text;
+  request.jsonData['first_name'] = _fnameController.text;
+  request.jsonData['last_name'] = _lnameController.text;
+  request.jsonData['email'] = _emailController.text;
+
+  if (!mounted) return;
+  navigator.pushReplacementNamed(
+    "/create-profile",
+    arguments: {"username": _usernameController.text},
+  );
+} else {
       request.loggedIn = false;
-      setState(() => errorMessage = response["errors"].toString());
+      setState(() {
+        errorMessage = response["message"] ??
+            _formatErrors(response["errors"]) ??
+            "Registrasi gagal. Periksa data Anda.";
+      });
     }
   }
 
@@ -161,4 +169,26 @@ class _RegisterPageState extends State<RegisterPage> {
       bottomNavigationBar: const AppBottomNav(currentRoute: '/register'),
     );
   }
+}
+
+String? _formatErrors(dynamic errors) {
+  if (errors == null) return null;
+  if (errors is String && errors.trim().isNotEmpty) return errors;
+  if (errors is Map) {
+    final parts = <String>[];
+    errors.forEach((key, value) {
+      if (value is List) {
+        parts.add("${key.toString()}: ${value.join(', ')}");
+      } else {
+        parts.add("${key.toString()}: $value");
+      }
+    });
+    if (parts.isNotEmpty) return parts.join("\n");
+  }
+  if (errors is List) {
+    final msgs =
+        errors.whereType<String>().where((m) => m.trim().isNotEmpty).toList();
+    if (msgs.isNotEmpty) return msgs.join("\n");
+  }
+  return null;
 }

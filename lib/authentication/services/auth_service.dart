@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class AuthService {
@@ -8,15 +9,12 @@ class AuthService {
 
   AuthService(this.request);
 
-  // Ganti dengan domain Django-mu
-  static const String baseUrl = "http://localhost:8000";
-
   Future<Map<String, dynamic>> login({
     required String username,
     required String password,
   }) async {
     final response = await request.postJson(
-      "$baseUrl/auth/flutter-login/",
+      ApiConfig.uri("auth/flutter-login/").toString(),
       jsonEncode({
         "username": username,
         "password": password,
@@ -35,7 +33,7 @@ class AuthService {
     required String password2,
   }) async {
     final response = await request.postJson(
-      "$baseUrl/auth/flutter-register/",
+      ApiConfig.uri("auth/flutter-register/").toString(),
       jsonEncode({
         "username": username,
         "first_name": firstName,
@@ -74,7 +72,7 @@ class AuthService {
     }
 
     final response = await request.postJson(
-      "$baseUrl/auth/flutter-google-login/",
+      ApiConfig.uri("auth/flutter-google-login/").toString(),
       jsonEncode({"credential": idToken}),
     );
 
@@ -83,7 +81,7 @@ class AuthService {
 
   Future<Map<String, dynamic>> logout() async {
     final response =
-        await request.postJson("$baseUrl/auth/flutter-logout/", {});
+        await request.postJson(ApiConfig.uri("auth/flutter-logout/").toString(), {});
     return response;
   }
 }

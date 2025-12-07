@@ -50,6 +50,7 @@ dependencies:
   url_launcher: ^6.2.5
   barcode_widget: ^2.0.4 
   image_picker: ^1.1.0
+  path: ^1.8.4
   shared_preferences: ^2.2.2
 
 dev_dependencies:
@@ -79,6 +80,8 @@ flutter:
     - assets/banners/banner1.jpeg
     - assets/banners/banner2.jpeg
     - assets/banners/banner3.jpeg
+    - assets/images/logo.png
+    - assets/images/favicon.ico
     - assets/profile_images/Admin.png
     - assets/profile_images/default-profile-picture.png
     - assets/profile_images/Journalist.png

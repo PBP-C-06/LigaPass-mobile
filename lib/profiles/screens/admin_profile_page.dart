@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/common/widgets/logout_button.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:ligapass/profiles/models/admin_journalist_profile.dart';
 import 'package:ligapass/profiles/models/profile.dart';
 import 'package:ligapass/profiles/widgets/admin_profile_card.dart';
@@ -8,11 +9,6 @@ import 'package:ligapass/profiles/widgets/admin_search_filter_card.dart';
 import 'package:ligapass/reviews/widgets/admin_analytics.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
-
-const String baseUrl = 'http://localhost:8000';
-const String adminProfileEndpoint = '$baseUrl/profiles/json/admin/';
-const String adminSearchFilterEndpoint =
-    '$baseUrl/profiles/json/admin/search-filter/';
 
 class AdminProfilePage extends StatefulWidget {
   const AdminProfilePage({super.key});
@@ -33,6 +29,9 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
   int currentPage = 1;
   int totalPages = 1;
+
+  String get adminProfileEndpoint =>
+      ApiConfig.uri('profiles/json/admin/').toString();
 
   @override
   void didChangeDependencies() {
@@ -70,8 +69,13 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   }) async {
     setState(() => loadingProfiles = true);
     try {
-      final url =
-          '$adminSearchFilterEndpoint?search=${Uri.encodeQueryComponent(search)}&filter=${Uri.encodeQueryComponent(filter)}';
+      final url = ApiConfig.uri(
+        'profiles/json/admin/search-filter/',
+        {
+          'search': search,
+          'filter': filter,
+        },
+      ).toString();
 
       final response = await request.get(url);
       profiles.clear();
@@ -82,12 +86,9 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
         }
       }
 
-      // Untuk menghitung pagination setelah di fetch
       setState(() {
         totalPages = (profiles.length / 5).ceil();
         if (totalPages < 1) totalPages = 1;
-
-        // Reset to page awal jika search / filter berubah
         currentPage = 1;
       });
     } catch (e) {
@@ -108,10 +109,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   if (picPath.startsWith("http")) {
     return NetworkImage(picPath);
   }
-
-  return NetworkImage("$baseUrl$picPath");
+  return NetworkImage(ApiConfig.resolveUrl(picPath));
 }
-
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +119,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Admin Profile",
+          "Profil",
           style: TextStyle(
             color: Color(0xFF1d4ed8),
             fontWeight: FontWeight.bold,
@@ -145,14 +144,12 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    AdminProfileCard(adminProfile: adminProfile!),
-
-                    const SizedBox(height: 20),
-
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
+                            AdminProfileCard(adminProfile: adminProfile!),
+                            const SizedBox(height: 10),
                             AdminSearchFilterCard(
                               userProfiles: profiles,
                               loading: loadingProfiles,
@@ -179,7 +176,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                 );
                               },
 
-                              // Pagination
                               currentPage: currentPage,
                               totalPages: totalPages,
                               onNextPage: () {
@@ -250,6 +246,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                 ),
                               ),
                             ),
+                            // Untuk button logout
                             const LogoutButton(),
                           ],
                         ),
@@ -259,7 +256,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 ),
               ),
       ),
-
+      // Untuk botton navbar
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }
