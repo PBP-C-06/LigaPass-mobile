@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -31,7 +32,9 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
 
   Future<void> _changeStatus(CookieRequest request) async {
     try {
-      final url = "http://localhost:8000/profiles/admin/flutter-edit/${widget.userId}/";
+      final url = ApiConfig.uri(
+        "profiles/admin/flutter-edit/${widget.userId}/",
+      ).toString();
       final response = await request.postJson(
         url,
         jsonEncode({"status": _selectedStatus}),
@@ -64,7 +67,8 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
 
   Future<void> _deleteUser(CookieRequest request) async {
     try {
-      final url = "http://localhost:8000/profiles/flutter-delete/${widget.userId}/";
+      final url =
+          ApiConfig.uri("profiles/flutter-delete/${widget.userId}/").toString();
       final response = await request.postJson(url, jsonEncode({}));
 
       if (!context.mounted) return;

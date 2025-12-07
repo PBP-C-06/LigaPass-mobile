@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-const String baseUrl = "http://localhost:8000";
+import 'package:ligapass/config/api_config.dart';
 
 void showAddReviewPopup(
   BuildContext context,
@@ -128,9 +127,7 @@ void showAddReviewPopup(
                             return;
                           }
 
-                          final url = Uri.parse(
-                            "$baseUrl/reviews/api/$matchId/create/",
-                          );
+                          final url = ApiConfig.uri("reviews/api/$matchId/create/");
 
                           final response = await http.post(
                             url,

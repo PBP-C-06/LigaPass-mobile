@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/common/widgets/logout_button.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:ligapass/profiles/models/admin_journalist_profile.dart';
 import 'package:ligapass/profiles/widgets/journalist_profile_card.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +16,7 @@ class JournalistProfilePage extends StatefulWidget {
 
 class _JournalistProfilePageState extends State<JournalistProfilePage> {
   Future<AdminJournalistProfile> fetchProfile(CookieRequest request) async {
-    String url = "http://localhost:8000/profiles/json/journalist/";
+    final url = ApiConfig.uri("profiles/json/journalist/").toString();
     final response = await request.get(url);
     return AdminJournalistProfile.fromJson(response);
   }

@@ -22,7 +22,7 @@ class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     super.key,
     required this.currentRoute,
-    this.showAssistantButton = false,
+    this.showAssistantButton = true,
   });
 
   final String currentRoute;
@@ -111,49 +111,23 @@ class AppBottomNav extends StatelessWidget {
 
     if (!showAssistantButton) return bar;
 
-    const baseHeight = kBottomNavigationBarHeight;
-
-    return SizedBox(
-      height: baseHeight + 8,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned.fill(child: bar),
-          Positioned(
-            right: 18,
-            top: -64,
-            child: _AssistantButton(
-              onTap: () => Navigator.pushNamed(context, '/assistant'),
-            ),
-          ),
-        ],
-      ),
-    );
+    // Return just the bar - the FAB will be handled by Scaffold
+    return bar;
   }
-}
 
-class _AssistantButton extends StatelessWidget {
-  const _AssistantButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0xFF2563EB),
-      elevation: 10,
-      shape: const CircleBorder(),
-      shadowColor: Colors.black.withOpacity(0.18),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: const Padding(
-          padding: EdgeInsets.all(14),
-          child: Icon(
-            Icons.chat_bubble_outline,
-            color: Colors.white,
-            size: 28,
-          ),
+  /// Build a floating action button for the assistant
+  /// Use this in Scaffold's floatingActionButton property
+  static Widget buildAssistantFAB(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20), // turunkan posisi
+      child: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, '/assistant'),
+        backgroundColor: const Color(0xFF2563EB),
+        elevation: 8,
+        child: const Icon(
+          Icons.chat_bubble,
+          color: Colors.white,
+          size: 24,
         ),
       ),
     );

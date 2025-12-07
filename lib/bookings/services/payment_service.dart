@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../../config/api_config.dart';
 
@@ -23,7 +24,7 @@ class PaymentService {
       }
 
       final response = await request.postJson(
-        '${ApiConfig.baseUrl}/bookings/flutter-payment/$bookingId/',
+        ApiConfig.uri('bookings/flutter-payment/$bookingId/').toString(),
         jsonEncode(body),
       );
 
@@ -42,12 +43,38 @@ class PaymentService {
     required String cardCvv,
     required String clientKey,
   }) async {
-    // Note: In production, this should use Midtrans JS SDK or native SDK
-    // For Flutter, we'll use a different approach - redirect to web view
-    return {
-      'status': false,
-      'message': 'Card tokenization should be done via Midtrans SDK',
-    };
+    try {
+      final uri = Uri.https(
+        'api.sandbox.midtrans.com',
+        '/v2/token',
+        {
+          'client_key': clientKey,
+          'card_number': cardNumber.replaceAll(' ', ''),
+          'card_exp_month': cardExpMonth,
+          'card_exp_year': cardExpYear,
+          'card_cvv': cardCvv,
+        },
+      );
+
+      final res = await http.get(uri);
+      if (res.statusCode != 200) {
+        return {
+          'status': false,
+          'message': 'Tokenization failed (${res.statusCode})',
+          'body': res.body,
+        };
+      }
+
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final tokenId = data['token_id']?.toString();
+      if (tokenId == null || tokenId.isEmpty) {
+        return {'status': false, 'message': 'Token ID missing', 'body': data};
+      }
+
+      return {'status': true, 'token_id': tokenId, 'data': data};
+    } catch (e) {
+      return {'status': false, 'message': 'Tokenization error: $e'};
+    }
   }
 
   /// Check payment status
