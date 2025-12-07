@@ -9,11 +9,13 @@ import 'package:ligapass/reviews/widgets/admin_analytics.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
+// URLS untuk fetch data 
 const String baseUrl = 'http://localhost:8000';
 const String adminProfileEndpoint = '$baseUrl/profiles/json/admin/';
 const String adminSearchFilterEndpoint =
     '$baseUrl/profiles/json/admin/search-filter/';
 
+//
 class AdminProfilePage extends StatefulWidget {
   const AdminProfilePage({super.key});
 
@@ -44,6 +46,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     _fetchProfiles(request, search: search, filter: filter);
   }
 
+  // Ambil profile admin
   Future<void> _fetchAdmin(CookieRequest request) async {
     setState(() => loadingAdmin = true);
     try {
@@ -63,6 +66,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     }
   }
 
+  // Ambil profile users 
   Future<void> _fetchProfiles(
     CookieRequest request, {
     required String search,
@@ -174,7 +178,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                 );
                               },
 
-                              // Pagination
                               currentPage: currentPage,
                               totalPages: totalPages,
                               onNextPage: () {
@@ -245,6 +248,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                 ),
                               ),
                             ),
+                            // Untuk button logout
                             const LogoutButton(),
                           ],
                         ),
@@ -254,7 +258,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 ),
               ),
       ),
-
+      // Untuk botton navbar
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }

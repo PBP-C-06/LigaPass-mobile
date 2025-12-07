@@ -36,6 +36,7 @@ class RedirectLoginPage extends StatelessWidget {
           ),
         ),
       ),
+      // Untuk botton navbar
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }

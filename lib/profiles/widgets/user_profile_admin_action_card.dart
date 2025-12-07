@@ -74,7 +74,6 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
           SnackBar(content: Text(response['message'])),
         );
 
-        // Kembali ke halaman sebelumnya
         Navigator.pop(context, true);
       } else {
         if (!mounted) return;
@@ -106,7 +105,6 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
       ),
       child: Column(
         children: [
-          // Dropdown untuk pilih status
           DropdownButtonFormField<String>(
             decoration: InputDecoration(
               labelText: "Ubah Status User",
@@ -114,7 +112,7 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            initialValue: _selectedStatus, // ganti value jadi initialValue
+            initialValue: _selectedStatus, 
             items: _statuses.map((status) => DropdownMenuItem(
               value: status,
               child: Text(status),
@@ -129,7 +127,6 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
           ),
           const SizedBox(height: 16),
 
-          // Tombol Update Status
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -151,7 +148,6 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
           ),
           const SizedBox(height: 16),
 
-          // Tombol Delete User
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(

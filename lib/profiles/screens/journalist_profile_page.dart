@@ -63,7 +63,8 @@ class _JournalistProfilePageState extends State<JournalistProfilePage> {
                   JournalistProfileCard(profile: profile),
 
                   const SizedBox(height: 20),
-
+                  
+                  // Untuk button logout
                   const LogoutButton(),
                 ],
               ),
@@ -71,6 +72,7 @@ class _JournalistProfilePageState extends State<JournalistProfilePage> {
           },
         ),
       ),
+      // Untuk botton navbar
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }

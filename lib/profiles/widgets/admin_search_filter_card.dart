@@ -194,13 +194,11 @@ class AdminSearchFilterCard extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder: (context) => UserProfilePage(
                                     id: p.id,
-                                    // Oper callback ke halaman detail
                                     onUserDeleted: onUserDeleted,
                                   ),
                                 ),
                               );
 
-                              // Kalau user dihapus, panggil callback onUserDeleted
                               if (deleted == true) {
                                 onUserDeleted?.call(p.id);
                               }

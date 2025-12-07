@@ -91,7 +91,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
             final profile = snapshot.data!;
             final role = request.jsonData['role'];
             String currentStatus = profile.status;
-            // Parse full name into first and last name
             final nameParts = profile.fullName.split(' ');
             final firstName = nameParts.isNotEmpty ? nameParts.first : '';
             final lastName = nameParts.length > 1
@@ -169,6 +168,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         ),
                       ),
                     ),
+                  // Untuk button logout
                   const LogoutButton(),
                 ],
               ),
@@ -176,6 +176,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           },
         ),
       ),
+      // Untuk botton navbar
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }

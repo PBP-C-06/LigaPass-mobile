@@ -28,7 +28,6 @@ class UserProfileUserActionCard extends StatelessWidget {
     this.onEditSuccess,
   });
 
-  // Delete profile, return true jika berhasil
   Future<bool> _deleteProfile(
     BuildContext context,
     CookieRequest request,
@@ -37,7 +36,7 @@ class UserProfileUserActionCard extends StatelessWidget {
       final url = "http://localhost:8000/profiles/flutter-delete/$userId/";
       final response = await request.postJson(
         url,
-        jsonEncode({}), // endpoint tidak butuh data tambahan
+        jsonEncode({}), 
       );
 
       if (!context.mounted) return false;
@@ -85,7 +84,6 @@ class UserProfileUserActionCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Edit Button
           Expanded(
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
@@ -127,7 +125,6 @@ class UserProfileUserActionCard extends StatelessWidget {
           ),
           const SizedBox(width: 16),
 
-          // Delete Button
           Expanded(
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
@@ -163,7 +160,7 @@ class UserProfileUserActionCard extends StatelessWidget {
 
                 if (confirm == true) {
                   if (!context.mounted) return;
-                  final ctx = context; // simpan context lokal
+                  final ctx = context;
                   final success = await _deleteProfile(ctx, request);
                   if (success) {
                     if (!context.mounted) return;

@@ -465,6 +465,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                       ),
                     ),
             ),
+      // Untuk botton navbar
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }
