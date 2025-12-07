@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:ligapass/config/api_config.dart';
 import 'package:ligapass/profiles/screens/user_edit.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +33,7 @@ class UserProfileUserActionCard extends StatelessWidget {
     CookieRequest request,
   ) async {
     try {
-      final url = ApiConfig.uri("profiles/flutter-delete/$userId/").toString();
+      final url = "http://localhost:8000/profiles/flutter-delete/$userId/";
       final response = await request.postJson(
         url,
         jsonEncode({}), 
