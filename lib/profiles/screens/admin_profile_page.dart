@@ -10,6 +10,10 @@ import 'package:ligapass/reviews/widgets/admin_analytics.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
+const String adminProfileEndpoint = '/profiles/json/admin/';
+const String adminSearchFilterEndpoint =
+    '/profiles/json/admin/search-filter/';
+
 class AdminProfilePage extends StatefulWidget {
   const AdminProfilePage({super.key});
 
@@ -30,9 +34,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   int currentPage = 1;
   int totalPages = 1;
 
-  String get adminProfileEndpoint =>
-      ApiConfig.uri('profiles/json/admin/').toString();
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -46,7 +47,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   Future<void> _fetchAdmin(CookieRequest request) async {
     setState(() => loadingAdmin = true);
     try {
-      final response = await request.get(adminProfileEndpoint);
+      final response = await request.get(ApiConfig.uri(adminProfileEndpoint).toString());
       if (response != null) {
         adminProfile = AdminJournalistProfile.fromJson(
           Map<String, dynamic>.from(response),
@@ -70,7 +71,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     setState(() => loadingProfiles = true);
     try {
       final url = ApiConfig.uri(
-        'profiles/json/admin/search-filter/',
+        adminSearchFilterEndpoint,
         {
           'search': search,
           'filter': filter,

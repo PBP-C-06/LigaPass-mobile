@@ -74,9 +74,8 @@ class LigaPassApp extends StatelessWidget {
               final req = Provider.of<CookieRequest>(context, listen: false);
               final id = req.jsonData['id'];
               final role = req.jsonData['role'];
-              final hasProfile = req.jsonData['hasProfile'] == true; // Explicit check for true
-
-              // Debug print untuk troubleshooting
+              final hasProfile = req.jsonData['hasProfile'] == true;
+              final username = req.jsonData['username'];
 
               // Profile route mapping berdasarkan role
               if (settings.name == '/profile') {
@@ -89,7 +88,7 @@ class LigaPassApp extends StatelessWidget {
                   // Jika belum punya profile tapi sudah login dan bukan admin and journalist
                   if (!hasProfile && role != "admin" && role != "journalist") {
                     return MaterialPageRoute(
-                      builder: (_) => const CreateProfilePage(),
+                      builder: (_) => CreateProfilePage(username: username),
                     );
                   }
                   // Jika sudah punya profile
@@ -116,11 +115,10 @@ class LigaPassApp extends StatelessWidget {
                 );
               }
 
-              // Route untuk create-profile (dari register page dengan username argument)
               if (settings.name == '/create-profile') {
                 return MaterialPageRoute(
-                  builder: (_) => const CreateProfilePage(),
-                  settings: settings, // Pass settings agar arguments tersedia
+                  builder: (_) => CreateProfilePage(username: username),
+                  settings: settings, 
                 );
               }
 
