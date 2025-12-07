@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ligapass/config/env.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -35,8 +36,13 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
   bool _isLoading = false;
   bool _isCancelling = false;
   bool _isInitializingPayment = true;
+  bool _isTokenizing = false;
   Map<String, dynamic> _paymentData = {};
   String? _errorMessage;
+  final TextEditingController _cardNumberCtrl = TextEditingController();
+  final TextEditingController _expMonthCtrl = TextEditingController();
+  final TextEditingController _expYearCtrl = TextEditingController();
+  final TextEditingController _cvvCtrl = TextEditingController();
 
   // Animation for hourglass
   late AnimationController _hourglassController;
@@ -48,13 +54,26 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat();
-    _initializePayment();
+    if (widget.paymentMethod == 'credit_card' &&
+        (widget.initialPaymentData == null ||
+            widget.initialPaymentData!.isEmpty)) {
+      // Show card form first, don't hit backend yet
+      setState(() {
+        _isInitializingPayment = false;
+      });
+    } else {
+      _initializePayment();
+    }
   }
 
   @override
   void dispose() {
     _statusTimer?.cancel();
     _hourglassController.dispose();
+    _cardNumberCtrl.dispose();
+    _expMonthCtrl.dispose();
+    _expYearCtrl.dispose();
+    _cvvCtrl.dispose();
     super.dispose();
   }
 
@@ -229,6 +248,91 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
     }
   }
 
+  Future<void> _startCardPayment() async {
+    final clientKey = Env.midtransClientKey;
+    if (clientKey.isEmpty) {
+      setState(() {
+        _errorMessage =
+            'MIDTRANS_CLIENT_KEY belum diset. Tambahkan --dart-define=MIDTRANS_CLIENT_KEY=xxxx saat run/build.';
+      });
+      return;
+    }
+
+    final cardNumber = _cardNumberCtrl.text.trim();
+    final expMonth = _expMonthCtrl.text.trim();
+    final expYear = _expYearCtrl.text.trim();
+    final cvv = _cvvCtrl.text.trim();
+
+    if (cardNumber.isEmpty ||
+        expMonth.isEmpty ||
+        expYear.isEmpty ||
+        cvv.isEmpty) {
+      setState(() {
+        _errorMessage = 'Isi semua data kartu terlebih dahulu.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isTokenizing = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final request = context.read<CookieRequest>();
+      final paymentService = PaymentService(request);
+
+      final tokenRes = await paymentService.getCardToken(
+        cardNumber: cardNumber,
+        cardExpMonth: expMonth,
+        cardExpYear: expYear,
+        cardCvv: cvv,
+        clientKey: clientKey,
+      );
+
+      if (tokenRes['status'] != true) {
+        setState(() {
+          _isTokenizing = false;
+          _errorMessage =
+              tokenRes['message'] ?? 'Gagal tokenisasi kartu, coba lagi.';
+        });
+        return;
+      }
+
+      final tokenId = tokenRes['token_id'] as String;
+
+      final initiateRes = await paymentService.initiatePayment(
+        bookingId: widget.bookingId,
+        method: widget.paymentMethod,
+        tokenId: tokenId,
+      );
+
+      if (!mounted) return;
+
+      if (initiateRes['status'] == true && initiateRes['payment_data'] != null) {
+        setState(() {
+          _paymentData = initiateRes['payment_data'] as Map<String, dynamic>;
+          _isInitializingPayment = false;
+          _isTokenizing = false;
+        });
+        _startStatusPolling();
+        _handleCardPayment();
+      } else {
+        setState(() {
+          _isTokenizing = false;
+          _errorMessage =
+              initiateRes['message'] ?? 'Gagal memulai pembayaran kartu.';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isTokenizing = false;
+        _errorMessage = 'Error: $e';
+      });
+    }
+  }
+
   void _navigateToSuccess() {
     Navigator.pushReplacement(
       context,
@@ -315,6 +419,10 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.paymentMethod == 'credit_card' && _paymentData.isEmpty) {
+      return _buildCardForm();
+    }
+
     // Show loading while initializing payment
     if (_isInitializingPayment) {
       return Scaffold(
@@ -600,6 +708,262 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
             Text(
               'Status auto-refreshes every 5 seconds',
               style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardForm() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFEFF6FF),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2563EB)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Pembayaran Kartu',
+          style: TextStyle(
+            color: Color(0xFF2563EB),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF2563EB), Color(0xFF1E3A8A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.15),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text(
+                        'Kartu Kredit / Debit',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Icon(Icons.lock_outline, color: Colors.white70, size: 18),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _cardNumberCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Nomor Kartu',
+                      labelStyle:
+                          const TextStyle(color: Colors.white70, fontSize: 13),
+                      hintText: '•••• •••• •••• ••••',
+                      hintStyle:
+                          const TextStyle(color: Colors.white54, fontSize: 16),
+                      prefixIcon: const Icon(Icons.credit_card, color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.08),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _expMonthCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Bulan (MM)',
+                            labelStyle: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.08),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _expYearCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Tahun (YY/ YYYY)',
+                            labelStyle: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.08),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _cvvCtrl,
+                          keyboardType: TextInputType.number,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: 'CVV',
+                            labelStyle: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.08),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Pembayaran diproses aman melalui Midtrans. Data kartu tidak disimpan.',
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (_errorMessage != null)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFDC2626)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: Color(0xFFDC2626)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Color(0xFF991B1B)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Ringkasan',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total bayar',
+                        style: TextStyle(color: Color(0xFF4B5563)),
+                      ),
+                      Text(
+                        'Rp ${_formatPrice(widget.totalAmount)}',
+                        style: const TextStyle(
+                          color: Color(0xFF2563EB),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isTokenizing ? null : _startCardPayment,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isTokenizing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Bayar Sekarang'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

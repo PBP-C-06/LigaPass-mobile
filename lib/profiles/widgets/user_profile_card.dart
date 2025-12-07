@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:ligapass/profiles/models/profile.dart';
 import 'package:intl/intl.dart';
 
@@ -29,7 +30,7 @@ class UserProfileCard extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: Text(
-              "Profil User",
+              "Profil Pengguna",
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -68,7 +69,7 @@ class UserProfileCard extends StatelessWidget {
                             fit: BoxFit.cover,
                           )
                         : Image.network(
-                            "http://localhost:8000${profile.profilePicture}",
+                            ApiConfig.resolveUrl(profile.profilePicture!),
                             width: 90,
                             height: 90,
                             fit: BoxFit.cover,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ligapass/config/api_config.dart';
 import 'package:ligapass/profiles/models/profile.dart';
 import 'package:ligapass/profiles/screens/user_profile_page.dart';
 
@@ -194,13 +195,11 @@ class AdminSearchFilterCard extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder: (context) => UserProfilePage(
                                     id: p.id,
-                                    // Oper callback ke halaman detail
                                     onUserDeleted: onUserDeleted,
                                   ),
                                 ),
                               );
 
-                              // Kalau user dihapus, panggil callback onUserDeleted
                               if (deleted == true) {
                                 onUserDeleted?.call(p.id);
                               }
@@ -208,7 +207,7 @@ class AdminSearchFilterCard extends StatelessWidget {
                             child: const Text(
                               "Detail",
                               style: TextStyle(
-                                color: Color(0xff2563eb),
+                                color: Color(0xFF2563EB),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -245,5 +244,5 @@ String resolveUrl(String? path) {
   if (path == null || path.isEmpty) {
     return "assets/profile_images/default-profile-picture.png";
   }
-  return "http://localhost:8000$path";
+  return ApiConfig.resolveUrl(path);
 }

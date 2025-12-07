@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import '../widgets/balas_buttom_sheet.dart';
 
 import '../../config/endpoints.dart';
 
@@ -20,6 +21,50 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
   bool isLoading = true;
   double averageRating = 0.0;
   int totalReviews = 0;
+
+  void showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF16A34A),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -53,10 +98,11 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
 
     if (!mounted) return;
     if (response["status"] == "success") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Berhasil menambahkan balasan")),
-      );
+      showSuccessSnackBar("Balasan berhasil dikirim");
       fetchReviews();
+    }
+    else {
+      showErrorSnackBar("Gagal mengirim balasan");
     }
   }
 
@@ -70,10 +116,11 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
 
     if (!mounted) return;
     if (response["status"] == "success") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Balasan berhasil diperbarui")),
-      );
+      showSuccessSnackBar("Balasan berhasil diperbarui");
       fetchReviews();
+    }
+    else {
+      showErrorSnackBar("Gagal memperbarui balasan");
     }
   }
 
@@ -87,51 +134,64 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
 
     if (!mounted) return;
     if (response["status"] == "success") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Balasan berhasil dihapus")),
-      );
+      showSuccessSnackBar("Balasan berhasil dihapus");
       fetchReviews();
+    }
+    else {
+      showErrorSnackBar("Gagal menghapus balasan");
     }
   }
 
-  void showReplyDialog(String reviewId, {String? initialText}) {
-    final controller = TextEditingController(text: initialText ?? "");
-
-    showDialog(
+  Future<void> confirmDeleteReply(String replyId) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text(initialText == null ? "Balas Review" : "Edit Balasan"),
-        content: SizedBox(
-                height: 80, // tinggi area input agar tidak terlalu besar
-                child: TextField(
-                  controller: controller,
-                  minLines: 1,
-                  maxLines: null, // unlimited, bisa scroll
-                  keyboardType: TextInputType.multiline,
-                  decoration: const InputDecoration(
-                    hintText: "Tuliskan balasan admin...",
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  ),
-                ),
-              ),
+        title: const Text("Hapus Balasan"),
+        content: const Text(
+          "Apakah Anda yakin ingin menghapus balasan ini?",
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text("Batal"),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              if (initialText == null) {
-                sendReply(reviewId, controller.text);
-              } else {
-                updateReply(reviewId, controller.text);
-              }
-            },
-            child: const Text("Kirim"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Hapus"),
           ),
         ],
+      ),
+    );
+
+    if (confirm == true) {
+      await deleteReply(replyId);
+    }
+  }
+  void openReplyBottomSheet({
+    required String reviewId,
+    String? replyId,
+    String? initialText,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BalasBottomSheet(
+        initialText: initialText,
+        onSubmit: (text) {
+          if (replyId == null) {
+            sendReply(reviewId, text);
+          } else {
+            updateReply(replyId, text);
+          }
+        },
       ),
     );
   }
@@ -228,8 +288,9 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
 
                 if (reply == null)
                   ElevatedButton(
-                    onPressed: () =>
-                        showReplyDialog(review["id"].toString()),
+                    onPressed: () => openReplyBottomSheet(
+                      reviewId: review["id"].toString(),
+                    ),
                     child: const Text("Balas Review"),
                   )
                 else
@@ -254,17 +315,21 @@ class _AdminReviewSectionState extends State<AdminReviewSection> {
                         Row(
                           children: [
                             TextButton(
-                              onPressed: () => showReplyDialog(
-                                reply["id"].toString(),
+                              onPressed: () => openReplyBottomSheet(
+                                reviewId: review["id"].toString(),
+                                replyId: reply["id"].toString(),
                                 initialText: reply["reply_text"],
                               ),
                               child: const Text("Edit"),
                             ),
                             TextButton(
-                              onPressed: () => deleteReply(
-                                  reply["id"].toString()),
-                              child: const Text("Hapus",
-                                  style: TextStyle(color: Colors.red)),
+                              onPressed: () => confirmDeleteReply(
+                                reply["id"].toString(),
+                              ),
+                              child: const Text(
+                                "Hapus",
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ),
                           ],
                         )

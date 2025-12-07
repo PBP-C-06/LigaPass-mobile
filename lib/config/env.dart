@@ -9,6 +9,10 @@ class Env {
   static const String baseUrl = 'http://localhost:8000';
   static const bool useHttps = false;
 
+  /// Midtrans public client key (use dart-define: MIDTRANS_CLIENT_KEY=xxx)
+  static const String midtransClientKey =
+      String.fromEnvironment('MIDTRANS_CLIENT_KEY', defaultValue: '');
+
   /// Isi hanya untuk pengembangan lokal.
   /// Untuk produksi, lebih aman gunakan --dart-define=GEMINI_API_KEY=xxx.
   static const String geminiApiKey = 'AIzaSyBiTcleixJOG-XtcOoE7kZwe2FGLHNunJI';

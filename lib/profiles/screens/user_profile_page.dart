@@ -58,7 +58,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "User Profile",
+          "Profil",
           style: TextStyle(
             color: Color(0xFF1d4ed8),
             fontWeight: FontWeight.bold,
@@ -91,7 +91,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
             final profile = snapshot.data!;
             final role = request.jsonData['role'];
             String currentStatus = profile.status;
-            // Parse full name into first and last name
             final nameParts = profile.fullName.split(' ');
             final firstName = nameParts.isNotEmpty ? nameParts.first : '';
             final lastName = nameParts.length > 1
@@ -109,7 +108,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       currentStatus: currentStatus,
                       onUserDeleted: widget.onUserDeleted,
                     )
-                  else if (role == 'user')
+                  else if (role == 'user') ...[
                     UserProfileUserActionCard(
                       userId: profile.id,
                       username: profile.username,
@@ -158,7 +157,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             Icon(Icons.analytics, color: Colors.white),
                             SizedBox(width: 10),
                             Text(
-                              "Lihat User Analytics",
+                              "Lihat Analitik Pengguna",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -169,6 +168,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         ),
                       ),
                     ),
+                  ],
+                  // Untuk button logout
                   const LogoutButton(),
                 ],
               ),
@@ -176,6 +177,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           },
         ),
       ),
+      // Untuk botton navbar
       bottomNavigationBar: const AppBottomNav(currentRoute: '/profile'),
     );
   }
