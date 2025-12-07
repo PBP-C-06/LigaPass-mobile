@@ -12,7 +12,8 @@ class Endpoints {
 
   // TODO: Tambahkan endpoint modul lain ketika sudah siap.
   static const String newsList = '$base/news/api/news/';
-  static const String createNews = '$base/news/api/news/create/';
+  static const String createNews = '$base/news/api/news/create-json/';
+  static String currentUser = '$base/news/api/user/';
 
   static String newsDetail(int id) => '$base/news/api/news/$id/';
   static String newsComments(int id, {String sort = 'latest'}) =>
@@ -21,5 +22,6 @@ class Endpoints {
     '$base/news/api/news/$id/recommendations/';
   static String likeComment(int id) => '$base/news/api/comment/$id/like/';
   static String deleteComment(int id) => '$base/news/api/comment/$id/delete/';
-  static String currentUser = '$base/news/api/user/';
+  static String editNews(int id) => "$base/news/api/news/$id/edit-json/";
+  static String deleteNews(int id) => "$base/news/api/news/$id/delete/";
 }

@@ -97,25 +97,33 @@ class _CommentWidgetState extends State<CommentWidget> {
           // Aksi: like, reply, delete
           Row(
             children: [
-              if (widget.isLoggedIn)
-                Tooltip(
-                  message: comment.userHasLiked ? "Batalkan Suka" : "Sukai",
-                  child: IconButton(
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () {
-                      if (comment.userHasLiked) {
-                        widget.onUnlike?.call(comment.id);
-                      } else {
-                        widget.onLike?.call(comment.id);
-                      }
-                    },
-                    icon: Icon(
-                      comment.userHasLiked ? Icons.favorite : Icons.favorite_border,
-                      color: comment.userHasLiked ? Colors.red : Colors.grey,
-                      size: 20,
-                    ),
-                  ),
-                ),
+              widget.isLoggedIn
+                  ? Tooltip(
+                      message:
+                          comment.userHasLiked ? "Batalkan Suka" : "Sukai",
+                      child: IconButton(
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () {
+                          if (comment.userHasLiked) {
+                            widget.onUnlike?.call(comment.id);
+                          } else {
+                            widget.onLike?.call(comment.id);
+                          }
+                        },
+                        icon: Icon(
+                          comment.userHasLiked
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color:
+                              comment.userHasLiked ? Colors.red : Colors.grey,
+                          size: 20,
+                        ),
+                      ),
+                    )
+                  : const Icon(Icons.favorite_border,
+                      size: 20, color: Colors.grey), // non-interaktif
+
+              const SizedBox(width: 4),
               Text(
                 "${comment.likeCount}",
                 style: const TextStyle(fontSize: 13, color: Colors.grey),
@@ -171,7 +179,8 @@ class _CommentWidgetState extends State<CommentWidget> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -187,10 +196,13 @@ class _CommentWidgetState extends State<CommentWidget> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Icon(Icons.send_rounded, color: Colors.blueAccent, size: 20),
+                      child: const Icon(Icons.send_rounded,
+                          color: Colors.blueAccent, size: 20),
                     ),
                   )
                 ],
@@ -208,7 +220,8 @@ class _CommentWidgetState extends State<CommentWidget> {
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
                             border: Border(
-                              left: BorderSide(color: Colors.blue.shade100, width: 2),
+                              left: BorderSide(
+                                  color: Colors.blue.shade100, width: 2),
                             ),
                           ),
                           padding: const EdgeInsets.only(left: 12),
