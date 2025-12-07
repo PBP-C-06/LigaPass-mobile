@@ -61,6 +61,7 @@ class HomeService {
           newsList = data['news'] ?? data['results'] ?? data['data'] ?? [];
         }
         return newsList
+            .take(limit)
             .map((n) => NewsItem.fromJson(n as Map<String, dynamic>))
             .toList();
       }
