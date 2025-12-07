@@ -16,7 +16,7 @@ class JournalistProfilePage extends StatefulWidget {
 
 class _JournalistProfilePageState extends State<JournalistProfilePage> {
   Future<AdminJournalistProfile> fetchProfile(CookieRequest request) async {
-    final url = ApiConfig.uri("profiles/json/journalist/").toString();
+    final url = ApiConfig.uri("/profiles/json/journalist/").toString();
     final response = await request.get(url);
     return AdminJournalistProfile.fromJson(response);
   }
