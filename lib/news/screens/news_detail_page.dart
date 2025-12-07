@@ -55,11 +55,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
           _fullNews = News.fromJson(response.cast<String, dynamic>());
           _loadingFullNews = false;
         });
-      } else {
-        debugPrint("Gagal load detail: ${response.toString()}");
       }
     } catch (e) {
-      debugPrint("Gagal load detail berita: $e");
     }
   }
 
@@ -162,7 +159,6 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
         });
       }
     } catch (e) {
-      debugPrint("Gagal cek status user: $e");
     }
   }
 
@@ -282,7 +278,6 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
         widget.news.views += 1;
       });
     } catch (e) {
-      debugPrint("Gagal menambah view count: $e");
     }
   }
 

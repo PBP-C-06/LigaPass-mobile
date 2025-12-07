@@ -70,7 +70,14 @@ class AppBottomNav extends StatelessWidget {
           label: 'Manage',
           requiresLogin: true,
           adminOnly: true,
-      )
+        )
+      else if (role == 'journalist')
+        const _NavItem(
+          route: '/news-manage',
+          icon: Icons.edit_note,
+          label: 'Manage',
+          requiresLogin: true,
+        )
       else
         const _NavItem(
           route: '/tickets',
