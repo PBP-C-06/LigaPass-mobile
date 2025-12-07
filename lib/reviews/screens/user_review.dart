@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
-
+import '../widgets/review_buttom_sheet.dart';
 import '../../config/endpoints.dart';
 
 class UserReviewSection extends StatefulWidget {
@@ -22,9 +22,51 @@ class _UserReviewSectionState extends State<UserReviewSection> {
 
 
   Map<String, dynamic>? myReview;
-
-  /// review orang lain
   List<dynamic> otherReviews = [];
+
+  void showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF16A34A),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -46,29 +88,6 @@ class _UserReviewSectionState extends State<UserReviewSection> {
     });
   }
 
-  Future<void> createReview(int rating, String comment) async {
-    final response = await widget.request.post(
-      "${Endpoints.base}/reviews/api/${widget.matchId}/create/",
-      {
-        "rating": rating.toString(),
-        "comment": comment,
-      },
-    );
-
-    if (!mounted) return;
-    if (response["ok"] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Review berhasil ditambahkan")),
-      );
-      await loadReviews();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response["message"] ?? "Gagal menambahkan review"),
-        ),
-      );
-    }
-  }
 
   Future<void> updateReview(int rating, String comment) async {
     final response = await widget.request.post(
@@ -81,95 +100,70 @@ class _UserReviewSectionState extends State<UserReviewSection> {
 
     if (!mounted) return;
     if (response["ok"] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Review berhasil diperbarui")),
-      );
+      showSuccessSnackBar("Review berhasil diperbarui");
       await loadReviews();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response["message"] ?? "Gagal memperbarui review"),
+      showErrorSnackBar("Review gagal diperbarui");
+    }
+  }
+
+  Future<void> deleteReview() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Hapus Review"),
+        content: const Text(
+          "Apakah Anda yakin ingin menghapus review ini?",
         ),
-      );
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+            foregroundColor: Colors.black, ),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Batal"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.black),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Hapus"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    final response = await widget.request.post(
+      "${Endpoints.base}/reviews/api/${widget.matchId}/delete/",
+      {},
+    );
+
+    if (!mounted) return;
+
+    if (response["ok"] == true) {
+      showSuccessSnackBar("Review berhasil dihapus");
+      await loadReviews();
+    } else {
+      showErrorSnackBar("Review gagal dihapus");
     }
   }
 
   void showReviewDialog({required bool editing}) {
-    final controller = TextEditingController(
-      text: editing && myReview != null
-          ? (myReview!["comment"] ?? "") as String
-          : "",
-    );
-
-    int selectedRating = editing && myReview != null
-        ? (myReview!["rating"] ?? 5) as int
-        : 5;
-
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          return AlertDialog(
-            title: Text(editing ? "Edit Review" : "Beri Review"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(5, (i) {
-                    final starVal = i + 1;
-                    return IconButton(
-                      icon: Icon(
-                        starVal <= selectedRating
-                            ? Icons.star
-                            : Icons.star_border,
-                        color: Colors.amber,
-                      ),
-                      onPressed: () {
-                        setDialogState(() {
-                          selectedRating = starVal;
-                        });
-                      },
-                    );
-                  }),
-                ),
-               SizedBox(
-                height: 80, // tinggi area input agar tidak terlalu besar
-                child: TextField(
-                  controller: controller,
-                  minLines: 1,
-                  maxLines: null, // unlimited, bisa scroll
-                  keyboardType: TextInputType.multiline,
-                  decoration: const InputDecoration(
-                    hintText: "Tulis pengalaman Anda...",
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  ),
-                ),
-              )
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Batal"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  final text = controller.text.trim();
-                  if (editing) {
-                    updateReview(selectedRating, text);
-                  } else {
-                    createReview(selectedRating, text);
-                  }
-                },
-                child: const Text("Kirim"),
-              ),
-            ],
-          );
-        },
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return ReviewBottomSheet(
+          editing: editing,
+          myReview: myReview,
+          onSubmit: (rating, comment) {
+            updateReview(rating, comment);
+          },
+        );
+      },
     );
   }
 
@@ -199,18 +193,6 @@ class _UserReviewSectionState extends State<UserReviewSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Tombol buat / edit review
-        Align(
-          alignment: Alignment.centerLeft,
-          child: ElevatedButton(
-            onPressed: () => showReviewDialog(editing: myReview != null),
-            child:
-                Text(myReview != null ? "Edit Review Saya" : "Beri Ulasan Anda"),
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        // Review milik user sendiri (kalau ada)
         if (myReview != null)
           Container(
             width: double.infinity,
@@ -236,6 +218,25 @@ class _UserReviewSectionState extends State<UserReviewSection> {
 
                 const SizedBox(height: 4),
                 Text(myReview!["comment"] ?? ""),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: () => showReviewDialog(editing: true),
+                      icon: const Icon(Icons.edit, size: 16),
+                      label: const Text("Edit"),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: deleteReview,
+                      icon: const Icon(Icons.delete, size: 16, color: Colors.red),
+                      label: const Text(
+                        "Hapus",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
                 if (myReview!["reply"] != null) ...[
                   const SizedBox(height: 10),
                   Container(

@@ -128,9 +128,6 @@ void showAddReviewPopup(
                             return;
                           }
 
-                          // ============================
-                          // CALL DJANGO CREATE REVIEW API
-                          // ============================
                           final url = Uri.parse(
                             "$baseUrl/reviews/api/$matchId/create/",
                           );
