@@ -27,7 +27,7 @@ class _JournalistProfilePageState extends State<JournalistProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Journalist Profile",
+          "Profil",
           style: TextStyle(
             color: Color(0xFF1d4ed8),
             fontWeight: FontWeight.bold,
@@ -56,17 +56,23 @@ class _JournalistProfilePageState extends State<JournalistProfilePage> {
             final profile = snapshot.data!;
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  JournalistProfileCard(profile: profile),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      JournalistProfileCard(profile: profile),
 
-                  const SizedBox(height: 20),
-                  
-                  // Untuk button logout
-                  const LogoutButton(),
-                ],
+                      const SizedBox(height: 20),
+
+                      const LogoutButton(),
+                    ],
+                  ),
+                ),
               ),
             );
           },

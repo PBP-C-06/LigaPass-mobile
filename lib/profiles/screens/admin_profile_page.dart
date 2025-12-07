@@ -9,13 +9,11 @@ import 'package:ligapass/reviews/widgets/admin_analytics.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
-// URLS untuk fetch data 
 const String baseUrl = 'http://localhost:8000';
 const String adminProfileEndpoint = '$baseUrl/profiles/json/admin/';
 const String adminSearchFilterEndpoint =
     '$baseUrl/profiles/json/admin/search-filter/';
 
-//
 class AdminProfilePage extends StatefulWidget {
   const AdminProfilePage({super.key});
 
@@ -46,7 +44,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     _fetchProfiles(request, search: search, filter: filter);
   }
 
-  // Ambil profile admin
   Future<void> _fetchAdmin(CookieRequest request) async {
     setState(() => loadingAdmin = true);
     try {
@@ -66,7 +63,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     }
   }
 
-  // Ambil profile users 
   Future<void> _fetchProfiles(
     CookieRequest request, {
     required String search,
@@ -119,7 +115,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Admin Profile",
+          "Profil",
           style: TextStyle(
             color: Color(0xFF1d4ed8),
             fontWeight: FontWeight.bold,
@@ -144,14 +140,12 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    AdminProfileCard(adminProfile: adminProfile!),
-
-                    const SizedBox(height: 20),
-
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
+                            AdminProfileCard(adminProfile: adminProfile!),
+                            const SizedBox(height: 10),
                             AdminSearchFilterCard(
                               userProfiles: profiles,
                               loading: loadingProfiles,

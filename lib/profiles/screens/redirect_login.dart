@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
-import 'package:ligapass/profiles/screens/profiles_colors.dart';
 
 class RedirectLoginPage extends StatelessWidget {
   const RedirectLoginPage({super.key});
@@ -25,7 +24,7 @@ class RedirectLoginPage extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primary,
+                  backgroundColor:  Color(0xFF2563EB),
                   foregroundColor: Colors.white,
                 ),
                 onPressed: () => Navigator.pushReplacementNamed(context, '/login'),

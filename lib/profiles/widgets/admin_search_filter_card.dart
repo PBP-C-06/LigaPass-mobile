@@ -206,7 +206,7 @@ class AdminSearchFilterCard extends StatelessWidget {
                             child: const Text(
                               "Detail",
                               style: TextStyle(
-                                color: Color(0xff2563eb),
+                                color: Color(0xFF2563EB),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
