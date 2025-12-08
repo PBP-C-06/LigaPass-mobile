@@ -48,3 +48,6 @@ app.*.map.json
 # Keystore files (never commit signing keys)
 *.keystore
 *.jks
+
+# Local environment config (keep secrets out of VCS)
+lib/config/env.dart

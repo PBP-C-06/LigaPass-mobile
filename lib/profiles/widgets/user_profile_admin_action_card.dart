@@ -33,7 +33,7 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
   Future<void> _changeStatus(CookieRequest request) async {
     try {
       final url = ApiConfig.uri(
-        "profiles/admin/flutter-edit/${widget.userId}/",
+        "/profiles/admin/flutter-edit/${widget.userId}/",
       ).toString();
       final response = await request.postJson(
         url,
@@ -68,7 +68,7 @@ class _UserProfileAdminActionCardState extends State<UserProfileAdminActionCard>
   Future<void> _deleteUser(CookieRequest request) async {
     try {
       final url =
-          ApiConfig.uri("profiles/flutter-delete/${widget.userId}/").toString();
+          ApiConfig.uri("/profiles/flutter-delete/${widget.userId}/").toString();
       final response = await request.postJson(url, jsonEncode({}));
 
       if (!context.mounted) return;
