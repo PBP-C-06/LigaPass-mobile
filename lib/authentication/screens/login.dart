@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/config/api_config.dart';
+import 'package:ligapass/config/env.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,9 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'google_sign_in_button_stub.dart'
     if (dart.library.html) 'google_sign_in_button_web.dart'
     as gsi_button;
-
-const String _googleClientId =
-    "496589546073-lhasinbg2db22bkti40suvgaqjqti4t2.apps.googleusercontent.com";
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -53,8 +51,8 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await GoogleSignIn.instance.initialize(
-        clientId: _googleClientId,
-        serverClientId: kIsWeb ? null : _googleClientId,
+        clientId: Env.googleClientId,
+        serverClientId: kIsWeb ? null : Env.googleClientId,
       );
 
       if (!mounted) return;
