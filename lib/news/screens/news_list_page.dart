@@ -95,7 +95,7 @@ class _NewsListScreenState extends State<NewsListScreen> {
     return SizedBox(
       width: 180, // Lebar konstan dropdown agar layout rapi dalam Wrap
       child: DropdownButtonFormField<String>(
-        value: value, // Nilai awal dari dropdown, bisa null jika "Semua" dipilih
+        initialValue: value, // Nilai awal dari dropdown, bisa null jika "Semua" dipilih
         decoration: InputDecoration(
           labelText: label, // Label teks yang ditampilkan di form field
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), // Border dengan sudut membulat
