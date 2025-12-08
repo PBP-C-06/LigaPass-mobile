@@ -8,8 +8,10 @@ class ApiConfig {
   // Default host per platform:
   // - Web/desktop/simulator: localhost hits the dev machine.
   // - Android emulator: 10.0.2.2 points to the host machine.
-  static const String _defaultLocalhost = 'http://localhost:8000';
-  static const String _defaultAndroidEmulator = 'http://10.0.2.2:8000';
+  static const String _defaultLocalhost =
+      'https://jaysen-lestari-ligapass.pbp.cs.ui.ac.id';
+  static const String _defaultAndroidEmulator =
+      'https://jaysen-lestari-ligapass.pbp.cs.ui.ac.id';
 
   static String get baseUrl {
     if (_overrideBaseUrl.isNotEmpty) return _overrideBaseUrl;
