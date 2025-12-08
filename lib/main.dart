@@ -66,9 +66,19 @@ Future<void> _restoreSession(CookieRequest request) async {
         "role": role,
         "hasProfile": hasProfile,
       };
+    } else {
+      // Session cookie invalid/expired; reset state so app can prompt login cleanly.
+      request.loggedIn = false;
+      request.jsonData = {};
+      request.cookies = {};
+      await request.persist("{}");
     }
   } catch (_) {
-    // Ignore restore errors; user will need to login again if invalid
+    // On error, also reset so user gets a fresh login instead of a broken state.
+    request.loggedIn = false;
+    request.jsonData = {};
+    request.cookies = {};
+    await request.persist("{}");
   }
 }
 
@@ -130,7 +140,7 @@ class LigaPassApp extends StatelessWidget {
                   // Jika belum punya profile tapi sudah login dan bukan admin and journalist
                   if (!hasProfile && role != "admin" && role != "journalist") {
                     return MaterialPageRoute(
-                      builder: (_) => CreateProfilePage(username: username),
+                      builder: (_) => CreateProfilePage(username: username ?? ""),
                     );
                   }
                   // Jika sudah punya profile
@@ -159,7 +169,7 @@ class LigaPassApp extends StatelessWidget {
 
               if (settings.name == '/create-profile') {
                 return MaterialPageRoute(
-                  builder: (_) => CreateProfilePage(username: username),
+                  builder: (_) => CreateProfilePage(username: username ?? ""),
                   settings: settings, 
                 );
               }

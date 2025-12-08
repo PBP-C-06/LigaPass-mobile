@@ -26,16 +26,35 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    _profileFuture = _initAndLoadProfile();
   }
 
-  void _loadProfile() {
+  Future<Profile> _initAndLoadProfile() async {
     final request = context.read<CookieRequest>();
-    _profileFuture = fetchProfile(request);
-  }
 
-  Future<Profile> fetchProfile(CookieRequest request) async {
-    final url = "${ApiConfig.baseUrl}/profiles/json/${widget.id}/";
+    if (!request.loggedIn) {
+      throw Exception("Silakan login untuk mengakses profil.");
+    }
+
+    String? targetId = widget.id.isNotEmpty ? widget.id : null;
+
+    if (targetId == null) {
+      try {
+        final resp =
+            await request.get("${ApiConfig.baseUrl}/profiles/current_user_json/");
+        if (resp is Map && resp["authenticated"] == true && resp["id"] != null) {
+          targetId = resp["id"].toString();
+        }
+      } catch (_) {
+        // fall through, will show error below
+      }
+    }
+
+    if (targetId == null) {
+      throw Exception("Tidak dapat memuat profil. Silakan login ulang.");
+    }
+
+    final url = "${ApiConfig.baseUrl}/profiles/json/$targetId/";
     final response = await request.get(url);
 
     if (response.containsKey('error')) {
@@ -83,7 +102,32 @@ class _UserProfilePageState extends State<UserProfilePage> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Error: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _profileFuture = _initAndLoadProfile();
+                          });
+                        },
+                        child: const Text('Coba Muat Ulang'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             } else if (!snapshot.hasData) {
               return const Center(child: Text('Profile not found'));
             }
