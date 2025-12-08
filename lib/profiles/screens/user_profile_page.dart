@@ -22,23 +22,18 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   late Future<Profile> _profileFuture;
-  String? _userId;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initialize();
-    });
+    _profileFuture = _initAndLoadProfile();
   }
 
-  Future<void> _initialize() async {
+  Future<Profile> _initAndLoadProfile() async {
     final request = context.read<CookieRequest>();
 
     if (!request.loggedIn) {
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/login');
-      return;
+      throw Exception("Silakan login untuk mengakses profil.");
     }
 
     String? targetId = widget.id.isNotEmpty ? widget.id : null;
@@ -56,27 +51,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
 
     if (targetId == null) {
-      if (!mounted) return;
-      setState(() {
-        _profileFuture = Future.error("Tidak dapat memuat profil. Silakan login ulang.");
-      });
-      return;
+      throw Exception("Tidak dapat memuat profil. Silakan login ulang.");
     }
 
-    _userId = targetId;
-    _loadProfile();
-  }
-
-  void _loadProfile() {
-    final request = context.read<CookieRequest>();
-    _profileFuture = fetchProfile(request);
-  }
-
-  Future<Profile> fetchProfile(CookieRequest request) async {
-    if (_userId == null || _userId!.isEmpty) {
-      throw Exception("User ID tidak tersedia. Silakan login ulang.");
-    }
-    final url = "${ApiConfig.baseUrl}/profiles/json/${_userId}/";
+    final url = "${ApiConfig.baseUrl}/profiles/json/$targetId/";
     final response = await request.get(url);
 
     if (response.containsKey('error')) {
@@ -139,7 +117,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: _loadProfile,
+                        onPressed: () {
+                          setState(() {
+                            _profileFuture = _initAndLoadProfile();
+                          });
+                        },
                         child: const Text('Coba Muat Ulang'),
                       ),
                     ],
