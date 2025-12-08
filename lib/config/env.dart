@@ -6,8 +6,17 @@ class Env {
   static const String appTagline = 'Where football passion meets technology.';
 
   // static const String baseUrl = 'http://10.0.2.2:8000';
-  static const String baseUrl = 'http://localhost:8000';
-  static const bool useHttps = false;
+  static const String baseUrl =
+      'https://jaysen-lestari-ligapass.pbp.cs.ui.ac.id';
+  static const bool useHttps = true;
+
+  /// Google OAuth client ID used across Android/iOS/Web.
+  /// Override in production with: --dart-define=GOOGLE_CLIENT_ID=xxx
+  static const String googleClientId = String.fromEnvironment(
+    'GOOGLE_CLIENT_ID',
+    defaultValue:
+        '496589546073-lhasinbg2db22bkti40suvgaqjqti4t2.apps.googleusercontent.com',
+  );
 
   /// Midtrans public client key (use dart-define: MIDTRANS_CLIENT_KEY=xxx)
   static const String midtransClientKey = String.fromEnvironment(
