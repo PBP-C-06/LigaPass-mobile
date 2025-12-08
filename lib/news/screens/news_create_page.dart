@@ -276,7 +276,7 @@ class _CreateNewsPageState extends State<CreateNewsPage> {
                                   // Expanded agar dropdown kategori mengisi ruang horizontal yang tersedia
                                   Expanded(
                                     child: DropdownButtonFormField<String>(
-                                      value: _selectedCategory, // Nilai kategori yang sedang terpilih
+                                      initialValue: _selectedCategory, // Nilai kategori yang sedang terpilih
                                       decoration: InputDecoration(
                                         labelText: "Kategori", // Label di atas dropdown
                                         filled: true,
