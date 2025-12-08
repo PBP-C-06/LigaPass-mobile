@@ -68,5 +68,7 @@ Pada proses pengintegrasian antara Django dengan Flutter, kami akan melakukan be
 **Figma** : https://www.figma.com/design/IZxjKlwpj4As5MbLBrLpZL/LigaPass-Mobile-Apps?node-id=0-1&t=UlYPYjwcnodUTghb-1  
 **User flow** : https://www.figma.com/proto/IZxjKlwpj4As5MbLBrLpZL/LigaPass-Mobile-Apps?page-id=0%3A1&node-id=13-198&p=f&viewport=252%2C-429%2C0.26&t=GGKmL2g4EzBQxpSO-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=45%3A77  
 **Admin flow**: https://www.figma.com/proto/IZxjKlwpj4As5MbLBrLpZL/LigaPass-Mobile-Apps?page-id=154%3A596&node-id=154-780&p=f&viewport=239%2C52%2C0.28&t=gbwmXgOBU7AlIg9Q-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=154%3A780  
-**Journalist flow**: https://www.figma.com/proto/IZxjKlwpj4As5MbLBrLpZL/LigaPass-Mobile-Apps?page-id=158%3A2334&node-id=158-2335&p=f&viewport=-205%2C48%2C0.39&t=IX4rFHObKfvI8pJI-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=158%3A2518
-**Download APK:**: [Download aplikasi versi terbaru](https://app.bitrise.io/app/6b7b02e8-ca0e-4ea8-aa53-c7b4c1178712/installable-artifacts/5baabd8bbcd0002c/public-install-page/05028be0136b42a3678a783db80a4d3c)
+**Journalist flow**: https://www.figma.com/proto/IZxjKlwpj4As5MbLBrLpZL/LigaPass-Mobile-Apps?page-id=158%3A2334&node-id=158-2335&p=f&viewport=-205%2C48%2C0.39&t=IX4rFHObKfvI8pJI-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=158%3A2518  
+
+## 📥 Download
+**Download APK:** [Download aplikasi versi terbaru](https://app.bitrise.io/app/6b7b02e8-ca0e-4ea8-aa53-c7b4c1178712/installable-artifacts/3d85a2f6695c9986/public-install-page/e8ccb28d67474e1510f6c21901ef03f4)
