@@ -140,7 +140,7 @@ class LigaPassApp extends StatelessWidget {
                   // Jika belum punya profile tapi sudah login dan bukan admin and journalist
                   if (!hasProfile && role != "admin" && role != "journalist") {
                     return MaterialPageRoute(
-                      builder: (_) => CreateProfilePage(username: username),
+                      builder: (_) => CreateProfilePage(username: username ?? ""),
                     );
                   }
                   // Jika sudah punya profile
@@ -169,7 +169,7 @@ class LigaPassApp extends StatelessWidget {
 
               if (settings.name == '/create-profile') {
                 return MaterialPageRoute(
-                  builder: (_) => CreateProfilePage(username: username),
+                  builder: (_) => CreateProfilePage(username: username ?? ""),
                   settings: settings, 
                 );
               }
