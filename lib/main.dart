@@ -30,19 +30,29 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
-  runApp(LigaPassApp(showOnboarding: !onboardingComplete));
+  final cookieRequest = CookieRequest();
+  await cookieRequest.init();
+  runApp(LigaPassApp(
+    showOnboarding: !onboardingComplete,
+    cookieRequest: cookieRequest,
+  ));
 }
 
 class LigaPassApp extends StatelessWidget {
   final bool showOnboarding;
+  final CookieRequest cookieRequest;
 
-  const LigaPassApp({super.key, this.showOnboarding = false});
+  const LigaPassApp({
+    super.key,
+    this.showOnboarding = false,
+    required this.cookieRequest,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<CookieRequest>(create: (_) => CookieRequest()),
+        Provider<CookieRequest>.value(value: cookieRequest),
         ChangeNotifierProvider(
           create: (_) =>
               MatchesNotifier(MatchesRepository(apiClient: MatchesApiClient()))
