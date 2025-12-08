@@ -77,7 +77,7 @@ class MatchDetailPage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _buildMatchCard(),
+            _buildMatchCard(dateText),
             const SizedBox(height: 16),
             _buildInfoCard(dateText),
             const SizedBox(height: 16),
@@ -111,7 +111,8 @@ class MatchDetailPage extends StatelessWidget {
   }
 
 
-  Widget _buildMatchCard() {
+  Widget _buildMatchCard(String dateText) {
+    final statusStyle = _statusStyle(match.status);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -126,17 +127,37 @@ class MatchDetailPage extends StatelessWidget {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            match.statusLabel,
-            style: TextStyle(
-              color: _statusColor(match.status),
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: statusStyle.background,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  match.statusLabel,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: statusStyle.foreground,
+                    fontSize: 12,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+              Text(
+                dateText,
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-
+          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
@@ -145,34 +166,33 @@ class MatchDetailPage extends StatelessWidget {
                   logoUrl: match.homeLogoUrl,
                 ),
               ),
-              Column(
-                children: [
-                  Text(
-                    match.status == MatchStatus.finished ? 'Skor' : 'Kick-off',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    match.status == MatchStatus.finished
-                        ? '${match.displayHomeGoals} - ${match.displayAwayGoals}'
-                        : (match.kickoff != null
-                            ? DateFormat.Hm().format(match.kickoff!)
-                            : match.dateText),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+              _ScoreBox(match: match),
               Expanded(
                 child: _TeamColumn(
                   name: match.awayTeamName,
                   logoUrl: match.awayLogoUrl,
                   alignEnd: true,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(
+                Icons.location_on_outlined,
+                size: 16,
+                color: Colors.grey,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  match.venueDisplay,
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -201,29 +221,114 @@ class MatchDetailPage extends StatelessWidget {
               label: 'Venue',
               value: match.venueDisplay,
             ),
-            const SizedBox(height: 10),
-            _InfoRow(
-              icon: Icons.link,
-              label: 'Detail Web',
-              value: match.detailsUrl,
-            ),
           ],
         ),
       ),
     );
   }
 
-  Color _statusColor(MatchStatus status) {
+  _StatusStyle _statusStyle(MatchStatus status) {
     switch (status) {
       case MatchStatus.upcoming:
-        return const Color(0xFF1D4ED8);
+        return _StatusStyle(
+          background: const Color(0xFFEFF6FF),
+          foreground: const Color(0xFF1D4ED8),
+        );
       case MatchStatus.ongoing:
-        return const Color(0xFF15803D);
+        return _StatusStyle(
+          background: const Color(0xFFECFDF3),
+          foreground: const Color(0xFF15803D),
+        );
       case MatchStatus.finished:
-        return const Color(0xFFB91C1C);
+        return _StatusStyle(
+          background: const Color(0xFFFFF1F2),
+          foreground: const Color(0xFFB91C1C),
+        );
       case MatchStatus.unknown:
-        return Colors.grey.shade700;
+        return _StatusStyle(
+          background: Colors.grey.shade200,
+          foreground: Colors.grey.shade800,
+        );
     }
+  }
+}
+
+class _StatusStyle {
+  const _StatusStyle({required this.background, required this.foreground});
+  final Color background;
+  final Color foreground;
+}
+
+class _ScoreBox extends StatelessWidget {
+  const _ScoreBox({required this.match});
+
+  final Match match;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFinished = match.status == MatchStatus.finished;
+    return Container(
+      width: 92,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          Text(
+            isFinished ? 'Skor' : 'Kick-off',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          isFinished
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      match.displayHomeGoals.toString(),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6),
+                      child: Text(
+                        '-',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      match.displayAwayGoals.toString(),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                )
+              : Text(
+                  match.kickoff != null
+                      ? DateFormat.Hm().format(match.kickoff!)
+                      : match.dateText,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ],
+      ),
+    );
   }
 }
 
