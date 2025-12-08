@@ -234,6 +234,22 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF1d4ed8),
         iconTheme: const IconThemeData(color: Color(0xFF1d4ed8)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: _loading ? null : () async {
+              setState(() => _loading = true);
+              try {
+                await request.logout("${ApiConfig.baseUrl}/auth/flutter-logout/");
+                if (!mounted) return;
+                Navigator.pushReplacementNamed(context, '/login');
+              } finally {
+                if (mounted) setState(() => _loading = false);
+              }
+            },
+          ),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(

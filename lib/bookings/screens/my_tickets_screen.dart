@@ -63,6 +63,63 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+    final hasProfile = request.jsonData["hasProfile"] == true ||
+        request.jsonData["profile_completed"] == true;
+    if (!request.loggedIn || !hasProfile) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Tiket Saya',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1d4ed8),
+            ),
+          ),
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1d4ed8),
+          iconTheme: const IconThemeData(color: Color(0xFF1d4ed8)),
+          elevation: 0,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.lock_outline,
+                  size: 64,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  request.loggedIn
+                      ? 'Lengkapi profil Anda untuk melihat tiket.'
+                      : 'Silakan login untuk melihat tiket.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(
+                        context, request.loggedIn ? '/create-profile' : '/login');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(request.loggedIn ? 'Lengkapi Profil' : 'Login'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: const AppBottomNav(currentRoute: '/tickets'),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(

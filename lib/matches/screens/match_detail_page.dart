@@ -26,11 +26,23 @@ class MatchDetailPage extends StatelessWidget {
         : match.dateText;
 
     void handleBuy() {
+      final hasProfile = request.jsonData["hasProfile"] == true ||
+          request.jsonData["profile_completed"] == true;
       if (!request.loggedIn) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Silakan login untuk membeli tiket')),
         );
         Navigator.pushNamed(context, '/login');
+        return;
+      }
+
+      if (!hasProfile) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Lengkapi profil terlebih dahulu sebelum membeli tiket'),
+          ),
+        );
+        Navigator.pushNamed(context, '/create-profile');
         return;
       }
 

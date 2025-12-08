@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ligapass/common/widgets/app_bottom_nav.dart';
 import 'package:ligapass/matches/models/match.dart';
-import 'package:ligapass/bookings/screens/ticket_price_screen.dart';
 import 'package:ligapass/news/models/news.dart';
 import 'package:ligapass/news/widgets/news_card_vertical.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -459,29 +458,11 @@ class _HomePageState extends State<HomePage> {
   Widget _buildMatchCard(Match match) {
     return GestureDetector(
       onTap: () {
-        // Navigate to ticket price screen for booking
-        final request = context.read<CookieRequest>();
-        if (request.loggedIn) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TicketPriceScreen(
-                matchId: match.id,
-                homeTeam: match.homeTeamName,
-                awayTeam: match.awayTeamName,
-                homeTeamLogo: match.homeLogoUrl,
-                awayTeamLogo: match.awayLogoUrl,
-                venue: match.venueName,
-                matchDate: match.kickoff?.toIso8601String(),
-                matchStatus: match.status.name,
-                homeScore: match.homeGoals,
-                awayScore: match.awayGoals,
-              ),
-            ),
-          );
-        } else {
-          Navigator.pushNamed(context, '/login');
-        }
+        Navigator.pushNamed(
+          context,
+          '/match',
+          arguments: match,
+        );
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
