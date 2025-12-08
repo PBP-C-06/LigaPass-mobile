@@ -111,16 +111,15 @@ class NewsListCard extends StatelessWidget {
 
             // Konten teks dan badge
             Expanded(
-              child: SizedBox(
-                height: 100,                             // Tinggi disamakan dengan thumbnail sehingga simetris
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, // Teks disejajarkan di kiri
-                  children: [
-                    // Badge kategori dan unggulan
-                    Row(
-                      children: [
-                        // Badge kategori berita
-                        Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, // Teks disejajarkan di kiri
+                children: [
+                  // Badge kategori dan unggulan
+                  Row(
+                    children: [
+                      // Badge kategori berita
+                      Flexible(
+                        child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Padding dalam badge
                           margin: const EdgeInsets.only(right: 6),                         // Jarak badge kategori dengan badge lainnya
                           decoration: BoxDecoration(
@@ -134,61 +133,85 @@ class NewsListCard extends StatelessWidget {
                               fontWeight: FontWeight.bold,                                 // Teks kategori ditebalkan
                               fontSize: 11,                                                // Ukuran font kecil untuk badge
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        // Badge jika berita merupakan berita unggulan
-                        if (news.isFeatured)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Padding badge unggulan
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),                            // Latar belakang merah muda lembut
-                              borderRadius: BorderRadius.circular(12),                       // Sudut badge membulat
-                            ),
-                            child: const Text(
-                              'Unggulan',                                                    // Label teks untuk berita unggulan
-                              style: TextStyle(
-                                color: Colors.red,                                           // Teks merah untuk menonjolkan status
-                                fontWeight: FontWeight.bold,                                 // Teks ditebalkan
-                                fontSize: 11,                                                // Ukuran font kecil agar konsisten dengan badge lain
-                              ),
+                      ),
+                      // Badge jika berita merupakan berita unggulan
+                      if (news.isFeatured)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Padding badge unggulan
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),                            // Latar belakang merah muda lembut
+                            borderRadius: BorderRadius.circular(12),                       // Sudut badge membulat
+                          ),
+                          child: const Text(
+                            'Unggulan',                                                    // Label teks untuk berita unggulan
+                            style: TextStyle(
+                              color: Colors.red,                                           // Teks merah untuk menonjolkan status
+                              fontWeight: FontWeight.bold,                                 // Teks ditebalkan
+                              fontSize: 11,                                                // Ukuran font kecil agar konsisten dengan badge lain
                             ),
                           ),
-                      ],
+                        ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 6), // Spasi kecil sebelum judul berita
+
+                  // Judul berita
+                  Text(
+                    news.title,                         // Judul dari objek news
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,      // Judul dibuat bold agar menonjol
+                      fontSize: 16,                     // Ukuran font sedang untuk judul
+                      height: 1.3,                      // Line height sedikit dinaikkan
                     ),
+                    maxLines: 2,                        // Judul dibatasi maksimal 2 baris
+                    overflow: TextOverflow.ellipsis,    // Jika lebih dari 2 baris akan dipotong dengan "..."
+                  ),
 
-                    const SizedBox(height: 6), // Spasi kecil sebelum judul berita
-
-                    // Judul berita
-                    Text(
-                      news.title,                         // Judul dari objek news
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,      // Judul dibuat bold agar menonjol
-                        fontSize: 16,                     // Ukuran font sedang untuk judul
-                        height: 1.3,                      // Line height sedikit dinaikkan
-                      ),
-                      maxLines: 2,                        // Judul dibatasi maksimal 2 baris
-                      overflow: TextOverflow.ellipsis,    // Jika lebih dari 2 baris akan dipotong dengan "..."
+                  const SizedBox(height: 6),
+                  Text(
+                    parseHtmlString(news.content),       // Deskripsi singkat dari konten berita
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 13,
+                      height: 1.35,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
 
-                    const Spacer(),                       // Mendorong baris informasi waktu ke bagian bawah kartu
+                  const SizedBox(height: 8),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // Informasi waktu dan jumlah view di kiri dan kanan
-                      children: [
-                        // Informasi tanggal publikasi berita
-                        Text(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween, // Informasi waktu dan jumlah view di kiri dan kanan
+                    children: [
+                      // Informasi tanggal publikasi berita
+                      Expanded(
+                        child: Text(
                           "Diterbitkan: ${news.createdAt}",              // Tanggal terbit yang sudah diformat di model
                           style: TextStyle(color: Colors.grey[600], fontSize: 12), // Teks kecil dan abu-abu
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        // Informasi jumlah view berita
-                        Text(
+                      ),
+                      const SizedBox(width: 8),
+                      // Informasi jumlah view berita
+                      Expanded(
+                        child: Text(
                           "${news.views} kali dilihat",                  // Menampilkan jumlah view mentah dalam teks
                           style: TextStyle(color: Colors.grey[600], fontSize: 12), // Teks kecil dan abu-abu
+                          textAlign: TextAlign.right,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
 
