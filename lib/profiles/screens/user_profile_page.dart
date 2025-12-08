@@ -66,7 +66,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   void _refreshProfile() {
     setState(() {
-      _loadProfile();
+      _profileFuture = _initAndLoadProfile();
     });
   }
 
