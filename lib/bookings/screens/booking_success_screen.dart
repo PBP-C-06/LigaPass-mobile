@@ -535,7 +535,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                           onPressed: () {
                             Navigator.pushNamedAndRemoveUntil(
                               context,
-                              '/',
+                              '/home',
                               (route) => false,
                             );
                           },
