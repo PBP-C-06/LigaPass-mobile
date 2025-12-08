@@ -215,17 +215,7 @@ class _LoginPageState extends State<LoginPage> {
         await _initGoogleSignIn();
       }
 
-      // Pastikan state Google Sign-In bersih sebelum memulai
-      await GoogleSignIn.instance.signOut();
-
-      final GoogleSignInAccount? user = await GoogleSignIn.instance.signIn();
-
-      if (user == null) {
-        if (mounted) {
-          setState(() => errorMessage = "Google sign-in dibatalkan.");
-        }
-        return;
-      }
+      final GoogleSignInAccount? user = await GoogleSignIn.instance.authenticate();
 
       final GoogleSignInAuthentication auth = await Future.value(
         user.authentication,
