@@ -151,6 +151,31 @@ class _UserReviewSectionState extends State<UserReviewSection> {
   }
 
   void showReviewDialog({required bool editing}) {
+    final isSuspended = widget.request.jsonData["profile_status"] == "suspended";
+    final hasProfile = widget.request.jsonData["hasProfile"] == true ||
+        widget.request.jsonData["profile_completed"] == true;
+    if (!widget.request.loggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan login untuk menulis review')),
+      );
+      return;
+    }
+    if (isSuspended) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Akun Anda sedang ditangguhkan. Review dinonaktifkan.')),
+      );
+      return;
+    }
+    if (!hasProfile) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Lengkapi profil terlebih dahulu sebelum menulis review')),
+      );
+      Navigator.pushNamed(context, '/create-profile');
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -193,6 +218,24 @@ class _UserReviewSectionState extends State<UserReviewSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (widget.request.jsonData["profile_status"] == "suspended")
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: const Text(
+              'Akun Anda sedang ditangguhkan. Review tidak tersedia.',
+              style: TextStyle(
+                color: Color(0xFF92400E),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         if (myReview != null)
           Container(
             width: double.infinity,
@@ -228,11 +271,17 @@ class _UserReviewSectionState extends State<UserReviewSection> {
                     ),
                     const SizedBox(width: 8),
                     TextButton.icon(
-                      onPressed: deleteReview,
+                      onPressed: widget.request.jsonData["profile_status"] == "suspended"
+                          ? null
+                          : deleteReview,
                       icon: const Icon(Icons.delete, size: 16, color: Colors.red),
-                      label: const Text(
+                      label: Text(
                         "Hapus",
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(
+                          color: widget.request.jsonData["profile_status"] == "suspended"
+                              ? Colors.grey
+                              : Colors.red,
+                        ),
                       ),
                     ),
                   ],

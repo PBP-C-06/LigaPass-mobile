@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -27,6 +28,7 @@ class _MatchesPageState extends State<MatchesPage> {
     MatchStatus.finished,
   };
   int _perPage = 10;
+  Timer? _searchDebounce;
 
   @override
   void initState() {
@@ -42,6 +44,7 @@ class _MatchesPageState extends State<MatchesPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
@@ -95,6 +98,15 @@ class _MatchesPageState extends State<MatchesPage> {
       _perPage = 10;
     });
     await context.read<MatchesNotifier>().resetFilters();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      final notifier = context.read<MatchesNotifier>();
+      notifier.updateQuery(value);
+      notifier.loadMatches(resetPage: true);
+    });
   }
 
   String _formatDate(DateTime? date) =>
@@ -184,15 +196,16 @@ class _MatchesPageState extends State<MatchesPage> {
                       });
                     },
                     perPage: _perPage,
-                    onPerPageChanged: (value) {
-                      if (value != null) {
-                        setState(() => _perPage = value);
-                      }
-                    },
-                    onApply: _applyFilters,
-                    onReset: _resetFilters,
-                    isLoading: state.isLoading,
-                  ),
+                  onPerPageChanged: (value) {
+                    if (value != null) {
+                      setState(() => _perPage = value);
+                    }
+                  },
+                  onSearchChanged: _onSearchChanged,
+                  onApply: _applyFilters,
+                  onReset: _resetFilters,
+                  isLoading: state.isLoading,
+                ),
                   const SizedBox(height: 12),
                   if (state.error != null)
                     _ErrorBanner(
@@ -264,6 +277,7 @@ class _FilterCard extends StatelessWidget {
     required this.onToggleStatus,
     required this.perPage,
     required this.onPerPageChanged,
+    required this.onSearchChanged,
     required this.onApply,
     required this.onReset,
     required this.isLoading,
@@ -278,6 +292,7 @@ class _FilterCard extends StatelessWidget {
   final void Function(MatchStatus status, bool isSelected) onToggleStatus;
   final int perPage;
   final ValueChanged<int?> onPerPageChanged;
+  final ValueChanged<String> onSearchChanged;
   final VoidCallback onApply;
   final VoidCallback onReset;
   final bool isLoading;
@@ -301,7 +316,8 @@ class _FilterCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onSubmitted: (_) => onApply(),
+              onChanged: onSearchChanged,
+              onSubmitted: onSearchChanged,
             ),
             const SizedBox(height: 12),
             Wrap(
