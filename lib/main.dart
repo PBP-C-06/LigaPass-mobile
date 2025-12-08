@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'assistant/screens/chatbot_page.dart';
 import 'authentication/screens/login.dart';
 import 'authentication/screens/register.dart';
+import 'config/api_config.dart';
 import 'config/env.dart';
 import 'core/theme/app_theme.dart';
 import 'home/home_page.dart';
@@ -32,10 +33,43 @@ void main() async {
   final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
   final cookieRequest = CookieRequest();
   await cookieRequest.init();
+  if (cookieRequest.loggedIn && (cookieRequest.jsonData.isEmpty || cookieRequest.jsonData['id'] == null)) {
+    await _restoreSession(cookieRequest);
+  }
   runApp(LigaPassApp(
     showOnboarding: !onboardingComplete,
     cookieRequest: cookieRequest,
   ));
+}
+
+Future<void> _restoreSession(CookieRequest request) async {
+  try {
+    final resp = await request.get("${ApiConfig.baseUrl}/profiles/current_user_json/");
+    if (resp is Map && resp["authenticated"] == true) {
+      final role = resp["role"];
+      final userId = resp["id"];
+      bool hasProfile = true;
+
+      if (role == "user" && userId != null) {
+        try {
+          final profileResp = await request.get("${ApiConfig.baseUrl}/profiles/json/$userId/");
+          hasProfile = !(profileResp is Map && profileResp.containsKey("error"));
+        } catch (_) {
+          hasProfile = false;
+        }
+      }
+
+      request.jsonData = {
+        "id": userId,
+        "username": resp["username"],
+        "email": resp["email"],
+        "role": role,
+        "hasProfile": hasProfile,
+      };
+    }
+  } catch (_) {
+    // Ignore restore errors; user will need to login again if invalid
+  }
 }
 
 class LigaPassApp extends StatelessWidget {
