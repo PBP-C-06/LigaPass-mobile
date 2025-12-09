@@ -154,6 +154,8 @@ class _UserReviewSectionState extends State<UserReviewSection> {
     final isSuspended = widget.request.jsonData["profile_status"] == "suspended";
     final hasProfile = widget.request.jsonData["hasProfile"] == true ||
         widget.request.jsonData["profile_completed"] == true;
+    final role = widget.request.jsonData["role"];
+    final isPrivileged = role == "admin" || role == "journalist";
     if (!widget.request.loggedIn) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Silakan login untuk menulis review')),
@@ -167,7 +169,7 @@ class _UserReviewSectionState extends State<UserReviewSection> {
       );
       return;
     }
-    if (!hasProfile) {
+    if (!hasProfile && !isPrivileged) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Lengkapi profil terlebih dahulu sebelum menulis review')),

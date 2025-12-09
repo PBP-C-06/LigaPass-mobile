@@ -124,6 +124,8 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
       final request = context.read<CookieRequest>();
       final hasProfile = request.jsonData["hasProfile"] == true ||
           request.jsonData["profile_completed"] == true;
+      final role = request.jsonData["role"];
+      final isPrivileged = role == "admin" || role == "journalist";
 
       if (!request.loggedIn) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -136,7 +138,7 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
         return;
       }
 
-      if (!hasProfile) {
+      if (!hasProfile && !isPrivileged) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Lengkapi profil terlebih dahulu sebelum membeli tiket'),

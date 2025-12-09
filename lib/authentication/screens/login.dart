@@ -217,6 +217,16 @@ class _LoginPageState extends State<LoginPage> {
 
       final GoogleSignInAccount? user = await GoogleSignIn.instance.authenticate();
 
+      if (user == null) {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+            errorMessage = "Login Google dibatalkan.";
+          });
+        }
+        return;
+      }
+
       final GoogleSignInAuthentication auth = await Future.value(
         user.authentication,
       );

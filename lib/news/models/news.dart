@@ -1,3 +1,5 @@
+import 'package:ligapass/config/env.dart';
+
 class News {
   final int id;
   final String title;
@@ -26,7 +28,7 @@ class News {
       id: json['id'],
       title: json['title'],
       content: json['content'],
-      thumbnail: json['thumbnail'] ?? '',
+      thumbnail: _normalizeThumbnail(json['thumbnail']),
       category: json['category'],
       isFeatured: json['is_featured'],
       views: json['news_views'],
@@ -47,5 +49,21 @@ class News {
       'created_at': createdAt,
       'is_owner': isOwner,
     };
+  }
+
+  /// Convert various thumbnail formats (null, relative path, http) into an HTTPS absolute URL.
+  static String _normalizeThumbnail(dynamic value) {
+    final raw = (value as String?)?.trim() ?? '';
+    if (raw.isEmpty) return '';
+    if (raw.startsWith('http://')) {
+      return raw.replaceFirst('http://', 'https://');
+    }
+    if (raw.startsWith('//')) {
+      return 'https:$raw';
+    }
+    if (raw.startsWith('/')) {
+      return '${Env.baseUrl}$raw';
+    }
+    return raw;
   }
 }

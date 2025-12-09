@@ -53,7 +53,9 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
     final request = context.read<CookieRequest>();
     final hasProfile = request.jsonData["hasProfile"] == true ||
         request.jsonData["profile_completed"] == true;
-    if (!request.loggedIn || !hasProfile) {
+    final role = request.jsonData["role"];
+    final isPrivileged = role == "admin" || role == "journalist";
+    if (!request.loggedIn || (!hasProfile && !isPrivileged)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
