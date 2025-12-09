@@ -66,7 +66,9 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
     final request = context.watch<CookieRequest>();
     final hasProfile = request.jsonData["hasProfile"] == true ||
         request.jsonData["profile_completed"] == true;
-    if (!request.loggedIn || !hasProfile) {
+    final role = request.jsonData["role"];
+    final isPrivileged = role == "admin" || role == "journalist";
+    if (!request.loggedIn || (!hasProfile && !isPrivileged)) {
       return Scaffold(
         appBar: AppBar(
           title: const Text(

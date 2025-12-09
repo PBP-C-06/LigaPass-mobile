@@ -28,6 +28,7 @@ class MatchDetailPage extends StatelessWidget {
     void handleBuy() {
       final hasProfile = request.jsonData["hasProfile"] == true ||
           request.jsonData["profile_completed"] == true;
+      final isPrivileged = role == "admin" || role == "journalist";
       if (!request.loggedIn) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Silakan login untuk membeli tiket')),
@@ -36,7 +37,7 @@ class MatchDetailPage extends StatelessWidget {
         return;
       }
 
-      if (!hasProfile) {
+      if (!hasProfile && !isPrivileged) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Lengkapi profil terlebih dahulu sebelum membeli tiket'),

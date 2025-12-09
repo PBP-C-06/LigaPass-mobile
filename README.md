@@ -71,6 +71,6 @@ Pada proses pengintegrasian antara Django dengan Flutter, kami akan melakukan be
 **Journalist flow**: https://www.figma.com/proto/IZxjKlwpj4As5MbLBrLpZL/LigaPass-Mobile-Apps?page-id=158%3A2334&node-id=158-2335&p=f&viewport=-205%2C48%2C0.39&t=IX4rFHObKfvI8pJI-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=158%3A2518  
 
 ## 📥 Download
-[![Build Status](https://app.bitrise.io/app/c6810da8-6cba-4393-b954-35089d5979fc/status.svg?token=GDFNuR0QlYXf8FNVuevL8g&branch=main)](https://app.bitrise.io/app/c6810da8-6cba-4393-b954-35089d5979fc)
+[![Build Status](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653/status.svg?token=b78LBxA1YeJAmyCdBD-GDQ&branch=main)](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653)
 <br/>
 **Download APK:** [Download aplikasi versi terbaru](https://app.bitrise.io/app/6b7b02e8-ca0e-4ea8-aa53-c7b4c1178712/installable-artifacts/3d85a2f6695c9986/public-install-page/e8ccb28d67474e1510f6c21901ef03f4)
