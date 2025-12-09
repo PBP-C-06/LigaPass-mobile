@@ -537,6 +537,11 @@ class _MatchesSectionState extends State<_MatchesSection> {
   List<AdminMatch> _matches = [];
   List<AdminTeam> _teams = [];
   List<AdminVenue> _venues = [];
+  String _search = '';
+  String _statusFilter = 'all'; // all, upcoming, ongoing, finished
+  String? _venueFilter;
+  DateTime? _startDate;
+  DateTime? _endDate;
 
   @override
   void initState() {
@@ -567,6 +572,70 @@ class _MatchesSectionState extends State<_MatchesSection> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  String _statusKey(AdminMatch m) {
+    final now = DateTime.now();
+    if (m.date.isAfter(now)) return 'upcoming';
+    if (now.isAfter(m.date) && now.difference(m.date).inMinutes <= 150) {
+      return 'ongoing';
+    }
+    return 'finished';
+  }
+
+  List<AdminMatch> get _filteredMatches {
+    return _matches.where((m) {
+      if (_search.isNotEmpty) {
+        final text = '${m.homeTeamName} ${m.awayTeamName}'.toLowerCase();
+        if (!text.contains(_search.toLowerCase())) return false;
+      }
+      if (_statusFilter != 'all' && _statusKey(m) != _statusFilter) {
+        return false;
+      }
+      if (_venueFilter != null && _venueFilter!.isNotEmpty) {
+        if ((m.venueId ?? '') != _venueFilter) return false;
+      }
+      if (_startDate != null && m.date.isBefore(_startDate!)) return false;
+      if (_endDate != null && m.date.isAfter(_endDate!)) return false;
+      return true;
+    }).toList();
+  }
+
+  Future<void> _pickDate({required bool isStart}) async {
+    final initial = isStart
+        ? (_startDate ?? DateTime.now())
+        : (_endDate ?? _startDate ?? DateTime.now());
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        if (isStart) {
+          _startDate = picked;
+          if (_endDate != null && _endDate!.isBefore(_startDate!)) {
+            _endDate = _startDate;
+          }
+        } else {
+          _endDate = picked;
+          if (_startDate != null && _endDate!.isBefore(_startDate!)) {
+            _startDate = _endDate;
+          }
+        }
+      });
+    }
+  }
+
+  void _resetFilters() {
+    setState(() {
+      _search = '';
+      _statusFilter = 'all';
+      _venueFilter = null;
+      _startDate = null;
+      _endDate = null;
+    });
   }
 
   Future<void> _openMatchForm({AdminMatch? match}) async {
@@ -856,6 +925,7 @@ class _MatchesSectionState extends State<_MatchesSection> {
 
   @override
   Widget build(BuildContext context) {
+    final matches = _filteredMatches;
     return RefreshIndicator(
       onRefresh: _loadAll,
       child: _loading
@@ -870,10 +940,12 @@ class _MatchesSectionState extends State<_MatchesSection> {
                   onAction: _teams.length < 2 ? null : () => _openMatchForm(),
                 ),
                 const SizedBox(height: 12),
-                if (_matches.isEmpty)
+                _buildFilters(),
+                const SizedBox(height: 12),
+                if (matches.isEmpty)
                   const Center(child: Text('Belum ada pertandingan.'))
                 else
-                  ..._matches.map(
+                  ...matches.map(
                     (m) => _MatchCard(
                       match: m,
                       onEdit: () => _openMatchForm(match: m),
@@ -883,6 +955,111 @@ class _MatchesSectionState extends State<_MatchesSection> {
                   ),
               ],
             ),
+    );
+  }
+
+  Widget _buildFilters() {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Cari tim',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (val) => setState(() => _search = val),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ChoiceChip(
+                  label: const Text('Semua'),
+                  selected: _statusFilter == 'all',
+                  onSelected: (_) => setState(() => _statusFilter = 'all'),
+                ),
+                ChoiceChip(
+                  label: const Text('Upcoming'),
+                  selected: _statusFilter == 'upcoming',
+                  onSelected: (_) => setState(() => _statusFilter = 'upcoming'),
+                ),
+                ChoiceChip(
+                  label: const Text('Ongoing'),
+                  selected: _statusFilter == 'ongoing',
+                  onSelected: (_) => setState(() => _statusFilter = 'ongoing'),
+                ),
+                ChoiceChip(
+                  label: const Text('Finished'),
+                  selected: _statusFilter == 'finished',
+                  onSelected: (_) => setState(() => _statusFilter = 'finished'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _pickDate(isStart: true),
+                    icon: const Icon(Icons.date_range),
+                    label: Text(
+                      _startDate != null
+                          ? DateFormat('dd MMM yyyy').format(_startDate!)
+                          : 'Tanggal mulai',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _pickDate(isStart: false),
+                    icon: const Icon(Icons.event),
+                    label: Text(
+                      _endDate != null
+                          ? DateFormat('dd MMM yyyy').format(_endDate!)
+                          : 'Tanggal akhir',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            DropdownButtonFormField<String>(
+              value: _venueFilter?.isNotEmpty == true ? _venueFilter : null,
+              decoration: const InputDecoration(
+                labelText: 'Venue',
+                border: OutlineInputBorder(),
+              ),
+              items: [
+                const DropdownMenuItem(value: null, child: Text('Semua venue')),
+                ..._venues.map(
+                  (v) => DropdownMenuItem(
+                    value: v.id,
+                    child: Text(
+                        '${v.name}${v.city != null && v.city!.isNotEmpty ? " - ${v.city}" : ""}'),
+                  ),
+                ),
+              ],
+              onChanged: (val) => setState(() => _venueFilter = val),
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: _resetFilters,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Reset filter'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
