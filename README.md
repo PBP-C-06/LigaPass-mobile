@@ -73,4 +73,4 @@ Pada proses pengintegrasian antara Django dengan Flutter, kami akan melakukan be
 ## 📥 Download
 [![Build Status](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653/status.svg?token=b78LBxA1YeJAmyCdBD-GDQ&branch=main)](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653)
 <br/>
-**Download APK:** [Download aplikasi versi terbaru](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653/installable-artifacts/a07a7876304a7920/public-install-page/91f6cd98f052e077d8bd04bc20d3c51f)
+**Download APK:** [Download aplikasi versi terbaru](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653/installable-artifacts/016f16e66f821273/public-install-page/04bf14c2807a557107d76f832b707aeb)
