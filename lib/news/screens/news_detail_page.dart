@@ -503,15 +503,34 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
               const SizedBox(height: 12),
 
               // Baris informasi view count dan waktu publikasi
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.visibility_outlined, size: 16, color: Colors.blueAccent),
-                  const SizedBox(width: 4),
-                  Text('${news.views} kali dilihat', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                  const SizedBox(width: 16),
-                  const Icon(Icons.access_time, size: 16, color: Colors.blueAccent),
-                  const SizedBox(width: 4),
-                  Text(news.createdAt, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Row(
+                    children: [
+                      const Icon(Icons.visibility_outlined, size: 16, color: Colors.blueAccent),
+                      const SizedBox(width: 4),
+                      Text('${news.views} kali dilihat', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.publish, size: 16, color: Colors.green),
+                      const SizedBox(width: 4),
+                      Text('Diterbitkan: ${news.createdAt}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    ],
+                  ),
+                  if (news.editedAt != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.edit, size: 16, color: Colors.orange),
+                        const SizedBox(width: 4),
+                        Text('Diedit: ${news.editedAt}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                  ],
                 ],
               ),
 
@@ -656,7 +675,7 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                         style: const TextStyle(fontSize: 15, color: Colors.black, fontWeight: FontWeight.bold),
                         items: const [
                           DropdownMenuItem(value: 'latest', child: Text('Terbaru')),
-                          DropdownMenuItem(value: 'popular', child: Text('Populer')),
+                          DropdownMenuItem(value: 'popular', child: Text('Terpopuler')),
                         ],
                         // Callback saat user mengganti mode sort komentar
                         onChanged: (value) {
