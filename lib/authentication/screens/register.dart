@@ -25,6 +25,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool isLoading = false;
   String? errorMessage;
+  final Map<String, String> _friendlyFieldNames = const {
+    "username": "Username",
+    "first_name": "Nama depan",
+    "last_name": "Nama belakang",
+    "email": "Email",
+    "password1": "Kata sandi",
+    "password2": "Kata sandi",
+    "__all__": "",
+  };
 
   Future<void> _performRegister(BuildContext context) async {
     final request = context.read<CookieRequest>();
@@ -52,27 +61,78 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => isLoading = false);
 
     if (response["status"] == "success") {
-  request.loggedIn = true;
-  request.jsonData = response;
+      request.loggedIn = true;
+      request.jsonData = response;
 
-  request.jsonData['username'] = _usernameController.text;
-  request.jsonData['first_name'] = _fnameController.text;
-  request.jsonData['last_name'] = _lnameController.text;
-  request.jsonData['email'] = _emailController.text;
+      request.jsonData['username'] = _usernameController.text;
+      request.jsonData['first_name'] = _fnameController.text;
+      request.jsonData['last_name'] = _lnameController.text;
+      request.jsonData['email'] = _emailController.text;
 
-  if (!mounted) return;
-  navigator.pushReplacementNamed(
-    "/create-profile",
-    arguments: {"username": _usernameController.text},
-  );
-} else {
+      if (!mounted) return;
+      navigator.pushReplacementNamed(
+        "/create-profile",
+        arguments: {"username": _usernameController.text},
+      );
+    } else {
       request.loggedIn = false;
       setState(() {
-        errorMessage = response["message"] ??
+        errorMessage =
+            response["message"] ??
             _formatErrors(response["errors"]) ??
             "Registrasi gagal. Periksa data Anda.";
       });
     }
+  }
+
+  String? _formatErrors(dynamic errors) {
+    if (errors == null) return null;
+    if (errors is String && errors.trim().isNotEmpty) return errors;
+    if (errors is Map) {
+      final parts = <String>[];
+      errors.forEach((rawKey, value) {
+        final key = rawKey.toString();
+        final friendly = _friendlyFieldNames[key] ?? key;
+        final msgList = (value is List) ? value : [value];
+        final cleaned = msgList
+            .whereType<String>()
+            .map(
+              (m) => m
+                  .trim()
+                  .replaceAll(RegExp(r'[.,]+$'), '')
+                  .replaceAll(RegExp(r'\.,\s'), '. '),
+            )
+            .where((m) => m.isNotEmpty)
+            .join(". ");
+
+        if (cleaned.isEmpty) return;
+
+        if (key == "__all__" || friendly.isEmpty) {
+          parts.add(cleaned);
+        } else {
+          // Skip adding prefix for password2 to avoid duplication
+          if (key == "password2" || key == "password1") {
+            parts.add(cleaned);
+          } else {
+            parts.add("$friendly: $cleaned");
+          }
+        }
+      });
+      if (parts.isNotEmpty) return parts.join("\n");
+    }
+    if (errors is List) {
+      final msgs = errors
+          .whereType<String>()
+          .where((m) => m.trim().isNotEmpty)
+          .map(
+            (m) => m
+                .replaceAll(RegExp(r'[.,]+$'), '')
+                .replaceAll(RegExp(r'\.,\s'), '. '),
+          )
+          .toList();
+      if (msgs.isNotEmpty) return msgs.join("\n");
+    }
+    return null;
   }
 
   @override
@@ -108,13 +168,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _fnameController,
-                  decoration: const InputDecoration(labelText: "First Name"),
+                  decoration: const InputDecoration(labelText: "Nama Depan"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _lnameController,
-                  decoration: const InputDecoration(labelText: "Last Name"),
+                  decoration: const InputDecoration(labelText: "Nama Belakang"),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -126,7 +186,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 TextFormField(
                   controller: _pw1Controller,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: "Password"),
+                  decoration: const InputDecoration(labelText: "Kata Sandi"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 const SizedBox(height: 12),
@@ -134,11 +194,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: _pw2Controller,
                   obscureText: true,
                   decoration: const InputDecoration(
-                    labelText: "Confirm Password",
+                    labelText: "Konfirmasi Kata Sandi",
                   ),
                   validator: (value) {
                     if (value != _pw1Controller.text) {
-                      return "Passwords do not match";
+                      return "Kata sandi tidak sama";
                     }
                     return null;
                   },
@@ -169,26 +229,4 @@ class _RegisterPageState extends State<RegisterPage> {
       bottomNavigationBar: const AppBottomNav(currentRoute: '/register'),
     );
   }
-}
-
-String? _formatErrors(dynamic errors) {
-  if (errors == null) return null;
-  if (errors is String && errors.trim().isNotEmpty) return errors;
-  if (errors is Map) {
-    final parts = <String>[];
-    errors.forEach((key, value) {
-      if (value is List) {
-        parts.add("${key.toString()}: ${value.join(', ')}");
-      } else {
-        parts.add("${key.toString()}: $value");
-      }
-    });
-    if (parts.isNotEmpty) return parts.join("\n");
-  }
-  if (errors is List) {
-    final msgs =
-        errors.whereType<String>().where((m) => m.trim().isNotEmpty).toList();
-    if (msgs.isNotEmpty) return msgs.join("\n");
-  }
-  return null;
 }

@@ -228,7 +228,9 @@ class _UserEditPageState extends State<UserEditPage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 20, horizontal: 20),
+                        vertical: 20,
+                        horizontal: 20,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
@@ -251,7 +253,7 @@ class _UserEditPageState extends State<UserEditPage> {
                               color: Colors.black87,
                             ),
                           ),
-                          
+
                           const SizedBox(height: 10),
                           Divider(color: Colors.grey, thickness: 1),
                           const SizedBox(height: 20),
@@ -273,18 +275,19 @@ class _UserEditPageState extends State<UserEditPage> {
                                               fit: BoxFit.cover,
                                             )
                                           : widget.initialProfilePicture != null
-                                              ? Image.network(
-                                                  widget.initialProfilePicture!
-                                                          .startsWith('http')
-                                                      ? widget.initialProfilePicture!
-                                                      : '${ApiConfig.baseUrl}${widget.initialProfilePicture}',
-                                                  fit: BoxFit.cover,
-                                                )
-                                              : const Icon(
-                                                  Icons.person,
-                                                  size: 48,
-                                                  color: Color(0xFF9CA3AF),
-                                                ),
+                                          ? Image.network(
+                                              widget.initialProfilePicture!
+                                                      .startsWith('http')
+                                                  ? widget
+                                                        .initialProfilePicture!
+                                                  : '${ApiConfig.baseUrl}${widget.initialProfilePicture}',
+                                              fit: BoxFit.cover,
+                                            )
+                                          : const Icon(
+                                              Icons.person,
+                                              size: 48,
+                                              color: Color(0xFF9CA3AF),
+                                            ),
                                     ),
                                   ),
                                   Positioned(
@@ -296,8 +299,11 @@ class _UserEditPageState extends State<UserEditPage> {
                                         color: Color(0xFF2563EB),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: const Icon(Icons.camera_alt,
-                                          color: Colors.white, size: 20),
+                                      child: const Icon(
+                                        Icons.camera_alt,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -333,12 +339,12 @@ class _UserEditPageState extends State<UserEditPage> {
                           const SizedBox(height: 16),
 
                           _inputField(
-                            label: "Username",
+                            label: "Nama Pengguna",
                             controller: _usernameController,
                             icon: Icons.alternate_email,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) {
-                                return "Username wajib diisi";
+                                return "Nama pengguna wajib diisi";
                               }
                               return null;
                             },
@@ -364,6 +370,20 @@ class _UserEditPageState extends State<UserEditPage> {
                             controller: _phoneController,
                             icon: Icons.phone,
                             keyboard: TextInputType.phone,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return "Nomor telepon wajib diisi";
+                              }
+                              final digitsOnly = v.trim().replaceAll(
+                                RegExp(r'\D'),
+                                '',
+                              );
+                              if (digitsOnly.length < 10 ||
+                                  digitsOnly.length > 15) {
+                                return "Nomor telepon harus 10-15 digit";
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 16),
 
@@ -392,7 +412,7 @@ class _UserEditPageState extends State<UserEditPage> {
                                 ),
                               ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -415,6 +435,33 @@ class _UserEditPageState extends State<UserEditPage> {
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: _loading
+                            ? null
+                            : () {
+                                Navigator.pop(context, false);
+                              },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(
+                            color: Colors.blueGrey.withValues(alpha: 0.4),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          "Batalkan",
+                          style: TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -452,9 +499,7 @@ class _UserEditPageState extends State<UserEditPage> {
           keyboardType: keyboard,
           decoration: InputDecoration(
             prefixIcon: Icon(icon),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
       ],
