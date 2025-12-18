@@ -71,6 +71,8 @@ class _MatchesPageState extends State<MatchesPage> {
           }
         }
       });
+      // Auto-apply filter setelah pilih tanggal
+      _applyFilters();
     }
   }
 
@@ -196,16 +198,16 @@ class _MatchesPageState extends State<MatchesPage> {
                       });
                     },
                     perPage: _perPage,
-                  onPerPageChanged: (value) {
-                    if (value != null) {
-                      setState(() => _perPage = value);
-                    }
-                  },
-                  onSearchChanged: _onSearchChanged,
-                  onApply: _applyFilters,
-                  onReset: _resetFilters,
-                  isLoading: state.isLoading,
-                ),
+                    onPerPageChanged: (value) {
+                      if (value != null) {
+                        setState(() => _perPage = value);
+                      }
+                    },
+                    onSearchChanged: _onSearchChanged,
+                    onApply: _applyFilters,
+                    onReset: _resetFilters,
+                    isLoading: state.isLoading,
+                  ),
                   const SizedBox(height: 12),
                   if (state.error != null)
                     _ErrorBanner(
@@ -391,13 +393,11 @@ class _FilterCard extends StatelessWidget {
                           ),
                         )
                         .toList(),
-                    onChanged: onPerPageChanged,
+                    onChanged: (value) {
+                      onPerPageChanged(value);
+                      if (value != null) onApply();
+                    },
                   ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: isLoading ? null : onApply,
-                  icon: const Icon(Icons.filter_alt),
-                  label: const Text('Terapkan'),
                 ),
                 TextButton(
                   onPressed: isLoading ? null : onReset,
@@ -415,7 +415,10 @@ class _FilterCard extends StatelessWidget {
     return FilterChip(
       selected: selected,
       label: Text(label),
-      onSelected: (value) => onToggleStatus(status, value),
+      onSelected: (value) {
+        onToggleStatus(status, value);
+        onApply();
+      },
       selectedColor: Colors.indigo.shade50,
       checkmarkColor: Colors.indigo,
       side: BorderSide(color: selected ? Colors.indigo : Colors.grey.shade300),

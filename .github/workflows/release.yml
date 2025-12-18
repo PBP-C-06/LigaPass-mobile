@@ -43,28 +43,31 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
-      - name: Build APK
-        run: >
-          flutter build apk --split-per-abi
-          --dart-define=API_BASE_URL=https://jaysen-lestari-ligapass.pbp.cs.ui.ac.id/
+      - name: Generate launcher icons
+        run: flutter pub run flutter_launcher_icons
 
       - name: Decode keystore
-        run: echo "${{ secrets.KEY_JKS }}" | base64 -d > release-keystore.jks
+        run: echo "${{ secrets.KEY_JKS }}" | base64 -d > android/app/release-keystore.jks
 
-      - name: Sign APKs
+      - name: Create key.properties
         run: |
-          for apk in build/app/outputs/flutter-apk/*.apk; do
-            echo "Signing $apk..."
-            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-              -keystore release-keystore.jks \
-              -storepass "${{ secrets.KEY_PASSWORD }}" \
-              -keypass "${{ secrets.KEY_PASSWORD }}" \
-              "$apk" release
-          done
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEY_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=release
+          storeFile=release-keystore.jks
+          EOF
+
+      - name: Build APK
+        run: >
+          flutter build apk --release
+          --dart-define=API_BASE_URL=https://jaysen-lestari-ligapass.pbp.cs.ui.ac.id/
 
       - name: Cleanup keystore
         if: always()
-        run: rm -f release-keystore.jks
+        run: |
+          rm -f android/app/release-keystore.jks
+          rm -f android/key.properties
 
       - name: Get current date
         id: date
@@ -78,7 +81,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: false
-          artifacts: "build/app/outputs/flutter-apk/*.apk"
+          artifacts: "build/app/outputs/flutter-apk/app-release.apk"
           body: "Published at ${{ steps.date.outputs.date }}"
           name: "v${{ steps.version.outputs.version }} - ${{ steps.date.outputs.date }}"
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -9,6 +9,7 @@ class News {
   final bool isFeatured;
   int views;
   final String createdAt;
+  final String? editedAt;
   final bool isOwner;
 
   News({
@@ -20,7 +21,8 @@ class News {
     required this.isFeatured,
     required this.views,
     required this.createdAt,
-    required this.isOwner
+    this.editedAt,
+    required this.isOwner,
   });
 
   factory News.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class News {
       isFeatured: json['is_featured'],
       views: json['news_views'],
       createdAt: json['created_at'],
+      editedAt: json['edited_at'],
       isOwner: json['is_owner'] ?? false,
     );
   }
@@ -47,6 +50,7 @@ class News {
       'is_featured': isFeatured,
       'news_views': views,
       'created_at': createdAt,
+      'edited_at': editedAt,
       'is_owner': isOwner,
     };
   }

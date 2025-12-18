@@ -100,11 +100,11 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (!mounted) return;
-      
+
       if (response["status"] == "success") {
         request.loggedIn = true;
         request.jsonData = response;
-        final username = request.jsonData['username']; 
+        final username = response["username"] ?? request.jsonData['username'];
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("userRole", response["role"]);
@@ -123,8 +123,9 @@ class _LoginPageState extends State<LoginPage> {
 
         setState(() => successMessage = warning ?? "Login Google berhasil.");
 
-        final String? redirect = response["redirect_url"] as String?;
-        if (redirect != null && redirect.contains("create_profile")) {
+        final bool hasProfile = response["hasProfile"] == true;
+
+        if (!hasProfile) {
           navigator.pushReplacementNamed(
             "/create-profile",
             arguments: {"username": username},
@@ -178,8 +179,20 @@ class _LoginPageState extends State<LoginPage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString("userRole", response["role"]);
 
-      // Redirect ke home page setelah login berhasil
-      navigator.pushReplacementNamed("/home");
+      final String? redirect = response["redirect_url"] as String?;
+      final bool hasProfile = response["hasProfile"] == true;
+      final bool needsProfile =
+          !hasProfile ||
+          (redirect != null && redirect.contains("create_profile"));
+
+      if (needsProfile) {
+        navigator.pushReplacementNamed(
+          "/create-profile",
+          arguments: {"username": response["username"]},
+        );
+      } else {
+        navigator.pushReplacementNamed("/home");
+      }
     } else {
       request.loggedIn = false;
       setState(() {
@@ -215,7 +228,8 @@ class _LoginPageState extends State<LoginPage> {
         await _initGoogleSignIn();
       }
 
-      final GoogleSignInAccount? user = await GoogleSignIn.instance.authenticate();
+      final GoogleSignInAccount? user = await GoogleSignIn.instance
+          .authenticate();
 
       if (user == null) {
         if (mounted) {
@@ -255,6 +269,7 @@ class _LoginPageState extends State<LoginPage> {
         final String? warning = response["warning"] as String?;
         final String profileStatus =
             response["profile_status"] as String? ?? "active";
+        final String username = response["username"] ?? "";
 
         if (profileStatus == "banned") {
           request.loggedIn = false;
@@ -267,10 +282,15 @@ class _LoginPageState extends State<LoginPage> {
         setState(() => successMessage = warning ?? "Login Google berhasil.");
 
         final String? redirect = response["redirect_url"] as String?;
-        if (redirect != null && redirect.contains("create_profile")) {
+        final bool hasProfile = response["hasProfile"] == true;
+        final bool needsProfile =
+            !hasProfile ||
+            (redirect != null && redirect.contains("create_profile"));
+
+        if (needsProfile) {
           navigator.pushReplacementNamed(
             "/create-profile",
-            arguments: {"username": response["username"]},
+            arguments: {"username": username},
           );
         } else {
           // Redirect ke home page setelah login berhasil
@@ -500,7 +520,7 @@ class _LoginPageState extends State<LoginPage> {
                           TextFormField(
                             controller: _usernameController,
                             decoration: InputDecoration(
-                              labelText: "Username",
+                              labelText: "Nama Pengguna",
                               filled: true,
                               fillColor: const Color(0xFFf8fafc),
                               border: OutlineInputBorder(
@@ -510,8 +530,9 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                             ),
-                            validator: (value) =>
-                                value!.isEmpty ? "Username required" : null,
+                            validator: (value) => value!.isEmpty
+                                ? "Nama pengguna wajib diisi"
+                                : null,
                           ),
                           const SizedBox(height: 14),
                           TextFormField(
