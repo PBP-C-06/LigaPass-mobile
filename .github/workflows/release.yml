@@ -62,6 +62,7 @@ jobs:
         run: >
           flutter build apk --release
           --dart-define=API_BASE_URL=https://jaysen-lestari-ligapass.pbp.cs.ui.ac.id/
+          --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
 
       - name: Cleanup keystore
         if: always()
