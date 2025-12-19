@@ -8,10 +8,7 @@ import '../../config/endpoints.dart';
 class AdminAnalyticsPanel extends StatefulWidget {
   final VoidCallback onClose;
 
-  const AdminAnalyticsPanel({
-    super.key,
-    required this.onClose,
-  });
+  const AdminAnalyticsPanel({super.key, required this.onClose});
 
   @override
   State<AdminAnalyticsPanel> createState() => _AdminAnalyticsPanelState();
@@ -36,7 +33,6 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
     fetchRevenue();
     fetchTickets();
   }
-
 
   Future<void> fetchRevenue() async {
     setState(() => isLoadingRevenue = true);
@@ -68,7 +64,6 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
     });
   }
 
- 
   double _getMaxY(List<dynamic> data, String key) {
     if (data.isEmpty) return 1;
 
@@ -91,78 +86,75 @@ class _AdminAnalyticsPanelState extends State<AdminAnalyticsPanel> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: const BoxDecoration(
-      color: Color(0xFFF8FBFF),
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min, // ✅ penting
-      children: [
-        // HEADER
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Analisis",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: widget.onClose,
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-
-        // ✅ LIST KONTEN
-        Flexible(
-          child: ListView(
-            shrinkWrap: true,
-            physics: const BouncingScrollPhysics(),
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8FBFF),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // ✅ penting
+        children: [
+          // HEADER
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildCard(
-                title: "Total Pendapatan",
-                dropdownValue: revenuePeriod,
-                onDropdownChange: (v) {
-                  setState(() => revenuePeriod = v);
-                  fetchRevenue();
-                },
-                child: isLoadingRevenue
-                    ? const Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : _buildRevenueChart(),
+              const Text(
+                "Analisis",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 20),
-              _buildCard(
-                title: "Tiket Terjual",
-                dropdownValue: ticketPeriod,
-                onDropdownChange: (v) {
-                  setState(() => ticketPeriod = v);
-                  fetchTickets();
-                },
-                child: isLoadingTickets
-                    ? const Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : _buildTicketsChart(),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: widget.onClose,
               ),
             ],
           ),
-        ),
-      ],
-    ),
-  );
-}
+          const SizedBox(height: 12),
+
+          // ✅ LIST KONTEN
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              children: [
+                _buildCard(
+                  title: "Total Pendapatan",
+                  dropdownValue: revenuePeriod,
+                  onDropdownChange: (v) {
+                    setState(() => revenuePeriod = v);
+                    fetchRevenue();
+                  },
+                  child: isLoadingRevenue
+                      ? const Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : _buildRevenueChart(),
+                ),
+                const SizedBox(height: 20),
+                _buildCard(
+                  title: "Tiket Terjual",
+                  dropdownValue: ticketPeriod,
+                  onDropdownChange: (v) {
+                    setState(() => ticketPeriod = v);
+                    fetchTickets();
+                  },
+                  child: isLoadingTickets
+                      ? const Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : _buildTicketsChart(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildCard({
     required String title,
@@ -183,11 +175,17 @@ Widget build(BuildContext context) {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               DropdownButton<String>(
                 value: dropdownValue,
                 underline: const SizedBox(),
@@ -209,22 +207,39 @@ Widget build(BuildContext context) {
     );
   }
 
-
   Widget _buildRevenueChart() {
     if (revenueData.isEmpty) return const Text("Tidak ada data.");
 
     final maxY = _getMaxY(revenueData, "total_revenue");
     final interval = _getInterval(maxY);
+    const tooltipStyle = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 11,
+      color: Colors.black,
+    );
 
     return SizedBox(
       height: 200,
       child: BarChart(
         BarChartData(
+          barTouchData: BarTouchData(
+            enabled: true,
+            handleBuiltInTouches: true,
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipColor: (group) => Colors.transparent,
+              tooltipPadding: EdgeInsets.zero,
+              tooltipMargin: 8,
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                return BarTooltipItem(rod.toY.toStringAsFixed(0), tooltipStyle);
+              },
+            ),
+          ),
           minY: 0,
           maxY: maxY,
           barGroups: revenueData.asMap().entries.map((entry) {
             return BarChartGroupData(
               x: entry.key,
+              showingTooltipIndicators: [0],
               barRods: [
                 BarChartRodData(
                   toY: (entry.value["total_revenue"] ?? 0).toDouble(),
@@ -233,10 +248,7 @@ Widget build(BuildContext context) {
               ],
             );
           }).toList(),
-          gridData: FlGridData(
-            show: true,
-            horizontalInterval: interval,
-          ),
+          gridData: FlGridData(show: true, horizontalInterval: interval),
           titlesData: FlTitlesData(
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
@@ -265,20 +277,13 @@ Widget build(BuildContext context) {
                   if (value < 0) return const SizedBox.shrink();
                   return Text(
                     value.toInt().toString(),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Colors.black87,
-                    ),
+                    style: const TextStyle(fontSize: 10, color: Colors.black87),
                   );
                 },
               ),
             ),
-            topTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            rightTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
           borderData: FlBorderData(show: false),
         ),
@@ -291,16 +296,34 @@ Widget build(BuildContext context) {
 
     final maxY = _getMaxY(ticketsData, "tickets_sold");
     final interval = _getInterval(maxY);
+    const tooltipStyle = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 11,
+      color: Colors.black,
+    );
 
     return SizedBox(
       height: 200,
       child: BarChart(
         BarChartData(
+          barTouchData: BarTouchData(
+            enabled: true,
+            handleBuiltInTouches: true,
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipColor: (group) => Colors.transparent,
+              tooltipPadding: EdgeInsets.zero,
+              tooltipMargin: 8,
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                return BarTooltipItem(rod.toY.toStringAsFixed(0), tooltipStyle);
+              },
+            ),
+          ),
           minY: 0,
           maxY: maxY,
           barGroups: ticketsData.asMap().entries.map((entry) {
             return BarChartGroupData(
               x: entry.key,
+              showingTooltipIndicators: [0],
               barRods: [
                 BarChartRodData(
                   toY: (entry.value["tickets_sold"] ?? 0).toDouble(),
@@ -309,10 +332,7 @@ Widget build(BuildContext context) {
               ],
             );
           }).toList(),
-          gridData: FlGridData(
-            show: true,
-            horizontalInterval: interval,
-          ),
+          gridData: FlGridData(show: true, horizontalInterval: interval),
           titlesData: FlTitlesData(
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
@@ -341,20 +361,13 @@ Widget build(BuildContext context) {
                   if (value < 0) return const SizedBox.shrink();
                   return Text(
                     value.toInt().toString(),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Colors.black87,
-                    ),
+                    style: const TextStyle(fontSize: 10, color: Colors.black87),
                   );
                 },
               ),
             ),
-            topTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            rightTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
           borderData: FlBorderData(show: false),
         ),

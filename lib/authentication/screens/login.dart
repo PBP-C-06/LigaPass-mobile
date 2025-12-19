@@ -174,16 +174,23 @@ class _LoginPageState extends State<LoginPage> {
 
     if (response["status"] == "success") {
       request.loggedIn = true;
-      request.jsonData = response;
+      final role = response["role"];
+      final isPrivilegedRole = role == "admin" || role == "journalist";
+      final hasProfile = response["hasProfile"] == true || isPrivilegedRole;
+      request.jsonData = {
+        ...response,
+        "role": role,
+        "hasProfile": hasProfile,
+      };
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString("userRole", response["role"]);
 
       final String? redirect = response["redirect_url"] as String?;
-      final bool hasProfile = response["hasProfile"] == true;
-      final bool needsProfile =
-          !hasProfile ||
-          (redirect != null && redirect.contains("create_profile"));
+      final bool needsProfile = !hasProfile ||
+          (!isPrivilegedRole &&
+              redirect != null &&
+              redirect.contains("create_profile"));
 
       if (needsProfile) {
         navigator.pushReplacementNamed(
