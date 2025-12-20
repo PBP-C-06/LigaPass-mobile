@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ligapass/admin/manage_page.dart';
 import 'package:ligapass/news/news_page.dart';
-import 'package:ligapass/news/screens/news_manage_page.dart';
 import 'package:ligapass/onboarding/screens/onboarding_screen.dart';
 import 'package:ligapass/profiles/screens/create_profile_page.dart';
 import 'package:ligapass/profiles/screens/redirect_login.dart';
@@ -17,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'assistant/screens/chatbot_page.dart';
 import 'authentication/screens/login.dart';
 import 'authentication/screens/register.dart';
+import 'config/api_config.dart';
 import 'config/env.dart';
 import 'core/theme/app_theme.dart';
 import 'home/home_page.dart';
@@ -31,19 +31,72 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
-  runApp(LigaPassApp(showOnboarding: !onboardingComplete));
+  final cookieRequest = CookieRequest();
+  await cookieRequest.init();
+  if (cookieRequest.loggedIn && (cookieRequest.jsonData.isEmpty || cookieRequest.jsonData['id'] == null)) {
+    await _restoreSession(cookieRequest);
+  }
+  runApp(LigaPassApp(
+    showOnboarding: !onboardingComplete,
+    cookieRequest: cookieRequest,
+  ));
+}
+
+Future<void> _restoreSession(CookieRequest request) async {
+  try {
+    final resp = await request.get("${ApiConfig.baseUrl}/profiles/current_user_json/");
+    if (resp is Map && resp["authenticated"] == true) {
+      final role = resp["role"];
+      final userId = resp["id"];
+      bool hasProfile = true;
+
+      if (role == "user" && userId != null) {
+        try {
+          final profileResp = await request.get("${ApiConfig.baseUrl}/profiles/json/$userId/");
+          hasProfile = !(profileResp is Map && profileResp.containsKey("error"));
+        } catch (_) {
+          hasProfile = false;
+        }
+      }
+
+      request.jsonData = {
+        "id": userId,
+        "username": resp["username"],
+        "email": resp["email"],
+        "role": role,
+        "hasProfile": hasProfile,
+      };
+    } else {
+      // Session cookie invalid/expired; reset state so app can prompt login cleanly.
+      request.loggedIn = false;
+      request.jsonData = {};
+      request.cookies = {};
+      await request.persist("{}");
+    }
+  } catch (_) {
+    // On error, also reset so user gets a fresh login instead of a broken state.
+    request.loggedIn = false;
+    request.jsonData = {};
+    request.cookies = {};
+    await request.persist("{}");
+  }
 }
 
 class LigaPassApp extends StatelessWidget {
   final bool showOnboarding;
+  final CookieRequest cookieRequest;
 
-  const LigaPassApp({super.key, this.showOnboarding = false});
+  const LigaPassApp({
+    super.key,
+    this.showOnboarding = false,
+    required this.cookieRequest,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<CookieRequest>(create: (_) => CookieRequest()),
+        Provider<CookieRequest>.value(value: cookieRequest),
         ChangeNotifierProvider(
           create: (_) =>
               MatchesNotifier(MatchesRepository(apiClient: MatchesApiClient()))
@@ -67,7 +120,6 @@ class LigaPassApp extends StatelessWidget {
               '/reviews': (_) => const ReviewsPage(),
               '/tickets': (_) => const MyTicketsScreen(),
               '/manage': (_) => const AdminManagePage(),
-              '/news-manage': (_) => const NewsManagePage(),
               '/assistant': (_) => const ChatbotPage(),
             },
             onGenerateRoute: (settings) {
@@ -88,7 +140,7 @@ class LigaPassApp extends StatelessWidget {
                   // Jika belum punya profile tapi sudah login dan bukan admin and journalist
                   if (!hasProfile && role != "admin" && role != "journalist") {
                     return MaterialPageRoute(
-                      builder: (_) => CreateProfilePage(username: username),
+                      builder: (_) => CreateProfilePage(username: username ?? ""),
                     );
                   }
                   // Jika sudah punya profile
@@ -117,7 +169,7 @@ class LigaPassApp extends StatelessWidget {
 
               if (settings.name == '/create-profile') {
                 return MaterialPageRoute(
-                  builder: (_) => CreateProfilePage(username: username),
+                  builder: (_) => CreateProfilePage(username: username ?? ""),
                   settings: settings, 
                 );
               }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -27,6 +28,7 @@ class _MatchesPageState extends State<MatchesPage> {
     MatchStatus.finished,
   };
   int _perPage = 10;
+  Timer? _searchDebounce;
 
   @override
   void initState() {
@@ -42,6 +44,7 @@ class _MatchesPageState extends State<MatchesPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
@@ -68,6 +71,8 @@ class _MatchesPageState extends State<MatchesPage> {
           }
         }
       });
+      // Auto-apply filter setelah pilih tanggal
+      _applyFilters();
     }
   }
 
@@ -95,6 +100,15 @@ class _MatchesPageState extends State<MatchesPage> {
       _perPage = 10;
     });
     await context.read<MatchesNotifier>().resetFilters();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      final notifier = context.read<MatchesNotifier>();
+      notifier.updateQuery(value);
+      notifier.loadMatches(resetPage: true);
+    });
   }
 
   String _formatDate(DateTime? date) =>
@@ -189,6 +203,7 @@ class _MatchesPageState extends State<MatchesPage> {
                         setState(() => _perPage = value);
                       }
                     },
+                    onSearchChanged: _onSearchChanged,
                     onApply: _applyFilters,
                     onReset: _resetFilters,
                     isLoading: state.isLoading,
@@ -264,6 +279,7 @@ class _FilterCard extends StatelessWidget {
     required this.onToggleStatus,
     required this.perPage,
     required this.onPerPageChanged,
+    required this.onSearchChanged,
     required this.onApply,
     required this.onReset,
     required this.isLoading,
@@ -278,6 +294,7 @@ class _FilterCard extends StatelessWidget {
   final void Function(MatchStatus status, bool isSelected) onToggleStatus;
   final int perPage;
   final ValueChanged<int?> onPerPageChanged;
+  final ValueChanged<String> onSearchChanged;
   final VoidCallback onApply;
   final VoidCallback onReset;
   final bool isLoading;
@@ -301,7 +318,8 @@ class _FilterCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onSubmitted: (_) => onApply(),
+              onChanged: onSearchChanged,
+              onSubmitted: onSearchChanged,
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -375,13 +393,11 @@ class _FilterCard extends StatelessWidget {
                           ),
                         )
                         .toList(),
-                    onChanged: onPerPageChanged,
+                    onChanged: (value) {
+                      onPerPageChanged(value);
+                      if (value != null) onApply();
+                    },
                   ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: isLoading ? null : onApply,
-                  icon: const Icon(Icons.filter_alt),
-                  label: const Text('Terapkan'),
                 ),
                 TextButton(
                   onPressed: isLoading ? null : onReset,
@@ -399,7 +415,10 @@ class _FilterCard extends StatelessWidget {
     return FilterChip(
       selected: selected,
       label: Text(label),
-      onSelected: (value) => onToggleStatus(status, value),
+      onSelected: (value) {
+        onToggleStatus(status, value);
+        onApply();
+      },
       selectedColor: Colors.indigo.shade50,
       checkmarkColor: Colors.indigo,
       side: BorderSide(color: selected ? Colors.indigo : Colors.grey.shade300),

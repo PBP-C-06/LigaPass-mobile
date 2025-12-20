@@ -374,6 +374,10 @@ class _TicketPriceScreenState extends State<TicketPriceScreen> {
           onPressed: canBuy
               ? () {
                   final request = context.read<CookieRequest>();
+                  final hasProfile = request.jsonData["hasProfile"] == true ||
+                      request.jsonData["profile_completed"] == true;
+                  final role = request.jsonData["role"];
+                  final isPrivileged = role == "admin" || role == "journalist";
                   if (!request.loggedIn) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -381,6 +385,16 @@ class _TicketPriceScreenState extends State<TicketPriceScreen> {
                       ),
                     );
                     Navigator.pushNamed(context, '/login');
+                    return;
+                  }
+
+                  if (!hasProfile && !isPrivileged) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Lengkapi profil terlebih dahulu sebelum membeli tiket'),
+                      ),
+                    );
+                    Navigator.pushNamed(context, '/create-profile');
                     return;
                   }
 

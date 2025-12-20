@@ -122,6 +122,33 @@ class _BookingCreateScreenState extends State<BookingCreateScreen> {
 
     try {
       final request = context.read<CookieRequest>();
+      final hasProfile = request.jsonData["hasProfile"] == true ||
+          request.jsonData["profile_completed"] == true;
+      final role = request.jsonData["role"];
+      final isPrivileged = role == "admin" || role == "journalist";
+
+      if (!request.loggedIn) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Silakan login untuk membeli tiket'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.pushNamed(context, '/login');
+        return;
+      }
+
+      if (!hasProfile && !isPrivileged) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Lengkapi profil terlebih dahulu sebelum membeli tiket'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.pushNamed(context, '/create-profile');
+        return;
+      }
+
       final service = BookingService(request);
 
       final ticketTypes = Map<String, int>.from(_selectedQuantities)

@@ -17,10 +17,18 @@ class AdminApiService {
     String path, [
     Map<String, dynamic>? query,
   ]) async {
-    final resp = await request.get(_uri(path, query).toString());
-    if (resp is Map<String, dynamic>) return resp;
+    try {
+      final resp = await request.get(_uri(path, query).toString());
+      if (resp is Map<String, dynamic>) return resp;
+      if (resp is String && resp.trim().startsWith('{')) {
+        final decoded = jsonDecode(resp);
+        if (decoded is Map<String, dynamic>) return decoded;
+      }
+    } on FormatException {
+      // fall through to throw below
+    }
     throw const FormatException(
-      'Respons tidak valid (mungkin belum login/ sesi kedaluwarsa atau server mengembalikan HTML).',
+      'Respons tidak valid (mungkin sesi kedaluwarsa atau server mengembalikan HTML/redirect).',
     );
   }
 
@@ -28,13 +36,21 @@ class AdminApiService {
     String path,
     Map<String, dynamic> body,
   ) async {
-    final resp = await request.postJson(
-      _uri(path).toString(),
-      jsonEncode(body),
-    );
-    if (resp is Map<String, dynamic>) return resp;
+    try {
+      final resp = await request.postJson(
+        _uri(path).toString(),
+        jsonEncode(body),
+      );
+      if (resp is Map<String, dynamic>) return resp;
+      if (resp is String && resp.trim().startsWith('{')) {
+        final decoded = jsonDecode(resp);
+        if (decoded is Map<String, dynamic>) return decoded;
+      }
+    } on FormatException {
+      // fall through to throw below
+    }
     throw const FormatException(
-      'Respons tidak valid (mungkin belum login/ sesi kedaluwarsa atau server mengembalikan HTML).',
+      'Respons tidak valid (mungkin sesi kedaluwarsa atau server mengembalikan HTML/redirect).',
     );
   }
 

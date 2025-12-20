@@ -1,3 +1,5 @@
+import 'package:ligapass/config/env.dart';
+
 class News {
   final int id;
   final String title;
@@ -7,6 +9,7 @@ class News {
   final bool isFeatured;
   int views;
   final String createdAt;
+  final String? editedAt;
   final bool isOwner;
 
   News({
@@ -18,7 +21,8 @@ class News {
     required this.isFeatured,
     required this.views,
     required this.createdAt,
-    required this.isOwner
+    this.editedAt,
+    required this.isOwner,
   });
 
   factory News.fromJson(Map<String, dynamic> json) {
@@ -26,11 +30,12 @@ class News {
       id: json['id'],
       title: json['title'],
       content: json['content'],
-      thumbnail: json['thumbnail'] ?? '',
+      thumbnail: _normalizeThumbnail(json['thumbnail']),
       category: json['category'],
       isFeatured: json['is_featured'],
       views: json['news_views'],
       createdAt: json['created_at'],
+      editedAt: json['edited_at'],
       isOwner: json['is_owner'] ?? false,
     );
   }
@@ -45,7 +50,24 @@ class News {
       'is_featured': isFeatured,
       'news_views': views,
       'created_at': createdAt,
+      'edited_at': editedAt,
       'is_owner': isOwner,
     };
+  }
+
+  /// Convert various thumbnail formats (null, relative path, http) into an HTTPS absolute URL.
+  static String _normalizeThumbnail(dynamic value) {
+    final raw = (value as String?)?.trim() ?? '';
+    if (raw.isEmpty) return '';
+    if (raw.startsWith('http://')) {
+      return raw.replaceFirst('http://', 'https://');
+    }
+    if (raw.startsWith('//')) {
+      return 'https:$raw';
+    }
+    if (raw.startsWith('/')) {
+      return '${Env.baseUrl}$raw';
+    }
+    return raw;
   }
 }

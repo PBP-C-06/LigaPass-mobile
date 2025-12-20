@@ -8,10 +8,7 @@ import '../../config/endpoints.dart';
 class UserAnalyticsPanel extends StatefulWidget {
   final VoidCallback onClose;
 
-  const UserAnalyticsPanel({
-    super.key,
-    required this.onClose,
-  });
+  const UserAnalyticsPanel({super.key, required this.onClose});
 
   @override
   State<UserAnalyticsPanel> createState() => _UserAnalyticsPanelState();
@@ -95,10 +92,7 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                 children: [
                   const Text(
                     "Analisis",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -192,6 +186,11 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
   Widget _buildSpendingCard() {
     final maxY = _maxSpendingY();
     final interval = _interval(maxY);
+    const tooltipStyle = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 11,
+      color: Colors.black,
+    );
 
     return _card(
       title: "Data Pengeluaran",
@@ -214,14 +213,29 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
         height: 220,
         child: BarChart(
           BarChartData(
+            barTouchData: BarTouchData(
+              enabled: true,
+              handleBuiltInTouches: true,
+              touchTooltipData: BarTouchTooltipData(
+                getTooltipColor: (group) => Colors.transparent,
+                tooltipPadding: EdgeInsets.zero,
+                tooltipMargin: 8,
+                getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                  return BarTooltipItem(
+                    rod.toY.toStringAsFixed(0),
+                    tooltipStyle,
+                  );
+                },
+              ),
+            ),
             minY: 0,
             maxY: maxY,
-            gridData:
-                FlGridData(show: true, horizontalInterval: interval),
+            gridData: FlGridData(show: true, horizontalInterval: interval),
             borderData: FlBorderData(show: false),
             barGroups: spendingData.asMap().entries.map((e) {
               return BarChartGroupData(
                 x: e.key,
+                showingTooltipIndicators: [0],
                 barRods: [
                   BarChartRodData(
                     toY: (e.value["total_spent"] ?? 0).toDouble(),
@@ -238,9 +252,10 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                   showTitles: true,
                   interval: interval,
                   reservedSize: 40,
-                  getTitlesWidget: (v, _) =>
-                      Text(v.toInt().toString(),
-                          style: const TextStyle(fontSize: 10)),
+                  getTitlesWidget: (v, _) => Text(
+                    v.toInt().toString(),
+                    style: const TextStyle(fontSize: 10),
+                  ),
                 ),
               ),
               bottomTitles: AxisTitles(
@@ -261,10 +276,12 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
                   },
                 ),
               ),
-              topTitles:
-                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              rightTitles:
-                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
             ),
           ),
         ),
@@ -289,10 +306,17 @@ class _UserAnalyticsPanelState extends State<UserAnalyticsPanel> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title,
+              Expanded(
+                child: Text(
+                  title,
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16)),
-              if (dropdown != null) dropdown,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (dropdown != null) ...[const SizedBox(width: 8), dropdown],
             ],
           ),
           const SizedBox(height: 12),
@@ -316,10 +340,7 @@ class _LegendDot extends StatelessWidget {
         Container(
           width: 10,
           height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Text(label, style: const TextStyle(fontSize: 12)),

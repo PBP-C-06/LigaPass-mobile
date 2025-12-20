@@ -279,7 +279,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
                                   // Dropdown kategori mengisi ruang sumbu horizontal yang tersisa
                                   Expanded(
                                     child: DropdownButtonFormField<String>(
-                                      value: _selectedCategory, // Kategori yang sedang dipilih
+                                      initialValue: _selectedCategory, // Kategori yang sedang dipilih
                                       decoration: InputDecoration(
                                         labelText: "Kategori", // Label di atas dropdown
                                         filled: true,

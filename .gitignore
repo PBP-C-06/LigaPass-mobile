@@ -51,3 +51,7 @@ app.*.map.json
 
 # Local environment config (keep secrets out of VCS)
 lib/config/env.dart
+
+# Firebase/Google service configs (contain client IDs/keys)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist

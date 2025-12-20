@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:ligapass/config/api_config.dart';
+import 'package:ligapass/config/env.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class AuthService {
@@ -49,8 +50,8 @@ class AuthService {
 
   Future<Map<String, dynamic>> loginWithGoogle() async {
     await GoogleSignIn.instance.initialize(
-      clientId:
-          "496589546073-lhasinbg2db22bkti40suvgaqjqti4t2.apps.googleusercontent.com",
+      clientId: Env.googleClientId,
+      serverClientId: Env.googleClientId,
     );
 
     if (!GoogleSignIn.instance.supportsAuthenticate()) {

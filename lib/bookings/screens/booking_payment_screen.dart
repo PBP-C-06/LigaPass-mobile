@@ -50,6 +50,28 @@ class _BookingPaymentScreenState extends State<BookingPaymentScreen>
   @override
   void initState() {
     super.initState();
+    final request = context.read<CookieRequest>();
+    final hasProfile = request.jsonData["hasProfile"] == true ||
+        request.jsonData["profile_completed"] == true;
+    final role = request.jsonData["role"];
+    final isPrivileged = role == "admin" || role == "journalist";
+    if (!request.loggedIn || (!hasProfile && !isPrivileged)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('Lengkapi profil dan login sebelum melanjutkan pembayaran'),
+          ),
+        );
+        if (!request.loggedIn) {
+          Navigator.pushReplacementNamed(context, '/login');
+        } else {
+          Navigator.pushReplacementNamed(context, '/create-profile');
+        }
+      });
+      return;
+    }
     _hourglassController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
