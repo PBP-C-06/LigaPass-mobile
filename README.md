@@ -106,3 +106,8 @@ https://rapidapi.com/Creativesdev/api/free-api-live-football-data
 [![Build Status](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653/status.svg?token=b78LBxA1YeJAmyCdBD-GDQ&branch=main)](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653)
 
 [Download APK](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653/installable-artifacts/0061d1eb6c19481b/public-install-page/bc60384025128d5eb21e0aa6de48e109)
+
+---
+
+## 🎥 Video Promosi
+[Nonton Video Promosi](https://www.youtube.com/watch?si=QtbM_qGtr7_eSd6S&v=EvyftGBOIik&feature=youtu.be)
