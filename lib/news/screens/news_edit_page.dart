@@ -78,9 +78,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
       final bytes = await picked.readAsBytes();
       // Update state untuk menyimpan gambar baru dan menghilangkan flag hapus gambar lama
       setState(() {
-        _pickedImage = picked;            // Simpan objek file yang dipilih
-        _selectedImageBytes = bytes;      // Simpan bytes untuk preview dan upload
-        _deleteCurrentImage = false;      // Jika memilih gambar baru, jangan tandai hapus gambar lama
+        _pickedImage = picked; // Simpan objek file yang dipilih
+        _selectedImageBytes = bytes; // Simpan bytes untuk preview dan upload
+        _deleteCurrentImage =
+            false; // Jika memilih gambar baru, jangan tandai hapus gambar lama
       });
     }
   }
@@ -102,18 +103,22 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
       // Menyusun payload data yang akan dikirim ke endpoint edit berita
       final data = {
-        "title": _titleController.text,            // Judul berita terbaru
-        "content": _contentController.text,        // Konten berita terbaru
-        "category": _selectedCategory,             // Kategori yang dipilih
-        "is_featured": _isFeatured,                // Status unggulan berita
-        "thumbnail_base64": base64Image,           // Gambar baru (jika ada) dalam format base64
-        "delete_thumbnail": _deleteCurrentImage,   // Flag apakah thumbnail lama dihapus
+        "title": _titleController.text, // Judul berita terbaru
+        "content": _contentController.text, // Konten berita terbaru
+        "category": _selectedCategory, // Kategori yang dipilih
+        "is_featured": _isFeatured, // Status unggulan berita
+        "thumbnail_base64":
+            base64Image, // Gambar baru (jika ada) dalam format base64
+        "delete_thumbnail":
+            _deleteCurrentImage, // Flag apakah thumbnail lama dihapus
       };
 
       // Mengirim request POST JSON ke endpoint edit berita dengan data terencode JSON
       final response = await request.postJson(
-        Endpoints.editNews(widget.news["id"]), // Endpoint edit berdasarkan id berita
-        jsonEncode(data),                      // Mengubah map data menjadi string JSON
+        Endpoints.editNews(
+          widget.news["id"],
+        ), // Endpoint edit berdasarkan id berita
+        jsonEncode(data), // Mengubah map data menjadi string JSON
       );
 
       // Jika status dari backend adalah success, berarti update berhasil
@@ -134,9 +139,9 @@ class _EditNewsPageState extends State<EditNewsPage> {
       }
     } catch (e) {
       // Menangkap error tak terduga seperti masalah jaringan atau parsing dan menampilkannya sebagai SnackBar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
       // finally selalu dijalankan baik sukses maupun gagal, mengembalikan status loading ke false
       if (mounted) setState(() => _loading = false);
@@ -169,11 +174,15 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 "Edit Berita", // Judul halaman yang ditampilkan di AppBar
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary, // Warna judul mengikuti color scheme primary
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary, // Warna judul mengikuti color scheme primary
                 ),
               ),
               iconTheme: IconThemeData(
-                color: Theme.of(context).colorScheme.primary, // Warna ikon AppBar (misalnya back) mengikuti primary
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary, // Warna ikon AppBar (misalnya back) mengikuti primary
               ),
             ),
           ),
@@ -183,13 +192,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
         // Dekorasi background berupa gradient lembut biru ke putih
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,   // Titik awal gradient di pojok kiri atas
-            end: Alignment.bottomRight, // Titik akhir gradient di pojok kanan bawah
-            colors: [
-              Color(0xFFf6f9ff),
-              Color(0xFFe8f0ff),
-              Color(0xFFdce6ff),
-            ],
+            begin: Alignment.topLeft, // Titik awal gradient di pojok kiri atas
+            end: Alignment
+                .bottomRight, // Titik akhir gradient di pojok kanan bawah
+            colors: [Color(0xFFf6f9ff), Color(0xFFe8f0ff), Color(0xFFdce6ff)],
           ),
         ),
         // Jika _loading true, tampilkan indikator loading di tengah
@@ -207,14 +213,20 @@ class _EditNewsPageState extends State<EditNewsPage> {
                       // Menghubungkan Form dengan _formKey agar bisa divalidasi
                       key: _formKey,
                       child: Card(
-                        elevation: 3, // Menambahkan sedikit bayangan untuk efek kartu mengambang
+                        elevation:
+                            3, // Menambahkan sedikit bayangan untuk efek kartu mengambang
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16), // Membuat sudut kartu membulat
+                          borderRadius: BorderRadius.circular(
+                            16,
+                          ), // Membuat sudut kartu membulat
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(24), // Padding internal kartu
+                          padding: const EdgeInsets.all(
+                            24,
+                          ), // Padding internal kartu
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start, // Semua konten disejajarkan ke kiri
+                            crossAxisAlignment: CrossAxisAlignment
+                                .start, // Semua konten disejajarkan ke kiri
                             children: [
                               const Text(
                                 "Edit Berita", // Judul besar pada form
@@ -231,35 +243,52 @@ class _EditNewsPageState extends State<EditNewsPage> {
                               const SizedBox(height: 24),
 
                               // === Judul ===
-                              const Text("Judul Berita"), // Label untuk TextFormField judul
+                              const Text(
+                                "Judul Berita",
+                              ), // Label untuk TextFormField judul
                               const SizedBox(height: 8),
                               TextFormField(
-                                controller: _titleController, // Menghubungkan field dengan controller judul
-                                maxLength: 100, // Maksimal 100 karakter untuk judul
+                                controller:
+                                    _titleController, // Menghubungkan field dengan controller judul
+                                maxLength:
+                                    100, // Maksimal 100 karakter untuk judul
                                 decoration: InputDecoration(
-                                  hintText: "Perbarui judul berita...", // Placeholder untuk judul
+                                  hintText:
+                                      "Perbarui judul berita...", // Placeholder untuk judul
                                   filled: true,
-                                  fillColor: Colors.grey.shade50, // Background field abu muda
+                                  fillColor: Colors
+                                      .grey
+                                      .shade50, // Background field abu muda
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12), // Sudut input membulat
+                                    borderRadius: BorderRadius.circular(
+                                      12,
+                                    ), // Sudut input membulat
                                   ),
-                                  counterStyle: const TextStyle(fontSize: 12), // Gaya teks counter karakter
+                                  counterStyle: const TextStyle(
+                                    fontSize: 12,
+                                  ), // Gaya teks counter karakter
                                 ),
                                 // Validator untuk memastikan judul tidak kosong
-                                validator: (value) => value == null || value.isEmpty
+                                validator: (value) =>
+                                    value == null || value.isEmpty
                                     ? "Judul wajib diisi"
                                     : null,
                               ),
                               const SizedBox(height: 16),
 
                               // === Konten ===
-                              const Text("Konten Berita"), // Label untuk TextFormField konten
+                              const Text(
+                                "Konten Berita",
+                              ), // Label untuk TextFormField konten
                               const SizedBox(height: 8),
                               TextFormField(
-                                controller: _contentController, // Controller untuk konten berita
-                                maxLines: 8, // Field dibuat tinggi dengan 8 baris
+                                controller:
+                                    _contentController, // Controller untuk konten berita
+                                maxLines:
+                                    8, // Field dibuat tinggi dengan 8 baris
                                 decoration: InputDecoration(
-                                  hintText: "Perbarui isi berita...", // Placeholder konten
+                                  hintText:
+                                      "Perbarui isi berita...", // Placeholder konten
                                   filled: true,
                                   fillColor: Colors.grey.shade50,
                                   border: OutlineInputBorder(
@@ -267,7 +296,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
                                   ),
                                 ),
                                 // Validator untuk memastikan konten tidak kosong
-                                validator: (value) => value == null || value.isEmpty
+                                validator: (value) =>
+                                    value == null || value.isEmpty
                                     ? "Konten wajib diisi"
                                     : null,
                               ),
@@ -279,37 +309,55 @@ class _EditNewsPageState extends State<EditNewsPage> {
                                   // Dropdown kategori mengisi ruang sumbu horizontal yang tersisa
                                   Expanded(
                                     child: DropdownButtonFormField<String>(
-                                      initialValue: _selectedCategory, // Kategori yang sedang dipilih
+                                      initialValue:
+                                          _selectedCategory, // Kategori yang sedang dipilih
                                       decoration: InputDecoration(
-                                        labelText: "Kategori", // Label di atas dropdown
+                                        labelText:
+                                            "Kategori", // Label di atas dropdown
                                         filled: true,
                                         fillColor: Colors.grey.shade50,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                       ),
                                       // Membuat DropdownMenuItem dari list kategori
                                       items: _categories
-                                          .map((cat) => DropdownMenuItem(
-                                                value: cat, // Nilai yang akan disimpan saat dipilih
-                                                child: Text(cat[0].toUpperCase() + cat.substring(1)), // Teks dengan huruf pertama kapital
-                                              ))
+                                          .map(
+                                            (cat) => DropdownMenuItem(
+                                              value:
+                                                  cat, // Nilai yang akan disimpan saat dipilih
+                                              child: Text(
+                                                cat[0].toUpperCase() +
+                                                    cat.substring(1),
+                                              ), // Teks dengan huruf pertama kapital
+                                            ),
+                                          )
                                           .toList(),
                                       // Callback ketika user mengganti kategori
-                                      onChanged: (value) =>
-                                          setState(() => _selectedCategory = value ?? 'update'),
+                                      onChanged: (value) => setState(
+                                        () => _selectedCategory =
+                                            value ?? 'update',
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
                                   // CheckboxListTile untuk menandai berita sebagai unggulan
                                   Flexible(
                                     child: CheckboxListTile(
-                                      value: _isFeatured, // Status unggulan saat ini
-                                      onChanged: (value) =>
-                                          setState(() => _isFeatured = value ?? false),
-                                      title: const Text("Unggulan"), // Label teks di samping checkbox
-                                      contentPadding: EdgeInsets.zero, // Menghilangkan padding default
-                                      controlAffinity: ListTileControlAffinity.leading, // Checkbox ditempatkan di kiri teks
+                                      value:
+                                          _isFeatured, // Status unggulan saat ini
+                                      onChanged: (value) => setState(
+                                        () => _isFeatured = value ?? false,
+                                      ),
+                                      title: const Text(
+                                        "Unggulan",
+                                      ), // Label teks di samping checkbox
+                                      contentPadding: EdgeInsets
+                                          .zero, // Menghilangkan padding default
+                                      controlAffinity: ListTileControlAffinity
+                                          .leading, // Checkbox ditempatkan di kiri teks
                                     ),
                                   ),
                                 ],
@@ -317,26 +365,34 @@ class _EditNewsPageState extends State<EditNewsPage> {
                               const SizedBox(height: 16),
 
                               // === Thumbnail ===
-                              const Text("Thumbnail Berita"), // Label untuk bagian thumbnail
+                              const Text(
+                                "Thumbnail Berita",
+                              ), // Label untuk bagian thumbnail
                               const SizedBox(height: 8),
 
                               // GestureDetector supaya area thumbnail bisa di-tap untuk memilih gambar
                               GestureDetector(
-                                onTap: _pickImage, // Ketika di-tap, panggil fungsi pilih gambar
+                                onTap:
+                                    _pickImage, // Ketika di-tap, panggil fungsi pilih gambar
                                 child: Container(
-                                  width: double.infinity, // Lebar penuh mengikuti parent
+                                  width: double
+                                      .infinity, // Lebar penuh mengikuti parent
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.1), // Shadow tipis di belakang card thumbnail
+                                        color: Colors.black.withOpacity(
+                                          0.1,
+                                        ), // Shadow tipis di belakang card thumbnail
                                         blurRadius: 10,
                                         offset: const Offset(0, 5),
                                       ),
                                     ],
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(16), // Membulatkan sudut gambar
+                                    borderRadius: BorderRadius.circular(
+                                      16,
+                                    ), // Membulatkan sudut gambar
                                     child: _selectedImageBytes != null
                                         // Jika user sudah memilih gambar baru, tampilkan gambar dari memori
                                         ? Image.memory(
@@ -346,53 +402,74 @@ class _EditNewsPageState extends State<EditNewsPage> {
                                             fit: BoxFit.cover,
                                           )
                                         // Jika belum memilih gambar baru dan masih ada thumbnail lama serta belum ditandai hapus
-                                        : (widget.news["thumbnail"] != null && !_deleteCurrentImage)
-                                            // Tampilkan thumbnail lama dari network
-                                            ? Image.network(
-                                                widget.news["thumbnail"],
-                                                width: double.infinity,
-                                                height: 200,
-                                                fit: BoxFit.cover,
-                                                // Jika gagal memuat thumbnail, gunakan gambar placeholder lokal
-                                                errorBuilder: (_, __, ___) => Image.asset(
+                                        : (widget.news["thumbnail"] != null &&
+                                              !_deleteCurrentImage)
+                                        // Tampilkan thumbnail lama dari network
+                                        ? Image.network(
+                                            widget.news["thumbnail"],
+                                            width: double.infinity,
+                                            height: 200,
+                                            fit: BoxFit.cover,
+                                            // Jika gagal memuat thumbnail, gunakan gambar placeholder lokal
+                                            errorBuilder: (_, __, ___) =>
+                                                Image.asset(
                                                   'assets/placeholder.png',
                                                   width: double.infinity,
                                                   height: 200,
                                                   fit: BoxFit.cover,
                                                 ),
-                                              )
-                                            // Jika tidak ada thumbnail atau sedang dihapus, tampilkan container abu-abu dengan ikon image
-                                            : Container(
-                                                height: 200,
-                                                color: Colors.grey[200],
-                                                child: const Center(
-                                                  child: Icon(Icons.image, size: 64, color: Colors.grey),
-                                                ),
+                                          )
+                                        // Jika tidak ada thumbnail atau sedang dihapus, tampilkan container abu-abu dengan ikon image
+                                        : Container(
+                                            height: 200,
+                                            color: Colors.grey[200],
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.image,
+                                                size: 64,
+                                                color: Colors.grey,
                                               ),
+                                            ),
+                                          ),
                                   ),
                                 ),
                               ),
 
                               const SizedBox(height: 12),
 
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Menempatkan tombol di ujung kiri dan kanan jika dua
+                              Wrap(
+                                spacing: 16,
+                                runSpacing: 8,
                                 children: [
-                                  // Tombol untuk mengunggah atau mengganti gambar thumbnail
                                   TextButton.icon(
-                                    onPressed: _pickImage, // Memanggil dialog pemilihan gambar
-                                    icon: const Icon(Icons.upload, color: Colors.blueAccent),
+                                    onPressed: _pickImage,
+                                    icon: const Icon(
+                                      Icons.upload,
+                                      color: Colors.blueAccent,
+                                    ),
                                     label: Text(
-                                      _pickedImage == null ? "Unggah Gambar" : "Ganti Gambar", // Ubah label jika sudah ada gambar dipilih
-                                      style: const TextStyle(color: Colors.blueAccent),
+                                      _pickedImage == null
+                                          ? "Unggah Gambar"
+                                          : "Ganti Gambar",
+                                      style: const TextStyle(
+                                        color: Colors.blueAccent,
+                                      ),
                                     ),
                                   ),
-                                  // Jika berita punya thumbnail lama dan belum ada gambar baru dipilih, tampilkan tombol hapus gambar
-                                  if (widget.news["thumbnail"] != null && _selectedImageBytes == null)
+                                  if (widget.news["thumbnail"] != null &&
+                                      _selectedImageBytes == null)
                                     TextButton.icon(
-                                      onPressed: () => setState(() => _deleteCurrentImage = true), // Set flag hapus thumbnail ke true
-                                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                      label: const Text("Hapus Gambar", style: TextStyle(color: Colors.red)),
+                                      onPressed: () => setState(
+                                        () => _deleteCurrentImage = true,
+                                      ),
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.red,
+                                      ),
+                                      label: const Text(
+                                        "Hapus Gambar",
+                                        style: TextStyle(color: Colors.red),
+                                      ),
                                     ),
                                 ],
                               ),
@@ -401,14 +478,25 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
                               // === Submit ===
                               SizedBox(
-                                width: double.infinity, // Tombol selebar container
+                                width:
+                                    double.infinity, // Tombol selebar container
                                 child: FilledButton.icon(
-                                  icon: const Icon(Icons.save_rounded), // Ikon disket (save) di tombol
-                                  label: const Text("Simpan Perubahan"), // Label tombol submit
-                                  onPressed: () => _submitEdit(request), // Saat ditekan, kirim perubahan ke backend
+                                  icon: const Icon(
+                                    Icons.save_rounded,
+                                  ), // Ikon disket (save) di tombol
+                                  label: const Text(
+                                    "Simpan Perubahan",
+                                  ), // Label tombol submit
+                                  onPressed: () => _submitEdit(
+                                    request,
+                                  ), // Saat ditekan, kirim perubahan ke backend
                                   style: FilledButton.styleFrom(
-                                    backgroundColor: Colors.blue.shade700, // Warna latar tombol
-                                    padding: const EdgeInsets.symmetric(vertical: 16), // Padding vertikal agar tombol terasa besar
+                                    backgroundColor: Colors
+                                        .blue
+                                        .shade700, // Warna latar tombol
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ), // Padding vertikal agar tombol terasa besar
                                     textStyle: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -440,12 +528,18 @@ class DottedBorderContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,            // Lebar container mengikuti lebar parent
-      padding: const EdgeInsets.all(24), // Padding seragam di semua sisi container
+      width: double.infinity, // Lebar container mengikuti lebar parent
+      padding: const EdgeInsets.all(
+        24,
+      ), // Padding seragam di semua sisi container
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.blue.shade200), // Border tipis berwarna biru muda
-        borderRadius: BorderRadius.circular(12),         // Sudut container dibuat membulat
-        color: Colors.grey.shade50,                      // Background abu-abu sangat muda
+        border: Border.all(
+          color: Colors.blue.shade200,
+        ), // Border tipis berwarna biru muda
+        borderRadius: BorderRadius.circular(
+          12,
+        ), // Sudut container dibuat membulat
+        color: Colors.grey.shade50, // Background abu-abu sangat muda
       ),
       child: child, // Menampilkan widget child yang dikirim lewat konstruktor
     );
