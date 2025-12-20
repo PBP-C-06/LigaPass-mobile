@@ -104,4 +104,5 @@ https://rapidapi.com/Creativesdev/api/free-api-live-football-data
 
 ## 📥 Download
 [![Build Status](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653/status.svg?token=b78LBxA1YeJAmyCdBD-GDQ&branch=main)](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653)
-> https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653/installable-artifacts/11d2f4cf6c805c6a/public-install-page/ccd66933feaead940bad24c3a2c445f8
+
+[Download APK](https://app.bitrise.io/app/4eb71d6b-eb4c-46a4-bc11-f4887b9d2653/installable-artifacts/0061d1eb6c19481b/public-install-page/bc60384025128d5eb21e0aa6de48e109)
